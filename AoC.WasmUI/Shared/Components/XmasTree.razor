@@ -1,0 +1,190 @@
+@using System.Numerics
+@using System.Timers
+@implements IDisposable
+
+@if (_grid != null)
+{
+    <div>
+        @foreach (var line in _grid)
+        {
+            <div>
+                @foreach (var pixel in line)
+                {
+                    <span key="pix-@pixel.Position.X-@pixel.Position.Y" style="@pixel.Style">
+                        @pixel.Text
+                    </span>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public int Size { get; set; } = 20;
+
+    private IReadOnlyList<Pixel>? _pixels;
+    private IReadOnlyList<IReadOnlyList<Pixel>>? _grid;
+
+    private Timer _tick = new(50);
+
+    protected override void OnInitialized()
+    {
+        _tick.Elapsed += (_, _) => Update();
+        _tick.Start();
+    }
+
+    public void Dispose() => _tick.Dispose();
+
+    protected override void OnParametersSet()
+    {
+        _pixels = BuildXmasTree(Size);
+        _grid = _pixels.ToGrid(pix => pix.Position, pix => pix, pos => new Pixel(pos.X, pos.Y));
+    }
+
+    private async void Update()
+    {
+        if (_pixels == null)
+            return;
+
+        foreach (var pixel in _pixels)
+        {
+            pixel.Update();
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Builds an animated ASCII Christmas Tree.
+    /// Inspired by @LuigiArpino's Tweet, 25 Dec 2020, to @shanselman: https://twitter.com/luigiarpino/status/1342522409400860683
+    /// </summary>
+    private IReadOnlyList<Pixel> BuildXmasTree(int size)
+    {
+        const int messageLine = 5;
+        const string message = "MERRY CHRISTMAS\n&\nHAPPY NEW YEAR!";
+        var messageLines = message.Split('\n').Reverse().ToArray();
+        var messageWidth = messageLines.Max(line => line.Length);
+
+        var pixels = new List<Pixel>();
+        var rnd = new Random();
+        for (var i = 1; i <= size; i++)
+        {
+            for (var j = 1; j < (size - i) * 2; j++)
+            {
+                var x = i + j;
+                var y = size - i;
+                var isWithinMessageRegion =
+                    i >= messageLine - 1 && i <= messageLine + messageLines.Length &&
+                    x >= (size - 1 - messageWidth / 2) && x <= (size + 1 + messageWidth / 2);
+                var isStar = y == 1;
+                var isLight = isStar || !isWithinMessageRegion && rnd.Next(0, 10) > 7;
+                pixels.Add(new Pixel(x, y, isStar ? 's' : (isLight ? '@' : '*'), isLight ? null : new Color(0x42, 0x69, 0x2F)));
+            }
+        }
+
+        for (var y = size; y < size + 3; y++)
+            for (var x = size - 1; x <= size + 1; x++)
+                pixels.Add(new Pixel(x, y, '#', new Color(0x65, 0x43, 0x21)));
+
+        pixels.AddRange(messageLines.SelectMany((line, y) => line
+            .Select((c, i) => (c, y, i, mid: line.Length / 2))
+            .Where(m => m.c != ' '))
+            .Select(m => new Pixel((size - m.mid) + m.i, size - messageLine - m.y, m.c, null)));
+
+        return pixels;
+    }
+
+    private readonly record struct Color(byte R, byte G, byte B);
+
+    private class Pixel
+    {
+        public Vector2 Position { get; }
+        public MarkupString Text { get; }
+        public bool IsStar { get; }
+        public bool IsLight { get; }
+        public string Style { get; private set; } = "";
+
+        private void SetColor(Color color) =>
+            Style = $"color: rgb({color.R}, {color.G}, {color.B});{(IsStar ? " font-size: 120%; margin-left: -0.425em;" : "")}";
+
+        public Pixel(float x, float y) : this(x, y, default, null)
+        {
+            Text = (MarkupString) "&nbsp;";
+        }
+
+        public Pixel(float x, float y, char c, Color? color)
+        {
+            Position = new Vector2(x, y);
+            IsStar = c == 's';
+            IsLight = color == null;
+            Text = (MarkupString) (IsStar ? "🌟" : c.ToString());
+            SetColor(color ?? default);
+
+            Update();
+        }
+
+        private static readonly Random Rnd = new();
+        private Rainbow _rainbow = new(Rnd.Next(20, 40) / 100d, Rnd.Next(1, 100));
+
+        public void Update()
+        {
+            if (IsLight)
+            {
+                SetColor(_rainbow.Next());
+            }
+        }
+    }
+
+    /// <summary>
+    /// Rainbow class full credits to https://github.com/riezebosch/crayon and https://github.com/devinRagotzy
+    /// Only modified and included here to return a Color tuple, rather than an IOutput;
+    /// and to be able to set the starting index for the offset of animations.
+    ///
+    /// MIT License
+    /// 
+    /// Copyright (c) 2019 Manuel Riezebosch
+    /// 
+    /// Permission is hereby granted, free of charge, to any person obtaining a copy
+    /// of this software and associated documentation files (the "Software"), to deal
+    /// in the Software without restriction, including without limitation the rights
+    /// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    /// copies of the Software, and to permit persons to whom the Software is
+    /// furnished to do so, subject to the following conditions:
+    /// 
+    /// The above copyright notice and this permission notice shall be included in all
+    /// copies or substantial portions of the Software.
+    /// 
+    /// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    /// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    /// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    /// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    /// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    /// SOFTWARE.
+    /// </summary>
+    private class Rainbow
+    {
+        private readonly double _freq;
+        private int _idx;
+
+        public Rainbow(double freq, int idx)
+        {
+            _freq = freq;
+            _idx = idx;
+        }
+
+        public Color Next() => ToRainbow(_freq, _idx++);
+
+        private static Color ToRainbow(double freq, int idx)
+        {
+            var r = Convert.ToByte(Math.Round(Math.Sin(freq * idx) * 127 + 128));
+            var g = Convert.ToByte(Math.Round(Math.Sin(freq * idx + 2) * 127 + 128));
+            var b = Convert.ToByte(Math.Round(Math.Sin(freq * idx + 4) * 127 + 128));
+
+            return new Color(r, g, b);
+        }
+    }
+
+}

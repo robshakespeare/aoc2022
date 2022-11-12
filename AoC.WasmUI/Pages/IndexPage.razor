@@ -1,0 +1,51 @@
+@page "/{DayNumber?}"
+
+<PageTitle>Shakey's AoC 2022</PageTitle>
+
+@if (_solver == null)
+{
+    <div class="warning">
+        No solver for day '<strong>@DayNumber</strong>'.
+    </div>
+}
+else
+{
+    if (DayNumber == "25")
+    {
+        <XmasTree />
+    }
+
+    <div>
+        <h2>--- Day @(DayNumber)@(_solver.DayName is null or "" ? "" : ": ")@(_solver.DayName) ---</h2>
+
+        <ResultDisplay PartNum="1" Result="_solver.Part1Result" />
+
+        <ResultDisplay PartNum="2" Result="_solver.Part2Result" />
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string? DayNumber { get; set; }
+
+    private ISolver? _solver;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (string.IsNullOrWhiteSpace(DayNumber))
+        {
+            DayNumber = SolverFactory.Instance.DefaultDay;
+        }
+
+        _solver = SolverFactory.Instance.TryCreateSolver(DayNumber);
+
+        if (_solver != null)
+        {
+            await _solver.RunAsync(async () =>
+            {
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(25); // give the UI some time to catch up
+            });
+        }
+    }
+}

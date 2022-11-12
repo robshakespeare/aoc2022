@@ -1,0 +1,39 @@
+@if (Result.IsStarted)
+{
+    <div class="margin-bottom">
+        Part @PartNum:
+        @if (!Result.IsCompleted)
+        {
+            <span class="dim">Working...</span>
+        }
+        else
+        {
+            if (Result.Value is string)
+            {
+                <pre class="hilight">@(Result.Value)</pre>
+            }
+            else
+            {
+                <span class="hilight">@(Result.Value)</span>
+            }
+
+            @if (Result.Value == null)
+            {
+                <div class="emphasis">
+                    Part @PartNum returned null / is not yet implemented
+                </div>
+            }
+            <div class="dim">
+                [Part @PartNum] time taken (seconds): @(Result.Elapsed?.TotalSeconds.ToString("0.000"))
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int PartNum { get; set; }
+
+    [Parameter]
+    public Result Result { get; set; }
+}

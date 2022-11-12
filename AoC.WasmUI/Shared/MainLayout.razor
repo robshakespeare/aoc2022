@@ -1,0 +1,14 @@
+@inherits LayoutComponentBase
+
+<h1>🎄 Shakey's AoC 2022 🌟</h1>
+
+<nav>
+    @foreach (var dayNumber in Enumerable.Range(0, 26))
+    {
+        <NavLink key="@($"day-link-{dayNumber}")" href="@dayNumber">@dayNumber</NavLink>
+    }
+</nav>
+
+<main>
+    @Body
+</main>
