@@ -1,0 +1,45 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+# Unix-style newlines for all files
+[*]
+end_of_line = lf
+
+
+# Specific settings based on file extensions:
+
+[*.{cs,cake,cshtml,razor,css}]
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+charset = utf-8
+insert_final_newline = true
+
+[*.{cs,cake}]
+max_line_length = 160
+
+[*.txt]
+charset = utf-8
+trim_trailing_whitespace = false
+insert_final_newline = false
+
+[*.{json,yml,yaml,ps1,csproj,py,js,ts,jsx,tsx}]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+charset = utf-8
+insert_final_newline = true
+
+[*.{md,feature}]
+indent_style = tab
+indent_size = 4
+charset = utf-8
+insert_final_newline = true
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.feature]
+trim_trailing_whitespace = true
