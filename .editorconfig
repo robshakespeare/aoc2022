@@ -3,43 +3,52 @@
 # top-most EditorConfig file
 root = true
 
-# Unix-style newlines for all files
+# Unix-style newlines with a newline ending every file
 [*]
 end_of_line = lf
+insert_final_newline = true
 
 
 # Specific settings based on file extensions:
 
-[*.{cs,cake,cshtml,razor,css}]
+[*.{cs,js,ts}]
+max_line_length = 160
+
+[*.cs]
+csharp_max_line_length = 160
+
+[*.{cs,cake}]
 indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
 charset = utf-8
-insert_final_newline = true
 
-[*.{cs,cake}]
-max_line_length = 160
-
-[*.txt]
-charset = utf-8
-trim_trailing_whitespace = false
-insert_final_newline = false
-
-[*.{json,yml,yaml,ps1,csproj,py,js,ts,jsx,tsx}]
+[*.{bicep,js,json,ts,jsx,tsx,yml,yaml,csproj,ps1}]
 indent_style = space
 indent_size = 2
 trim_trailing_whitespace = true
 charset = utf-8
-insert_final_newline = true
-
-[*.{md,feature}]
-indent_style = tab
-indent_size = 4
-charset = utf-8
-insert_final_newline = true
 
 [*.md]
+indent_style = tab
+indent_size = 4
 trim_trailing_whitespace = false
+charset = utf-8
 
 [*.feature]
+indent_style = tab
+indent_size = 4
 trim_trailing_whitespace = true
+charset = utf-8
+
+[*.{xml,xsd}]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+charset = utf-8
+
+[*.{html,cshtm,puml}]
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+charset = utf-8
