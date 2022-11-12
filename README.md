@@ -11,6 +11,7 @@ Rob Shakespeare's solutions to the Advent of Code 2022 challenges at https://adv
 ### Prerequisites
 
 * [.NET 7.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/7.0)
+* Optional: to be able to run the cake scripts, first: `dotnet tool restore`
 
 
 ### Run
