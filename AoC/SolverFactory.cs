@@ -1,6 +1,6 @@
 namespace AoC;
 
-public class SolverFactory
+public partial class SolverFactory
 {
     private SolverFactory()
     {
@@ -48,13 +48,16 @@ public class SolverFactory
             _ => 1
         };
 
-    public ISolver? TryCreateSolver(string? dayNumber) => _solvers.TryGetValue((dayNumber ?? ""), out var solverType)
+    public ISolver? TryCreateSolver(string? dayNumber) => _solvers.TryGetValue(dayNumber ?? "", out var solverType)
         ? (ISolver?) Activator.CreateInstance(solverType)
         : null;
 
     private void AddSolver<TSolver>() where TSolver : ISolver => _solvers.Add(GetDayNumber(typeof(TSolver)).ToString(), typeof(TSolver));
 
-    private static readonly Regex DayNumRegex = new(@"Day(?<dayNum>\d+)", RegexOptions.Compiled);
+    private static readonly Regex DayNumRegex = BuildDayNumRegex();
+
+    [GeneratedRegex("Day(?<dayNum>\\d+)", RegexOptions.Compiled)]
+    private static partial Regex BuildDayNumRegex();
 
     private static int GetDayNumber(Type solverType)
     {
