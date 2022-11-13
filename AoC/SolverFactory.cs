@@ -32,6 +32,8 @@ public partial class SolverFactory
         AddSolver<Day25.Day25Solver>();
     }
 
+    public static IReadOnlyCollection<int> Days { get; } = Enumerable.Range(0, 26).ToReadOnlyArray();
+
     private static readonly Lazy<SolverFactory> LazyInstance = new(() => new SolverFactory());
 
     public static SolverFactory Instance => LazyInstance.Value;

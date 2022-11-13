@@ -24,6 +24,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AoC.WasmUI", "AoC.WasmUI\Ao
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AoC.CLI", "AoC.CLI\AoC.CLI.csproj", "{4BC3E0CA-95F8-4E5B-96E6-45129748F564}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AoC.MAUI", "AoC.MAUI\AoC.MAUI.csproj", "{AFF90317-6ED7-418D-B24B-E95CF921B3AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +48,12 @@ Global
 		{4BC3E0CA-95F8-4E5B-96E6-45129748F564}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BC3E0CA-95F8-4E5B-96E6-45129748F564}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4BC3E0CA-95F8-4E5B-96E6-45129748F564}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFF90317-6ED7-418D-B24B-E95CF921B3AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFF90317-6ED7-418D-B24B-E95CF921B3AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFF90317-6ED7-418D-B24B-E95CF921B3AA}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{AFF90317-6ED7-418D-B24B-E95CF921B3AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFF90317-6ED7-418D-B24B-E95CF921B3AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFF90317-6ED7-418D-B24B-E95CF921B3AA}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
