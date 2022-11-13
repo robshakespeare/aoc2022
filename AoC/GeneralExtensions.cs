@@ -23,13 +23,6 @@ public static class GeneralExtensions
     /// </summary>
     public static IReadOnlyList<TSource> ToReadOnlyArray<TSource>(this IEnumerable<TSource> source) => Array.AsReadOnly(source.ToArray());
 
-    private static readonly Regex LineEndingsRegex = new(@"\r\n|\n|\r", RegexOptions.Compiled);
-
-    /// <summary>
-    /// Normalizes the line endings in the input string, so that all the line endings match the current environment's line endings.
-    /// </summary>
-    public static string NormalizeLineEndings(this string? value) => LineEndingsRegex.Replace(value ?? "", Environment.NewLine); // rs-todo: replace with inbuilt one
-
     /// <summary>
     /// Increments the value in the dictionary matching the key by the specified amount, or adds the amount in to the dictionary if no matching key is found.
     /// </summary>

@@ -8,7 +8,7 @@ public class PuzzleInput
     {
         // Normalizes the line endings in the input string, so that all the line endings match the current environment's line endings;
         // and remove all trailing white-space (including trailing line endings)
-        _input = input.NormalizeLineEndings().TrimEnd();
+        _input = (input ?? "").ReplaceLineEndings().TrimEnd();
     }
 
     /// <summary>

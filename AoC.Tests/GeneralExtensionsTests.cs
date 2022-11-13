@@ -18,7 +18,10 @@ public class GeneralExtensionsTests
             opts => opts.WithStrictOrdering());
     }
 
-    public class TheNormalizeLineEndingsMethod
+    /// <summary>
+    /// These tests verify that the method inbuilt to .NET does behave the same as the previous custom one.
+    /// </summary>
+    public class TheReplaceLineEndingsMethod
     {
         // Carriage Return = \r
         // Line Feed = \n
@@ -27,7 +30,7 @@ public class GeneralExtensionsTests
         public void Does_NormalizeLineEndings_LineFeed()
         {
             // ACT
-            var result = "test\nvalue\nhere".NormalizeLineEndings();
+            var result = "test\nvalue\nhere".ReplaceLineEndings();
 
             // ASSERT
             result.Split(Environment.NewLine).Should().BeEquivalentTo(
@@ -40,7 +43,7 @@ public class GeneralExtensionsTests
         public void Does_NormalizeLineEndings_CarriageReturn()
         {
             // ACT
-            var result = "test\rvalue\rhere".NormalizeLineEndings();
+            var result = "test\rvalue\rhere".ReplaceLineEndings();
 
             // ASSERT
             result.Split(Environment.NewLine).Should().BeEquivalentTo(
@@ -53,7 +56,7 @@ public class GeneralExtensionsTests
         public void Does_NormalizeLineEndings_CarriageReturnLineFeed()
         {
             // ACT
-            var result = "test\r\nvalue\r\nhere".NormalizeLineEndings();
+            var result = "test\r\nvalue\r\nhere".ReplaceLineEndings();
 
             // ASSERT
             result.Split(Environment.NewLine).Should().BeEquivalentTo(
@@ -66,7 +69,7 @@ public class GeneralExtensionsTests
         public void Does_NormalizeLineEndings_Mixture()
         {
             // ACT
-            var result = "test\r\n\nvalue\r\r\n\nhere".NormalizeLineEndings();
+            var result = "test\r\n\nvalue\r\r\n\nhere".ReplaceLineEndings();
 
             // ASSERT
             result.Split(Environment.NewLine).Should().BeEquivalentTo(
@@ -82,20 +85,10 @@ public class GeneralExtensionsTests
         public void Does_NormalizeLineEndings_MultipleBlankLines()
         {
             // ACT
-            var result = "\r\n\r\n\r\n\n\n\n\r\r\rhello world".NormalizeLineEndings();
+            var result = "\r\n\r\n\r\n\n\n\n\r\r\rhello world".ReplaceLineEndings();
 
             // ASSERT
             result.Should().Be($"{string.Join("", Enumerable.Repeat(Environment.NewLine, 9))}hello world");
-        }
-
-        [Test]
-        public void Does_NormalizeLineEndings_WhenInputNull_ReturnsEmptyString()
-        {
-            // ACT
-            var result = ((string?) null).NormalizeLineEndings();
-
-            // ASSERT
-            result.Should().BeEmpty();
         }
     }
 
