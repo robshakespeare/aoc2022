@@ -5,7 +5,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <Configurations>Debug;Release;Dbg Minimal</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
