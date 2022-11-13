@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:aoC="clr-namespace:AoC;assembly=AoC"
@@ -10,10 +10,8 @@
             <Label
                 Text="🎄 Shakey's AoC 2022 🌟"
                 SemanticProperties.HeadingLevel="Level1"
-                FontSize="18"
                 Margin="0,0,0,16"
-                TextColor="{StaticResource GreenHiLight}"
-                FontFamily="Consolas" />
+                TextColor="{StaticResource GreenHiLight}" />
 
             <FlexLayout
                 BindableLayout.ItemsSource="{x:Static aoC:SolverFactory.Days}"
@@ -24,11 +22,9 @@
                     <DataTemplate>
                         <Label
                             Text="{Binding .}"
-                            FontSize="18"
                             HeightRequest="30"
                             Padding="0,0,12,0"
-                            TextColor="{StaticResource Green}"
-                            FontFamily="Consolas" />
+                            TextColor="{StaticResource Green}" />
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
             </FlexLayout>
@@ -36,24 +32,15 @@
             <Label
                 Text="--- Day 0: Test Day ---"
                 SemanticProperties.HeadingLevel="Level2"
-                FontSize="18"
                 Margin="0,0,0,16"
-                TextColor="{StaticResource TextBright}"
-                FontFamily="Consolas" />
+                TextColor="{StaticResource TextBright}" />
 
-            <Label
-                Text="Part 1: 22739580"
-                FontSize="18"
-                TextColor="{StaticResource TextNormal}"
-                FontFamily="Consolas" />
+            <Label Text="Part 1: 22739580" />
 
             <Label
                 Text="[Part 1] time taken (seconds): 0.211"
-                FontSize="18"
                 Margin="0,0,0,16"
-                TextColor="{StaticResource TextDim}"
-                FontFamily="Consolas" />
-
+                TextColor="{StaticResource TextDim}" />
 
         </VerticalStackLayout>
     </ScrollView>
