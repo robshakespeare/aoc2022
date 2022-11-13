@@ -4,7 +4,10 @@ namespace AoC.Tests.Day00;
 
 public class Day0SolverTests
 {
-    private readonly Day0Solver _sut = new();
+    private readonly Day0Solver _sut = new()
+    {
+        SimulateSlowness = false
+    };
 
     [Test]
     public void Part1Example()
@@ -25,7 +28,7 @@ public class Day0SolverTests
 
         // ASSERT
         part1Result.Should().Be(136);
-        _sut.Part1Result!.Value.Should().Be(136);
+        _sut.Part1Result.Value.Should().Be(136);
         _sut.Part1Result.IsStarted.Should().BeTrue();
         _sut.Part1Result.IsCompleted.Should().BeTrue();
     }
@@ -37,7 +40,7 @@ public class Day0SolverTests
         var part2ExampleResult = _sut.SolvePart2("8,18,24");
 
         // ASSERT
-        part2ExampleResult.Should().Be(72);
+        part2ExampleResult.Should().BeOfType<string>().Which.Should().EndWith("72");
     }
 
     [Test]
@@ -47,8 +50,8 @@ public class Day0SolverTests
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(840);
-        _sut.Part2Result!.Value.Should().Be(840);
+        part2Result.Should().BeOfType<string>().Which.Should().EndWith("840").And.StartWith("Hello World!");
+        _sut.Part2Result.Value.Should().BeOfType<string>().Which.Should().EndWith("840");
         _sut.Part2Result.IsStarted.Should().BeTrue();
         _sut.Part2Result.IsCompleted.Should().BeTrue();
     }

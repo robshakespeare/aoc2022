@@ -1,26 +1,41 @@
 namespace AoC.Day00;
 
-public class Day0Solver : SolverBase
+public class Day0Solver : SolverBase<long, string>
 {
     public override string DayName => "Test Day";
 
+    public bool SimulateSlowness { get; set; } = true;
+
     private readonly Random _random = new();
 
-    public override long? SolvePart1(PuzzleInput input)
+    private void SimulateLongRunning(int minWaitMilliseconds)
     {
-        Thread.Sleep(800 + _random.Next(1, 200)); // Simulate a short-ish task, to test wait handling / spinners
+        if (SimulateSlowness)
+        {
+            Thread.Sleep(minWaitMilliseconds + _random.Next(1, 200));
+        }
+    }
+
+    public override long SolvePart1(PuzzleInput input)
+    {
+        SimulateLongRunning(800); // Simulate a short-ish task, to test wait handling / spinners
 
         var numbers = input.ReadLinesAsLongs().ToArray();
 
         return MathUtils.LeastCommonMultiple(numbers[0], numbers[1]);
     }
 
-    public override long? SolvePart2(PuzzleInput input)
+    public override string SolvePart2(PuzzleInput input)
     {
-        Thread.Sleep(1600 + _random.Next(1, 400)); // Simulate a long-ish task, to test wait handling / spinners
+        SimulateLongRunning(1700); // Simulate a long-ish task, to test wait handling / spinners
 
         var numbers = input.ToString().Split(',').Select(long.Parse).ToArray();
+        var result = MathUtils.LeastCommonMultiple(numbers[0], numbers[1], numbers[2]);
 
-        return MathUtils.LeastCommonMultiple(numbers[0], numbers[1], numbers[2]);
+        return $"""
+            Hello World!
+            This tests that sometimes the answer can be just text.
+            The specific answer was: {result}
+            """;
     }
 }
