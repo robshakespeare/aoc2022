@@ -10,6 +10,8 @@
     <Color x:Key="TextBright">#fff</Color>
     <Color x:Key="TextNormal">#ccc</Color>
     <Color x:Key="TextDim">#767676</Color>
-    <Color x:Key="TextWarn">#B4009E</Color>
+    <Color x:Key="TextHiLight">#FCE100</Color>
+    <Color x:Key="TextEmphasis">#B4009E</Color>
+    <Color x:Key="TextWarning">#E74856</Color>
 
 </ResourceDictionary>
