@@ -1,22 +1,14 @@
-using System.Runtime.InteropServices;
-
 namespace AoC.Day00;
 
 public class Day0Solver : SolverBase
 {
     public override string DayName => "Test Day";
 
-    private static bool IsWebAssembly => RuntimeInformation.RuntimeIdentifier.Contains("browser", StringComparison.OrdinalIgnoreCase) ||
-                                         RuntimeInformation.RuntimeIdentifier.Contains("wasm", StringComparison.OrdinalIgnoreCase);
+    private readonly Random _random = new();
 
     public override long? SolvePart1(PuzzleInput input)
     {
-        if (IsWebAssembly) // Simulate a long-ish task, to test the async wait handling when running in Blazor 
-        {
-            var i = 0;
-            for (; i < 19999999; i++) { }
-            return i + 2739581;
-        }
+        Thread.Sleep(800 + _random.Next(1, 200)); // Simulate a short-ish task, to test wait handling / spinners
 
         var numbers = input.ReadLinesAsLongs().ToArray();
 
@@ -25,12 +17,7 @@ public class Day0Solver : SolverBase
 
     public override long? SolvePart2(PuzzleInput input)
     {
-        if (IsWebAssembly)
-        {
-            var i = 0;
-            for (; i < 29999999; i++) { }
-            return i + 364682626;
-        }
+        Thread.Sleep(1600 + _random.Next(1, 400)); // Simulate a long-ish task, to test wait handling / spinners
 
         var numbers = input.ToString().Split(',').Select(long.Parse).ToArray();
 
