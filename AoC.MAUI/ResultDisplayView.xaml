@@ -18,9 +18,11 @@
             </Label.FormattedText>
         </Label>
 
-        <Label TextColor="{StaticResource TextDim}"
-               IsVisible="{Binding Result.IsRunning}"
-               Text="Working..." />
+        <ActivityIndicator IsVisible="{Binding Result.IsRunning}"
+                           IsRunning="{Binding Result.IsRunning}"
+                           Margin="5,10"
+                           Color="{StaticResource GreenHiLight}"
+                           HorizontalOptions="Start" />
 
         <Label TextColor="{StaticResource TextHiLight}"
                IsVisible="{Binding Result.IsCompletedWithValue}"
