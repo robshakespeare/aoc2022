@@ -17,14 +17,15 @@
                 <span class="hilight">@(Result.Value)</span>
             }
 
-            @if (Result.Value == null)
+            @if (Result.IsCompletedWithoutValue)
             {
                 <div class="emphasis">
                     Part @PartNum returned null / is not yet implemented
                 </div>
             }
+
             <div class="dim">
-                [Part @PartNum] time taken (seconds): @(Result.Elapsed?.TotalSeconds.ToString("0.000"))
+                [Part @PartNum] time taken (seconds): @(Result.ElapsedTotalSeconds.ToString("0.000"))
             </div>
         }
     </div>

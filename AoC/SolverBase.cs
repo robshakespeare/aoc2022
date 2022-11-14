@@ -89,4 +89,12 @@ public readonly record struct Result(object? Value, TimeSpan? Elapsed, bool IsSt
     public static Result Started() => default(Result) with { IsStarted = true };
 
     public static Result Completed(object? value, TimeSpan? elapsed) => new(value, elapsed, true, true);
+
+    public bool IsRunning => IsStarted && !IsCompleted;
+
+    public double ElapsedTotalSeconds => Elapsed?.TotalSeconds ?? 0;
+
+    public bool IsCompletedWithValue => IsCompleted && Value != null;
+
+    public bool IsCompletedWithoutValue => IsCompleted && Value == null;
 }

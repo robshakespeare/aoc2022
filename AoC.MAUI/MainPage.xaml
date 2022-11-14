@@ -49,20 +49,9 @@
                 </BindableLayout.ItemTemplate>
             </FlexLayout>
 
-            <Label
-                Text="{Binding Title}"
-                SemanticProperties.HeadingLevel="Level2"
-                Margin="0,0,0,16"
-                TextColor="{StaticResource TextBright}" />
+            <app:ResultDisplayView PartNum="1" Result="{Binding Part1Result}" />
 
-            <Label Text="Part 1: 22739580" />
-
-            <Label Text="{Binding Part1Result.Value}" />
-
-            <Label
-                Text="[Part 1] time taken (seconds): 0.211"
-                Margin="0,0,0,16"
-                TextColor="{StaticResource TextDim}" />
+            <app:ResultDisplayView PartNum="2" Result="{Binding Part2Result}" />
 
         </VerticalStackLayout>
     </ScrollView>
