@@ -16,7 +16,7 @@ else
     }
 
     <div>
-        <h2>--- Day @(DayNumber)@(_solver.DayName is null or "" ? "" : ": ")@(_solver.DayName) ---</h2>
+        <h2>@(_solver.Title)</h2>
 
         <ResultDisplay PartNum="1" Result="_solver.Part1Result" />
 
@@ -34,7 +34,7 @@ else
     {
         if (string.IsNullOrWhiteSpace(DayNumber))
         {
-            DayNumber = SolverFactory.Instance.DefaultDay;
+            DayNumber = SolverFactory.DefaultDay;
         }
 
         _solver = SolverFactory.Instance.TryCreateSolver(DayNumber);
