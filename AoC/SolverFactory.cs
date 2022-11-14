@@ -32,13 +32,15 @@ public partial class SolverFactory
         AddSolver<Day25.Day25Solver>();
     }
 
+    public static IReadOnlyCollection<int> Days { get; } = Enumerable.Range(0, 26).ToReadOnlyArray();
+
+    public static string DefaultDay => GetDefaultDay(DateTime.Now).ToString();
+
     private static readonly Lazy<SolverFactory> LazyInstance = new(() => new SolverFactory());
 
     public static SolverFactory Instance => LazyInstance.Value;
 
     private readonly Dictionary<string, Type> _solvers = new();
-
-    public string DefaultDay => GetDefaultDay(DateTime.Now).ToString();
 
     internal static int GetDefaultDay(DateTime date) =>
         date.Month switch

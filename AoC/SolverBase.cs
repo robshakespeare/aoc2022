@@ -9,6 +9,8 @@ public interface ISolver
 
     string DayName { get; }
 
+    string Title => $"--- Day {DayNumber}{(DayName is null or "" ? "" : ": ")}{DayName} ---";
+
     Task RunAsync(Func<Task>? onUpdated = null);
 
     Result Part1Result { get; }
@@ -43,7 +45,7 @@ public abstract class SolverBase<TOutputPart1, TOutputPart2> : ISolver
     {
         async Task Updated() => await (onUpdated?.Invoke() ?? Task.CompletedTask);
 
-        Console.WriteLine(Yellow($"Day {DayNumber}{(DayName is null or "" ? "" : ": " + DayName)}{NewLine}"));
+        Console.WriteLine(Yellow($"{((ISolver) this).Title}{NewLine}"));
 
         _results.Initialize();
 
@@ -87,4 +89,12 @@ public readonly record struct Result(object? Value, TimeSpan? Elapsed, bool IsSt
     public static Result Started() => default(Result) with { IsStarted = true };
 
     public static Result Completed(object? value, TimeSpan? elapsed) => new(value, elapsed, true, true);
+
+    public bool IsRunning => IsStarted && !IsCompleted;
+
+    public double ElapsedTotalSeconds => Elapsed?.TotalSeconds ?? 0;
+
+    public bool IsCompletedWithValue => IsCompleted && Value != null;
+
+    public bool IsCompletedWithoutValue => IsCompleted && Value == null;
 }

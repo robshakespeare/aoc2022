@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:lib="clr-namespace:AoC;assembly=AoC"
+             xmlns:app="clr-namespace:AoC.MAUI"
+             x:DataType="app:SolverViewModel"
+             x:Class="AoC.MAUI.MainPage">
+
+    <ScrollView VerticalScrollBarVisibility="Default">
+        <VerticalStackLayout Margin="12">
+
+            <Label
+                Text="🎄 Shakey's AoC 2022 🌟"
+                SemanticProperties.HeadingLevel="Level1"
+                Margin="0,0,0,16"
+                TextColor="{StaticResource GreenHiLight}" />
+
+            <FlexLayout
+                BindableLayout.ItemsSource="{x:Static lib:SolverFactory.Days}"
+                Margin="0,0,0,10"
+                Direction="Row"
+                Wrap="Wrap">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <Label
+                            Text="{Binding .}"
+                            HeightRequest="30"
+                            Padding="0,0,12,0">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding RunDayCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}"
+                                                      CommandParameter="{Binding .}" />
+                            </Label.GestureRecognizers>
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label"
+                                             Binding="{Binding ViewModel.IsComplete, Source={RelativeSource AncestorType={x:Type ContentPage}}}"
+                                             Value="true">
+                                    <Setter Property="TextColor"
+                                            Value="{StaticResource Green}" />
+                                </DataTrigger>
+                                <DataTrigger TargetType="Label"
+                                             Binding="{Binding ViewModel.IsComplete, Source={RelativeSource AncestorType={x:Type ContentPage}}}"
+                                             Value="false">
+                                    <Setter Property="TextColor"
+                                            Value="{StaticResource TextDim}" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </FlexLayout>
+
+            <Label
+                Text="{Binding Title}"
+                SemanticProperties.HeadingLevel="Level2"
+                Margin="0,0,0,16"
+                TextColor="{StaticResource TextBright}" />
+
+            <app:ResultDisplayView PartNum="1" Result="{Binding Part1Result}" />
+
+            <app:ResultDisplayView PartNum="2" Result="{Binding Part2Result}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

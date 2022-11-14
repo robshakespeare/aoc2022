@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Name="Self"
+             x:Class="AoC.MAUI.ResultDisplayView">
+
+    <VerticalStackLayout BindingContext="{x:Reference Self}"
+                         Margin="0,0,0,16"
+                         IsVisible="{Binding Result.IsStarted}">
+        <Label>
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="Part " />
+                    <Span Text="{Binding PartNum}" />
+                    <Span Text=": " />
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+
+        <ActivityIndicator IsVisible="{Binding Result.IsRunning}"
+                           IsRunning="{Binding Result.IsRunning}"
+                           Margin="5,10"
+                           Color="{StaticResource GreenHiLight}"
+                           HorizontalOptions="Start" />
+
+        <Label TextColor="{StaticResource TextHiLight}"
+               IsVisible="{Binding Result.IsCompletedWithValue}"
+               Text="{Binding Result.Value}" />
+
+        <Label TextColor="{StaticResource TextEmphasis}"
+               IsVisible="{Binding Result.IsCompletedWithoutValue}"
+               Text="{Binding PartNum, StringFormat='Part {0} returned null / is not yet implemented'}" />
+
+        <Label TextColor="{StaticResource TextDim}" IsVisible="{Binding Result.IsCompleted}">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="{Binding PartNum, StringFormat='[Part {0}] time taken (seconds):'}" />
+                    <Span Text="{Binding Result.ElapsedTotalSeconds, StringFormat=' {0:0.000000}'}" />
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+    </VerticalStackLayout>
+
+</ContentView>

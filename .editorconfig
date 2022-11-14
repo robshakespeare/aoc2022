@@ -47,7 +47,7 @@ indent_size = 2
 trim_trailing_whitespace = true
 charset = utf-8
 
-[*.{html,cshtm,puml}]
+[*.{html,xaml,cshtm,puml}]
 indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
