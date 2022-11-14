@@ -23,6 +23,6 @@ jobs:
     - name: Restore
       run: dotnet restore
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --configuration Debug --no-restore # Note `Debug` to verify everything compiles, but avoid expensive linking operations performed by `Release` builds
     - name: Test
-      run: dotnet test --no-restore --verbosity normal
+      run: dotnet test AoC.Tests --configuration Release --no-restore --verbosity normal
