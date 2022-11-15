@@ -7,7 +7,7 @@
              x:Class="AoC.MAUI.MainPage">
 
     <ScrollView VerticalScrollBarVisibility="Default">
-        <VerticalStackLayout Margin="12">
+        <VerticalStackLayout Margin="12,20">
 
             <Label
                 Text="🎄 Shakey's AoC 2022 🌟"
