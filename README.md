@@ -2,6 +2,7 @@
 
 [![CI workflow](https://github.com/robshakespeare/aoc2022/actions/workflows/CI-workflow.yml/badge.svg)](https://github.com/robshakespeare/aoc2022/actions/workflows/CI-workflow.yml)
 [![Azure Static Web App Deployment](https://github.com/robshakespeare/aoc2022/actions/workflows/deployment-workflow.yml/badge.svg)](https://github.com/robshakespeare/aoc2022/actions/workflows/deployment-workflow.yml)
+[![App releases](https://github.com/robshakespeare/aoc2022/actions/workflows/release-workflow.yml/badge.svg)](https://github.com/robshakespeare/aoc2022/actions/workflows/release-workflow.yml)
 
 Rob Shakespeare's solutions to the Advent of Code 2022 challenges at https://adventofcode.com/2022.
 
