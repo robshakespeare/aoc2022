@@ -1,4 +1,5 @@
-using System.Runtime.CompilerServices;
+using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 
 namespace AoC.MAUI;
 
@@ -23,5 +24,12 @@ public partial class ResultDisplayView
     public ResultDisplayView()
     {
         InitializeComponent();
+    }
+
+    private async void CopyResultEventAsync(object? sender, TappedEventArgs e)
+    {
+        await Clipboard.Default.SetTextAsync($"{Result.Value}");
+        var toast = Toast.Make($"✔️ Part {PartNum} copied to clipboard", ToastDuration.Short, 18);
+        await toast.Show();
     }
 }

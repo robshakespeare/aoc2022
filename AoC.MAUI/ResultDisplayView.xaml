@@ -24,9 +24,20 @@
                            Color="{StaticResource GreenHiLight}"
                            HorizontalOptions="Start" />
 
-        <Label TextColor="{StaticResource TextHiLight}"
+        <Frame BorderColor="{StaticResource TextDim}"
+               BackgroundColor="{StaticResource TextDim}"
                IsVisible="{Binding Result.IsCompletedWithValue}"
-               Text="{Binding Result.Value}" />
+               Padding="2"
+               Margin="0, 6">
+            <Label TextColor="{StaticResource TextHiLight}"
+                   BackgroundColor="Black"
+                   Padding="6"
+                   Text="{Binding Result.Value}">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="CopyResultEventAsync"  />
+                </Label.GestureRecognizers>
+            </Label>
+        </Frame>
 
         <Label TextColor="{StaticResource TextEmphasis}"
                IsVisible="{Binding Result.IsCompletedWithoutValue}"
