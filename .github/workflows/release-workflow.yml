@@ -18,7 +18,14 @@ jobs:
         dotnet-version: 7.0.100
     - name: Workload restore
       run: dotnet workload restore
-    - name: Publish Android app
-      run: dotnet publish AoC.MAUI -f:net7.0-android -c:Release
+    # - name: Publish Android app
+    #   run: dotnet publish AoC.MAUI -f:net7.0-android -c:Release
     - name: Publish Windows CLI
       run: dotnet publish AoC.CLI -c Release -r win-x64 --self-contained -p:PublishSingleFile=true
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      name: Create GitHub release
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: false
+        files: |
+          AoC.CLI/bin/Release/net7.0/win-x64/publish/AoC.CLI.exe
