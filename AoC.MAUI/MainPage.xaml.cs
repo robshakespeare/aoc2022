@@ -1,11 +1,7 @@
-using System.Windows.Input;
-
 namespace AoC.MAUI;
 
 public partial class MainPage
 {
-    private Task? _currentSolverTask;
-
     public MainPage()
     {
         RunDay(SolverFactory.DefaultDay);
@@ -16,20 +12,13 @@ public partial class MainPage
 
     private void RunDay(string dayNumber)
     {
-        if (_currentSolverTask is {IsCompleted: false})
-        {
-            return; // Don't start a new solver until the current one has finished!
-        }
-
-        _currentSolverTask?.Dispose();
-
         var solver = SolverFactory.Instance.TryCreateSolver(dayNumber) ?? throw new InvalidOperationException("No solver found for day " + dayNumber);
         var solverViewModel = new SolverViewModel(solver);
 
         BindingContext = solverViewModel;
         OnPropertyChanged(nameof(ViewModel));
 
-        _currentSolverTask = Task.Run(async () =>
+        Task.Run(async () =>
         {
             await solver.RunAsync(() =>
             {
@@ -41,5 +30,14 @@ public partial class MainPage
         });
     }
 
-    public ICommand RunDayCommand => new Command<int>(dayNumber => RunDay(dayNumber.ToString()));
+    private async void ChooseDayButtonClickedAsync(object? sender, EventArgs e)
+    {
+        const string cancel = "Cancel";
+        var day = await DisplayActionSheet("Choose Day", cancel, null, SolverFactory.Days.Select(day => day.ToString()).ToArray());
+
+        if (day != cancel)
+        {
+            RunDay(day);
+        }
+    }
 }

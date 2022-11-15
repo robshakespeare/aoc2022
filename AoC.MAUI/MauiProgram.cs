@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 
 namespace AoC.MAUI
@@ -12,7 +13,8 @@ namespace AoC.MAUI
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("Consolas.ttf", "Consolas");
-                });
+                })
+                .UseMauiCommunityToolkit();
 
 #if DEBUG
         builder.Logging.AddDebug();

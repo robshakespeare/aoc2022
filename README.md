@@ -28,6 +28,12 @@ To run the Blazor WebAssembly application:
 dotnet run --project AoC.WasmUI
 ```
 
+To run the MAUI app in an Android Emulator, start an [Android Emulator](https://visualstudio.microsoft.com/vs/msft-android-emulator/), then run:
+
+```
+dotnet build AoC.MAUI -t:Run -f net7.0-android
+```
+
 
 ### Test
 
