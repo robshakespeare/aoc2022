@@ -15,45 +15,19 @@
                 Margin="0,0,0,16"
                 TextColor="{StaticResource GreenHiLight}" />
 
-            <FlexLayout
-                BindableLayout.ItemsSource="{x:Static lib:SolverFactory.Days}"
-                Margin="0,0,0,10"
-                Direction="Row"
-                Wrap="Wrap">
-                <BindableLayout.ItemTemplate>
-                    <DataTemplate>
-                        <Label
-                            Text="{Binding .}"
-                            HeightRequest="30"
-                            Padding="0,0,12,0">
-                            <Label.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding RunDayCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}"
-                                                      CommandParameter="{Binding .}" />
-                            </Label.GestureRecognizers>
-                            <Label.Triggers>
-                                <DataTrigger TargetType="Label"
-                                             Binding="{Binding ViewModel.IsComplete, Source={RelativeSource AncestorType={x:Type ContentPage}}}"
-                                             Value="true">
-                                    <Setter Property="TextColor"
-                                            Value="{StaticResource Green}" />
-                                </DataTrigger>
-                                <DataTrigger TargetType="Label"
-                                             Binding="{Binding ViewModel.IsComplete, Source={RelativeSource AncestorType={x:Type ContentPage}}}"
-                                             Value="false">
-                                    <Setter Property="TextColor"
-                                            Value="{StaticResource TextDim}" />
-                                </DataTrigger>
-                            </Label.Triggers>
-                        </Label>
-                    </DataTemplate>
-                </BindableLayout.ItemTemplate>
-            </FlexLayout>
-
-            <Label
+            <Button
                 Text="{Binding Title}"
+                Clicked="ChooseDayButtonClickedAsync"
                 SemanticProperties.HeadingLevel="Level2"
-                Margin="0,0,0,16"
-                TextColor="{StaticResource TextBright}" />
+                BorderWidth="0"
+                BackgroundColor="{StaticResource AoCBackground}"
+                FontFamily="Consolas"
+                TextColor="{StaticResource TextBright}"
+                FontSize="18"
+                HorizontalOptions="Start"
+                Padding="0"
+                Margin="0,0,0,16">
+            </Button>
 
             <app:ResultDisplayView PartNum="1" Result="{Binding Part1Result}" />
 
