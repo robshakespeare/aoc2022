@@ -38,4 +38,8 @@
     <Using Include="NUnit.Framework" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="TestResults\**" />
+  </ItemGroup>
+
 </Project>
