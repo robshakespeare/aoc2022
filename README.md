@@ -8,7 +8,7 @@ Rob Shakespeare's solutions to the Advent of Code 2022 challenges at https://adv
 
 
 ### Shakey's AoC 2022 Releases
-* [Blazor Web App](https://black-smoke-0bf67c303.azurestaticapps.net)
+* [Blazor WebAssembly App](https://black-smoke-0bf67c303.azurestaticapps.net)
 * [Andriod App download](https://github.com/robshakespeare/aoc2022/releases/download/latest/com.rws.aoc2022-Signed.apk)
 * [Windows CLI download](https://github.com/robshakespeare/aoc2022/releases/download/latest/AoC.CLI.exe)
 
