@@ -4,17 +4,17 @@
         Part @PartNum:
         @if (!Result.IsCompleted)
         {
-            <span class="dim">Working...</span>
+            <div class="dim">Working...</div>
         }
         else
         {
-            if (Result.Value is string)
+            @if (Result.IsCompletedWithValue)
             {
-                <pre class="hilight">@(Result.Value)</pre>
-            }
-            else
-            {
-                <span class="hilight">@(Result.Value)</span>
+                <pre>
+                    <code class="hilight">
+                        @(Result.Value)
+                    </code>
+                </pre>
             }
 
             @if (Result.IsCompletedWithoutValue)
