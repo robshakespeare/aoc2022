@@ -11,27 +11,40 @@ static void PrintTitle()
 
 PrintTitle();
 
-bool exit;
-var defaultDay = SolverFactory.DefaultDay;
+bool resume;
+var defaultDay = SolverFactory.Instance.DefaultDay;
 var cliDays = new Queue<string>(args.Length > 0 ? args : new[] { "" });
 do
 {
-    Console.WriteLine(Green($"Type day number or blank for {defaultDay} or 'x' to exit"));
+    Console.WriteLine(Green($"Type day number, or blank for {defaultDay}, or 'list', or 'x' to exit"));
     var dayNumber = cliDays.TryDequeue(out var cliDay) ? cliDay : Console.ReadLine() ?? "x";
     dayNumber = string.IsNullOrWhiteSpace(dayNumber) ? defaultDay : dayNumber;
 
-    exit = dayNumber is "x" or "exit";
-    if (!exit)
+    resume = dayNumber is not ("x" or "exit");
+    switch (resume)
     {
-        PrintTitle();
-        var solver = SolverFactory.Instance.TryCreateSolver(dayNumber);
-        if (solver != null)
+        case true when dayNumber == "list":
         {
-            await solver.RunAsync();
+            PrintTitle();
+            Console.WriteLine(string.Join(
+                Environment.NewLine,
+                SolverFactory.Instance.Solvers.Where(x => !string.IsNullOrEmpty(x.DayName)).Select(x => $"{x.DayNumber}: {x.DayName}")));
+            break;
         }
-        else
+        case true:
         {
-            Console.WriteLine(Red($"No solver for day '{Bright.Cyan(dayNumber)}'."));
+            PrintTitle();
+            var solver = SolverFactory.Instance.TryCreateSolver(dayNumber);
+            if (solver != null)
+            {
+                await solver.RunAsync();
+            }
+            else
+            {
+                Console.WriteLine(Red($"No solver for day '{Bright.Cyan(dayNumber)}'."));
+            }
+
+            break;
         }
     }
-} while (!exit);
+} while (resume);

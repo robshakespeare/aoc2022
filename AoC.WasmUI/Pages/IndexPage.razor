@@ -1,4 +1,5 @@
 @page "/{DayNumber?}"
+@inject ISolverFactory SolverFactory
 
 <PageTitle>Shakey's AoC 2022</PageTitle>
 
@@ -16,7 +17,9 @@ else
     }
 
     <div>
-        <h2>@(_solver.Title)</h2>
+        <h2>
+            <NavLink href="list">@(_solver.Title)</NavLink>
+        </h2>
 
         <ResultDisplay PartNum="1" Result="_solver.Part1Result" />
 
@@ -37,7 +40,7 @@ else
             DayNumber = SolverFactory.DefaultDay;
         }
 
-        _solver = SolverFactory.Instance.TryCreateSolver(DayNumber);
+        _solver = SolverFactory.TryCreateSolver(DayNumber);
 
         if (_solver != null)
         {

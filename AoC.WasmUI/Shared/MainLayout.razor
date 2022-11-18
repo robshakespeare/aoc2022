@@ -1,13 +1,22 @@
 @inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject ISolverFactory SolverFactory
 
-<h1>🎄 Shakey's AoC 2022 🌟</h1>
+<h1>
+    <NavLink href="/">
+        🎄 Shakey's AoC 2022 🌟
+    </NavLink>
+</h1>
 
-<nav>
-    @foreach (var dayNumber in SolverFactory.Days)
-    {
-        <NavLink key="@($"day-link-{dayNumber}")" href="@dayNumber">@dayNumber</NavLink>
-    }
-</nav>
+@if (!NavigationManager.Uri.EndsWith("list"))
+{
+    <nav>
+        @foreach (var (dayNumber, dayName) in SolverFactory.Solvers)
+        {
+            <NavLink key="@($"day-link-{dayNumber}")" title=@dayName href="@dayNumber">@dayNumber</NavLink>
+        }
+    </nav>
+}
 
 <main>
     @Body

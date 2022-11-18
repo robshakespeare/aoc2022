@@ -6,7 +6,7 @@ namespace AoC.MAUI
         {
             InitializeComponent();
 
-            MainPage = new MainPage();
+            MainPage = new MainPage(SolverFactory.Instance);
         }
     }
 }

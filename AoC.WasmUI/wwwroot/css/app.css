@@ -1,4 +1,4 @@
-html, body, pre {
+html, body, pre, code {
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     background-color: #0f0f23;
     color: #CCC;
@@ -17,13 +17,15 @@ nav {
         display: inline-block;
     }
 
-h1 {
+h1,
+h1 a {
     font-size: 100%;
     color: #99ff99;
     font-weight: normal;
 }
 
-h2 {
+h2,
+h2 a {
     font-size: 100%;
     color: #fff;
     font-weight: normal;
@@ -48,6 +50,19 @@ input {
     background: none;
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     color: #CCC;
+}
+
+pre {
+    margin: 6px 0;
+}
+
+pre code {
+    background-color: #000;
+    border: 2px solid #767676;
+    padding: 8px;
+    border-radius: 5px;
+    display: inline-block;
+    margin: 0;
 }
 
 .warning {

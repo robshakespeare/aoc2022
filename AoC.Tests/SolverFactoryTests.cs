@@ -23,6 +23,27 @@ public class SolverFactoryTests
         solver!.DayNumber.Should().Be(0);
     }
 
+    [Test]
+    public void Solvers_DoesHaveAllExpectedDaysIncludingTestDay()
+    {
+        SolverFactory.Instance.Solvers.Select(x => x.DayNumber)
+            .Should().BeEquivalentTo(
+                Enumerable.Range(0, 26).Select(i => i.ToString()),
+                opts => opts.WithStrictOrdering());
+    }
+
+    [Test]
+    public void Solvers_CanCreateEach()
+    {
+        foreach (var (dayNumber, dayName) in SolverFactory.Instance.Solvers)
+        {
+            var solver = SolverFactory.Instance.CreateSolver(dayNumber);
+
+            solver.DayNumber.Should().Be(int.Parse(dayNumber));
+            solver.DayName.Should().Be(dayName);
+        }
+    }
+
     [TestCaseSource(nameof(DefaultDayTestCases))]
     public int GetDefaultDay_Tests(DateTime inputDate) => SolverFactory.GetDefaultDay(inputDate);
 
