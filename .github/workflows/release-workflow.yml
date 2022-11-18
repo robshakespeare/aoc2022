@@ -26,9 +26,9 @@ jobs:
       name: Create GitHub release
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "latest"
+        automatic_release_tag: "release-${{ github.run_number }}"
         prerelease: false
-        title: "Latest Release"
+        title: "Release ${{ github.run_number }}"
         files: |
           AoC.MAUI/bin/Release/net7.0-android/publish/com.rws.aoc2022-Signed.apk
           AoC.CLI/bin/Release/net7.0/win-x64/publish/AoC.CLI.exe
