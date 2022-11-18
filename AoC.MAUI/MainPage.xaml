@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:lib="clr-namespace:AoC;assembly=AoC"
              xmlns:app="clr-namespace:AoC.MAUI"
              x:DataType="app:SolverViewModel"
              x:Class="AoC.MAUI.MainPage">
@@ -13,7 +12,11 @@
                 Text="🎄 Shakey's AoC 2022 🌟"
                 SemanticProperties.HeadingLevel="Level1"
                 Margin="0,0,0,16"
-                TextColor="{StaticResource GreenHiLight}" />
+                TextColor="{StaticResource GreenHiLight}" >
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="RunDefaultDayTapped" />
+                </Label.GestureRecognizers>
+            </Label>
 
             <Button
                 Text="{Binding Title}"

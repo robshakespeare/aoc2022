@@ -13,7 +13,6 @@ Rob Shakespeare's solutions to the Advent of Code 2022 challenges at https://adv
 * [Windows CLI download](https://github.com/robshakespeare/aoc2022/releases/latest/download/AoC.CLI.exe)
 
 
-
 ### Prerequisites
 
 * [.NET 7.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/7.0)

@@ -40,7 +40,7 @@ public partial class SolverFactory : ISolverFactory
 
     public IReadOnlyCollection<(string DayNumber, string DayName)> Solvers { get; }
 
-    public string DefaultDay { get; } = GetDefaultDay(DateTime.Now).ToString();
+    public string DefaultDay => GetDefaultDay(DateTime.Now).ToString();
 
     private static readonly Lazy<SolverFactory> LazyInstance = new(() => new SolverFactory());
 
