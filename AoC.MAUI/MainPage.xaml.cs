@@ -2,6 +2,8 @@ namespace AoC.MAUI;
 
 public partial class MainPage
 {
+    private const string DefaultDayEntry = "Default Day";
+
     private readonly ISolverFactory _solverFactory;
     private readonly IDictionary<string, string> _dayEntriesToNumbers;
 
@@ -11,6 +13,7 @@ public partial class MainPage
         _dayEntriesToNumbers = _solverFactory.Solvers.ToDictionary(
             x => string.IsNullOrEmpty(x.DayName) ? x.DayNumber : $"{x.DayNumber}: {x.DayName}",
             x => x.DayNumber);
+        _dayEntriesToNumbers.Add(DefaultDayEntry, DefaultDayEntry);
 
         RunDay(solverFactory.DefaultDay);
         InitializeComponent();
@@ -45,7 +48,7 @@ public partial class MainPage
 
         if (dayEntry != cancel)
         {
-            RunDay(_dayEntriesToNumbers[dayEntry]);
+            RunDay(dayEntry == DefaultDayEntry ? _solverFactory.DefaultDay : _dayEntriesToNumbers[dayEntry]);
         }
     }
 }
