@@ -3,12 +3,12 @@ namespace AoC.MAUI;
 public partial class MainPage
 {
     private readonly ISolverFactory _solverFactory;
-    private readonly IDictionary<string, string> _dayTitlesToNumbers;
+    private readonly IDictionary<string, string> _dayEntriesToNumbers;
 
     public MainPage(ISolverFactory solverFactory)
     {
         _solverFactory = solverFactory;
-        _dayTitlesToNumbers = _solverFactory.Solvers.ToDictionary(
+        _dayEntriesToNumbers = _solverFactory.Solvers.ToDictionary(
             x => string.IsNullOrEmpty(x.DayName) ? x.DayNumber : $"{x.DayNumber}: {x.DayName}",
             x => x.DayNumber);
 
@@ -41,11 +41,11 @@ public partial class MainPage
     private async void ChooseDayButtonClickedAsync(object? sender, EventArgs e)
     {
         const string cancel = "Cancel";
-        var dayTitle = await DisplayActionSheet("Choose Day", cancel, null, _dayTitlesToNumbers.Keys.ToArray());
+        var dayEntry = await DisplayActionSheet("Choose Day", cancel, null, _dayEntriesToNumbers.Keys.ToArray());
 
-        if (dayTitle != cancel)
+        if (dayEntry != cancel)
         {
-            RunDay(_dayTitlesToNumbers[dayTitle]);
+            RunDay(_dayEntriesToNumbers[dayEntry]);
         }
     }
 }
