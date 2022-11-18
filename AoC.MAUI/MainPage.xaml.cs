@@ -51,4 +51,6 @@ public partial class MainPage
             RunDay(dayEntry == DefaultDayEntry ? _solverFactory.DefaultDay : _dayEntriesToNumbers[dayEntry]);
         }
     }
+
+    private void RunDefaultDayTapped(object? sender, TappedEventArgs e) => RunDay(_solverFactory.DefaultDay);
 }
