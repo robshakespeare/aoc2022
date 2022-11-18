@@ -2,7 +2,7 @@ namespace AoC;
 
 public interface ISolverFactory
 {
-    IReadOnlyCollection<(string DayNumber, string DayName, string Title)> Solvers { get; }
+    IReadOnlyCollection<(string DayNumber, string DayName)> Solvers { get; }
 
     string DefaultDay { get; }
 

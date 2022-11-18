@@ -35,13 +35,12 @@ public class SolverFactoryTests
     [Test]
     public void Solvers_CanCreateEach()
     {
-        foreach (var (dayNumber, dayName, title) in SolverFactory.Instance.Solvers)
+        foreach (var (dayNumber, dayName) in SolverFactory.Instance.Solvers)
         {
             var solver = SolverFactory.Instance.CreateSolver(dayNumber);
 
             solver.DayNumber.Should().Be(int.Parse(dayNumber));
             solver.DayName.Should().Be(dayName);
-            solver.Title.Should().Be(title);
         }
     }
 

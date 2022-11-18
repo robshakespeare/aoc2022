@@ -34,11 +34,11 @@ public partial class SolverFactory : ISolverFactory
         Solvers = _solvers
             .Select(solver => solver.Key)
             .Select(CreateSolver)
-            .Select(solver => (solver.DayNumber.ToString(), solver.DayName, solver.Title))
+            .Select(solver => (solver.DayNumber.ToString(), solver.DayName))
             .ToReadOnlyArray();
     }
 
-    public IReadOnlyCollection<(string DayNumber, string DayName, string Title)> Solvers { get; }
+    public IReadOnlyCollection<(string DayNumber, string DayName)> Solvers { get; }
 
     public string DefaultDay { get; } = GetDefaultDay(DateTime.Now).ToString();
 
