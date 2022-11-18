@@ -2,9 +2,17 @@ namespace AoC.MAUI;
 
 public partial class MainPage
 {
-    public MainPage()
+    private readonly ISolverFactory _solverFactory;
+    private readonly IDictionary<string, string> _dayTitlesToNumbers;
+
+    public MainPage(ISolverFactory solverFactory)
     {
-        RunDay(SolverFactory.DefaultDay);
+        _solverFactory = solverFactory;
+        _dayTitlesToNumbers = _solverFactory.Solvers.ToDictionary(
+            x => string.IsNullOrEmpty(x.DayName) ? x.DayNumber : $"{x.DayNumber} ({x.DayName})",
+            x => x.DayNumber);
+
+        RunDay(solverFactory.DefaultDay);
         InitializeComponent();
     }
 
@@ -12,7 +20,7 @@ public partial class MainPage
 
     private void RunDay(string dayNumber)
     {
-        var solver = SolverFactory.Instance.TryCreateSolver(dayNumber) ?? throw new InvalidOperationException("No solver found for day " + dayNumber);
+        var solver = _solverFactory.CreateSolver(dayNumber);
         var solverViewModel = new SolverViewModel(solver);
 
         BindingContext = solverViewModel;
@@ -33,11 +41,11 @@ public partial class MainPage
     private async void ChooseDayButtonClickedAsync(object? sender, EventArgs e)
     {
         const string cancel = "Cancel";
-        var day = await DisplayActionSheet("Choose Day", cancel, null, SolverFactory.Days.Select(day => day.ToString()).ToArray());
+        var dayTitle = await DisplayActionSheet("Choose Day", cancel, null, _dayTitlesToNumbers.Keys.ToArray());
 
-        if (day != cancel)
+        if (dayTitle != cancel)
         {
-            RunDay(day);
+            RunDay(_dayTitlesToNumbers[dayTitle]);
         }
     }
 }

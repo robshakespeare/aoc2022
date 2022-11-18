@@ -3,7 +3,7 @@
 <h1>🎄 Shakey's AoC 2022 🌟</h1>
 
 <nav>
-    @foreach (var dayNumber in SolverFactory.Days)
+    @foreach (var dayNumber in SolverFactory.Instance.Solvers.Select(x => x.DayNumber))
     {
         <NavLink key="@($"day-link-{dayNumber}")" href="@dayNumber">@dayNumber</NavLink>
     }

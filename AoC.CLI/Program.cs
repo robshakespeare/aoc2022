@@ -12,7 +12,7 @@ static void PrintTitle()
 PrintTitle();
 
 bool exit;
-var defaultDay = SolverFactory.DefaultDay;
+var defaultDay = SolverFactory.Instance.DefaultDay;
 var cliDays = new Queue<string>(args.Length > 0 ? args : new[] { "" });
 do
 {

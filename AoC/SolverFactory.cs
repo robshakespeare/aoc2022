@@ -1,6 +1,6 @@
 namespace AoC;
 
-public partial class SolverFactory
+public partial class SolverFactory : ISolverFactory
 {
     private SolverFactory()
     {
@@ -30,15 +30,21 @@ public partial class SolverFactory
         AddSolver<Day23.Day23Solver>();
         AddSolver<Day24.Day24Solver>();
         AddSolver<Day25.Day25Solver>();
+
+        Solvers = _solvers
+            .Select(solver => solver.Key)
+            .Select(CreateSolver)
+            .Select(solver => (solver.DayNumber.ToString(), solver.DayName, solver.Title))
+            .ToReadOnlyArray();
     }
 
-    public static IReadOnlyCollection<int> Days { get; } = Enumerable.Range(0, 26).ToReadOnlyArray();
+    public IReadOnlyCollection<(string DayNumber, string DayName, string Title)> Solvers { get; }
 
-    public static string DefaultDay => GetDefaultDay(DateTime.Now).ToString();
+    public string DefaultDay { get; } = GetDefaultDay(DateTime.Now).ToString();
 
     private static readonly Lazy<SolverFactory> LazyInstance = new(() => new SolverFactory());
 
-    public static SolverFactory Instance => LazyInstance.Value;
+    public static ISolverFactory Instance => LazyInstance.Value;
 
     private readonly Dictionary<string, Type> _solvers = new();
 
@@ -53,6 +59,8 @@ public partial class SolverFactory
     public ISolver? TryCreateSolver(string? dayNumber) => _solvers.TryGetValue(dayNumber ?? "", out var solverType)
         ? (ISolver?) Activator.CreateInstance(solverType)
         : null;
+
+    public ISolver CreateSolver(string? dayNumber) => TryCreateSolver(dayNumber) ?? throw new InvalidOperationException($"No solver for day {dayNumber}.");
 
     private void AddSolver<TSolver>() where TSolver : ISolver => _solvers.Add(GetDayNumber(typeof(TSolver)).ToString(), typeof(TSolver));
 
