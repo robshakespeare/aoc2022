@@ -9,7 +9,7 @@ public partial class MainPage
     {
         _solverFactory = solverFactory;
         _dayTitlesToNumbers = _solverFactory.Solvers.ToDictionary(
-            x => string.IsNullOrEmpty(x.DayName) ? x.DayNumber : $"{x.DayNumber} ({x.DayName})",
+            x => string.IsNullOrEmpty(x.DayName) ? x.DayNumber : $"{x.DayNumber}: {x.DayName}",
             x => x.DayNumber);
 
         RunDay(solverFactory.DefaultDay);
