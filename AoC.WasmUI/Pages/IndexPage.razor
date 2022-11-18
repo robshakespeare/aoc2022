@@ -17,7 +17,9 @@ else
     }
 
     <div>
-        <h2>@(_solver.Title)</h2>
+        <h2>
+            <NavLink href="list">@(_solver.Title)</NavLink>
+        </h2>
 
         <ResultDisplay PartNum="1" Result="_solver.Part1Result" />
 
