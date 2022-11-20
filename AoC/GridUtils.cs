@@ -146,8 +146,8 @@ public static class GridUtils
 
         var itemMap = items.GroupBy(positionSelector).ToDictionary(grp => positionSelector(grp.Last()), grp => grp.Last());
 
-        var minBounds = new Vector2(items.Min(p => positionSelector(p).X), items.Min(p => positionSelector(p).Y));
-        var maxBounds = new Vector2(items.Max(p => positionSelector(p).X), items.Max(p => positionSelector(p).Y));
+        var minBounds = new Vector2(itemMap.Min(i => i.Key.X), itemMap.Min(i => i.Key.Y));
+        var maxBounds = new Vector2(itemMap.Max(i => i.Key.X), itemMap.Max(i => i.Key.Y));
 
         var grid = new List<IReadOnlyList<TOut>>();
 
