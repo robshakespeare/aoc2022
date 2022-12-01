@@ -17,8 +17,7 @@ public class PuzzleInput
     public IEnumerable<string> ReadLines()
     {
         using var sr = new StringReader(_input);
-        string? line;
-        while ((line = sr.ReadLine()) != null)
+        while (sr.ReadLine() is { } line)
         {
             yield return line;
         }
