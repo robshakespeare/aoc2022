@@ -28,7 +28,7 @@ do
             PrintTitle();
             Console.WriteLine(string.Join(
                 Environment.NewLine,
-                SolverFactory.Instance.Solvers.Where(x => !string.IsNullOrEmpty(x.DayName)).Select(x => $"{x.DayNumber}: {x.DayName}")));
+                SolverFactory.Instance.Solvers.Where(x => !string.IsNullOrEmpty(x.DayName)).Select(x => $"Day {x.DayNumber}: {x.DayName}")));
             break;
         }
         case true:
