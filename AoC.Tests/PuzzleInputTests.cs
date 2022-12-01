@@ -112,6 +112,31 @@ public class PuzzleInputTests
     }
 
     [Test]
+    public void ReadLines_DoesParseLinesWithSpacesAsExpected()
+    {
+        // ACT
+        var result = new PuzzleInput("""
+            This is line 1
+            This is line 2
+            And this is another line
+            And this is also another line
+            The end!
+            """).ReadLines();
+
+        // ASSERT
+        result.Should().BeEquivalentTo(
+            new[]
+            {
+                "This is line 1",
+                "This is line 2",
+                "And this is another line",
+                "And this is also another line",
+                "The end!"
+            },
+            opts => opts.WithStrictOrdering());
+    }
+
+    [Test]
     public void ReadLines_DoesTrimTrailingLineEndings()
     {
         // ACT
