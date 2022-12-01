@@ -11,7 +11,7 @@ public partial class MainPage
     {
         _solverFactory = solverFactory;
         _dayEntriesToNumbers = _solverFactory.Solvers.ToDictionary(
-            x => string.IsNullOrEmpty(x.DayName) ? x.DayNumber : $"{x.DayNumber}: {x.DayName}",
+            x => $"Day {x.DayNumber}{(string.IsNullOrEmpty(x.DayName) ? "": $": {x.DayName}")}",
             x => x.DayNumber);
         _dayEntriesToNumbers.Add(DefaultDayEntry, DefaultDayEntry);
 
