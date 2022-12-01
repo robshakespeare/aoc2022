@@ -6,26 +6,13 @@ public class Day1Solver : SolverBase
 {
     public override string DayName => "Calorie Counting";
 
-    public override long? SolvePart1(PuzzleInput input)
-    {
-        var elves = input.ToString()
+    private static IEnumerable<long> ParseElves(PuzzleInput input) =>
+        input.ToString()
             .Split($"{NewLine}{NewLine}")
-            .Select(elf => elf.Split(NewLine).Select(long.Parse))
-            .ToArray();
+            .Select(block => block.Split(NewLine).Select(long.Parse))
+            .Select(elfCalories => elfCalories.Sum());
 
-        return elves.Select(elf => elf.Sum()).Max();
-    }
+    public override long? SolvePart1(PuzzleInput input) => ParseElves(input).Max(totalCalories => totalCalories);
 
-    public override long? SolvePart2(PuzzleInput input)
-    {
-        var elves = input.ToString()
-            .Split($"{NewLine}{NewLine}")
-            .Select(elf => elf.Split(NewLine).Select(long.Parse))
-            .ToArray();
-
-        return elves.Select(elf => elf.Sum())
-            .OrderByDescending(x => x)
-            .Take(3)
-            .Sum();
-    }
+    public override long? SolvePart2(PuzzleInput input) => ParseElves(input).OrderByDescending(totalCalories => totalCalories).Take(3).Sum();
 }
