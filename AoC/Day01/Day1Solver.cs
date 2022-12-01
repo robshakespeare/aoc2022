@@ -8,7 +8,7 @@ public class Day1Solver : SolverBase
 
     private static IEnumerable<long> ParseElves(PuzzleInput input) =>
         input.ToString()
-            .Split($"{NewLine}{NewLine}")
+            .Split(NewLine + NewLine)
             .Select(block => block.Split(NewLine).Select(long.Parse))
             .Select(elfCalories => elfCalories.Sum());
 
