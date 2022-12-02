@@ -6,7 +6,9 @@ public class Day2SolverTests
 {
     private readonly Day2Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = @"A Y
+B X
+C Z";
 
     [Test]
     public void Part1Example()
@@ -15,7 +17,7 @@ public class Day2SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(15);
     }
 
     [Test]
@@ -25,7 +27,7 @@ public class Day2SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(12586);
     }
 
     [Test]
@@ -35,7 +37,7 @@ public class Day2SolverTests
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(12);
     }
 
     [Test]
@@ -45,6 +47,6 @@ public class Day2SolverTests
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(13193);
     }
 }
