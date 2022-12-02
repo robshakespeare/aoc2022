@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices.ComTypes;
+
 namespace AoC.Day02;
 
 /*
@@ -29,7 +31,50 @@ public class Day2Solver : SolverBase
 
     public override long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        return ParseRounds(input)
+            .Select(round =>
+            {
+                // X means you need to lose, Y means you need to end the round in a draw, and Z means you need to win
+                var ourRequiredOutcome = round.OurShape switch
+                {
+                    'X' => Outcome.Loss,
+                    'Y' => Outcome.Draw,
+                    'Z' => Outcome.Win,
+                    _ => throw new InvalidOperationException("Invalid required outcome char: " + round.OurShape)
+                };
+
+                // A winner for a round is selected:
+                //  * Rock defeats Scissors
+                //  * Scissors defeats Paper
+                //  * Paper defeats Rock
+                //  * If both players choose the same shape, the round instead ends in a draw.
+
+                var ourShape = ourRequiredOutcome switch
+                {
+                    Outcome.Win => round.OpponentShape switch
+                    {
+                        TheirScissors => OurRock,
+                        TheirPaper => OurScissors,
+                        _=> OurPaper
+                    },
+                    Outcome.Loss => round.OpponentShape switch
+                    {
+                        TheirScissors => OurPaper,
+                        TheirPaper => OurRock,
+                        _ => OurScissors
+                    },
+                    _ => round.OpponentShape switch
+                    {
+                        TheirScissors => OurScissors,
+                        TheirPaper => OurPaper,
+                        _ => OurRock
+                    }
+                };
+
+                return round with {OurShape = ourShape};
+            })
+            .Select(round => GetOurShapeScore(round) + GetOurOutcomeScore(round))
+            .Sum();
     }
 
     public readonly record struct Round(char OpponentShape, char OurShape);
