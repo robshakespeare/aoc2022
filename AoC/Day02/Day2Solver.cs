@@ -1,155 +1,189 @@
-using System.Runtime.InteropServices.ComTypes;
-
 namespace AoC.Day02;
-
-/*
- * Column 0 - Opponent: A for Rock, B for Paper, and C for Scissors
- * Column 1 - Us: X for Rock, Y for Paper, and Z for Scissors
- *
- * 1 for Rock, 2 for Paper, and 3 for Scissors
- * 0 if you lost, 3 if the round was a draw, and 6 if you won
- */
 
 public class Day2Solver : SolverBase
 {
-    private const char TheirRock = 'A';
-    private const char TheirPaper = 'B';
-    private const char TheirScissors = 'C';
+    //private const char TheirRock = 'A';
+    //private const char TheirPaper = 'B';
+    //private const char TheirScissors = 'C';
 
-    private const char OurRock = 'X';
-    private const char OurPaper = 'Y';
-    private const char OurScissors = 'Z';
+    //private const char OurRock = 'X';
+    //private const char OurPaper = 'Y';
+    //private const char OurScissors = 'Z';
 
     public override string DayName => "Rock Paper Scissors";
 
-    public override long? SolvePart1(PuzzleInput input)
+    public enum Shape
     {
-        return ParseRounds(input)
-            .Select(round => GetOurShapeScore(round) + GetOurOutcomeScore(round))
-            .Sum();
+        Rock,
+        Paper,
+        Scissors
     }
 
-    public override long? SolvePart2(PuzzleInput input)
-    {
-        return ParseRounds(input)
-            .Select(round =>
-            {
-                // X means you need to lose, Y means you need to end the round in a draw, and Z means you need to win
-                var ourRequiredOutcome = round.OurShape switch
-                {
-                    'X' => Outcome.Loss,
-                    'Y' => Outcome.Draw,
-                    'Z' => Outcome.Win,
-                    _ => throw new InvalidOperationException("Invalid required outcome char: " + round.OurShape)
-                };
+    //private enum Outcome
+    //{
+    //    Draw,
+    //    Win,
+    //    Loss
+    //}
 
-                // A winner for a round is selected:
-                //  * Rock defeats Scissors
-                //  * Scissors defeats Paper
-                //  * Paper defeats Rock
-                //  * If both players choose the same shape, the round instead ends in a draw.
-
-                var ourShape = ourRequiredOutcome switch
-                {
-                    Outcome.Win => round.OpponentShape switch
-                    {
-                        TheirScissors => OurRock,
-                        TheirPaper => OurScissors,
-                        _=> OurPaper
-                    },
-                    Outcome.Loss => round.OpponentShape switch
-                    {
-                        TheirScissors => OurPaper,
-                        TheirPaper => OurRock,
-                        _ => OurScissors
-                    },
-                    _ => round.OpponentShape switch
-                    {
-                        TheirScissors => OurScissors,
-                        TheirPaper => OurPaper,
-                        _ => OurRock
-                    }
-                };
-
-                return round with {OurShape = ourShape};
-            })
-            .Select(round => GetOurShapeScore(round) + GetOurOutcomeScore(round))
-            .Sum();
-    }
-
-    public readonly record struct Round(char OpponentShape, char OurShape);
-
-    private static IReadOnlyCollection<Round> ParseRounds(PuzzleInput input) =>
-        input.ReadLines().Select(line => new Round(line[0], line[2])).ToReadOnlyArray();
-
-    private static long GetOurShapeScore(Round round) => round.OurShape switch
-    {
-        OurRock => 1, // Rock
-        OurPaper => 2, // Paper
-        OurScissors => 3, // Scissors
-        _ => throw new InvalidOperationException("Invalid OurShape: " + round.OurShape)
-    };
-
-    private static long GetOurOutcomeScore(Round round)
-    {
-        var outcome = GetOutcome(round.OpponentShape, round.OurShape);
-        return outcome switch
-        {
-            Outcome.Loss => 0,
-            Outcome.Draw => 3,
-            Outcome.Win => 6,
-            _ => throw new InvalidOperationException("Invalid outcome: " + outcome)
-        };
-    }
+    //private static Lookup<Outcome2, Round3> Test = new Lookup<Outcome2,Round3>()
 
     /// <summary>
     /// A winner for a round is selected:
     ///  * Rock defeats Scissors
-    ///  * Scissors defeats Paper
     ///  * Paper defeats Rock
+    ///  * Scissors defeats Paper
     ///  * If both players choose the same shape, the round instead ends in a draw.
     /// </summary>
-    private static Outcome GetOutcome(char theirScore, char ourScore)
+    private static readonly IReadOnlyDictionary<Shape, Shape> ShapeWinners = new Dictionary<Shape, Shape>
     {
-        if (theirScore == TheirRock && ourScore == OurScissors)
-        {
-            return Outcome.Loss;
-        }
+        {Shape.Rock, Shape.Scissors},
+        {Shape.Paper, Shape.Rock},
+        {Shape.Scissors, Shape.Paper}
+    };
 
-        if (theirScore == TheirScissors && ourScore == OurPaper)
-        {
-            return Outcome.Loss;
-        }
+    private static readonly IReadOnlyDictionary<Shape, Shape> ShapeLosers = ShapeWinners.ToDictionary(x => x.Value, x => x.Key);
 
-        if (theirScore == TheirPaper && ourScore == OurRock)
-        {
-            return Outcome.Loss;
-        }
+    /// <summary>
+    /// Score for the shape you selected: 1 for Rock, 2 for Paper, and 3 for Scissors
+    /// </summary>
+    private static readonly IReadOnlyDictionary<Shape, long> ShapeScores = new Dictionary<Shape, long>
+    {
+        {Shape.Rock, 1},
+        {Shape.Paper, 2},
+        {Shape.Scissors, 3}
+    };
 
-
-        if (ourScore == OurRock && theirScore == TheirScissors)
-        {
-            return Outcome.Win;
-        }
-
-        if (ourScore == OurScissors && theirScore == TheirPaper)
-        {
-            return Outcome.Win;
-        }
-
-        if (ourScore == OurPaper && theirScore == TheirRock)
-        {
-            return Outcome.Win;
-        }
-
-
-        return Outcome.Draw;
+    /// <summary>
+    /// Score for the outcome of the round: 0 if you lost, 3 if the round was a draw, and 6 if you won
+    /// </summary>
+    public enum OutcomeScore
+    {
+        Loss = 0,
+        Draw = 3,
+        Win = 6
     }
 
-    private enum Outcome
+    /// <summary>
+    /// First Column - Opponent: A for Rock, B for Paper, and C for Scissors
+    /// </summary>
+    private static readonly IReadOnlyDictionary<char, Shape> TheirLetterMap = new Dictionary<char, Shape>
     {
-        Draw,
-        Win,
-        Loss
+        {'A', Shape.Rock},
+        {'B', Shape.Paper},
+        {'C', Shape.Scissors}
+    };
+
+    /// <summary>
+    /// Second Column - Us: X for Rock, Y for Paper, and Z for Scissors
+    /// </summary>
+    private static readonly IReadOnlyDictionary<char, Shape> OurLetterMap = new Dictionary<char, Shape>
+    {
+        {'X', Shape.Rock},
+        {'Y', Shape.Paper},
+        {'Z', Shape.Scissors}
+    };
+
+    public readonly record struct Round3(char TheirLetter, char OurLetter, Shape TheirShape, Shape OurShape)
+    {
+        public Round3(char theirLetter, char ourLetter) : this(theirLetter, ourLetter, TheirLetterMap[theirLetter], OurLetterMap[ourLetter])
+        {
+        }
+
+        public long GetOurScore() => ShapeScores[OurShape] + (long) GetOurOutcomeScore();
+
+        private OutcomeScore GetOurOutcomeScore() =>
+            ShapeWinners[OurShape] == TheirShape
+                ? OutcomeScore.Win
+                : ShapeWinners[TheirShape] == OurShape
+                    ? OutcomeScore.Loss
+                    : OutcomeScore.Draw;
     }
+
+    //private const long LossScore = 0;
+    //private const long DrawScore = 3;
+    //private const long WinScore = 6;
+
+
+
+    //private readonly record struct Round2(char TheirLetter, char OurLetter);
+
+    //private readonly record struct Outcome2(long Score);
+
+    //private static readonly Outcome2 Win = new(6);
+    //private static readonly Outcome2 Draw = new(3);
+    //private static readonly Outcome2 Loss = new(0);
+
+    
+
+    private static IEnumerable<Round3> ParseRounds3(PuzzleInput input) =>
+        input.ReadLines().Select(line => new Round3(line[0], line[2]));
+
+    public override long? SolvePart1(PuzzleInput input) => ParseRounds3(input).Sum(round => round.GetOurScore());
+
+    public override long? SolvePart2(PuzzleInput input) =>
+        ParseRounds3(input)
+            // X means you need to lose, Y means you need to end the round in a draw, and Z means you need to win
+            .Select(round => round with {OurShape = round.OurLetter switch
+            {
+                'X' => ShapeWinners[round.TheirShape],
+                'Y' => round.TheirShape,
+                'Z' => ShapeLosers[round.TheirShape],
+                _ => throw new InvalidOperationException("Unexpected letter " + round.OurLetter)
+            }})
+            .Sum(round => round.GetOurScore());
+
+    //public readonly record struct Round(char OpponentShape, char OurShape);
+
+    //private static IReadOnlyCollection<Round> ParseRounds(PuzzleInput input) =>
+    //    input.ReadLines().Select(line => new Round(line[0], line[2])).ToReadOnlyArray();
+
+    //private static long GetOurShapeScore(Round round) => round.OurShape switch
+    //{
+    //    OurRock => 1, // Rock
+    //    OurPaper => 2, // Paper
+    //    OurScissors => 3, // Scissors
+    //    _ => throw new InvalidOperationException("Invalid OurShape: " + round.OurShape)
+    //};
+
+    //private static long GetOurOutcomeScore(Round round)
+    //{
+    //    var outcome = GetOutcome(round.OpponentShape, round.OurShape);
+    //    return outcome switch
+    //    {
+    //        Outcome.Loss => 0,
+    //        Outcome.Draw => 3,
+    //        Outcome.Win => 6,
+    //        _ => throw new InvalidOperationException("Invalid outcome: " + outcome)
+    //    };
+    //}
+
+    ///// <summary>
+    ///// A winner for a round is selected:
+    /////  * Rock defeats Scissors
+    /////  * Scissors defeats Paper
+    /////  * Paper defeats Rock
+    /////  * If both players choose the same shape, the round instead ends in a draw.
+    ///// </summary>
+    //private static Outcome GetOutcome(char theirShape, char ourShape)
+    //{
+    //    switch (theirShape)
+    //    {
+    //        case TheirRock when ourShape == OurScissors:
+    //        case TheirScissors when ourShape == OurPaper:
+    //        case TheirPaper when ourShape == OurRock:
+    //            return Outcome.Loss;
+    //    }
+
+
+    //    switch (ourShape)
+    //    {
+    //        case OurRock when theirShape == TheirScissors:
+    //        case OurScissors when theirShape == TheirPaper:
+    //        case OurPaper when theirShape == TheirRock:
+    //            return Outcome.Win;
+    //        default:
+    //            return Outcome.Draw;
+    //    }
+    //}
 }
