@@ -4,7 +4,7 @@ public class Day3Solver : SolverBase
 {
     public override string DayName => "Rucksack Reorganization";
 
-    static int GetPriority(char c) => (27 + c - 'A') % 58;
+    static int GetPriority(char c) => (c - '&') % 58;
 
     static char GetCommonCharacter(IReadOnlyCollection<string> group) => group
         .SelectMany(sack => sack.Select(c => (c, sack)))
