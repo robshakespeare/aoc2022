@@ -1,5 +1,3 @@
-using System.Linq;
-
 namespace AoC.Day03;
 
 public class Day3Solver : SolverBase
@@ -17,12 +15,36 @@ public class Day3Solver : SolverBase
                 compartment2 = line[(line.Length / 2)..]
             })
             .Select(compartments => compartments.compartment1.Join(compartments.compartment2, c => c, c => c, (c, _) => c).First())
-            //.Select(line => line.GroupBy(c => c).First(g => g.Count() == 2).Key)
             .Sum(GetPriority);
     }
 
     public override long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        char GetGroupBadge(IEnumerable<string> group)
+        {
+            var dict = new Dictionary<char, List<string>>();
+
+            foreach (var sack in group)
+            {
+                foreach (var c in sack.Distinct())
+                {
+                    if (!dict.ContainsKey(c))
+                    {
+                        dict[c] = new List<string>();
+                    }
+
+                    dict[c].Add(sack);
+                }
+            }
+
+            return dict.Single(x => x.Value.Count == 3).Key;
+        }
+
+        return input.ReadLines()
+            .Select((line, i) => (line, i))
+            .GroupBy(x => x.i / 3)
+            .Select(g => g.Select(sack => sack.line))
+            .Select(GetGroupBadge)
+            .Sum(GetPriority);
     }
 }
