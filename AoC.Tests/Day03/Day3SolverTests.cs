@@ -6,7 +6,12 @@ public class Day3SolverTests
 {
     private readonly Day3Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = @"vJrwpWtwJgWrhcsFMMfFFhFp
+jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+PmmdzqPrVvPwwTWBwg
+wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+ttgJtRGJQctTZtZT
+CrZsJsPPZsGzwwsLwLmpwMDw";
 
     [Test]
     public void Part1Example()
@@ -15,7 +20,7 @@ public class Day3SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(157);
     }
 
     [Test]
@@ -25,7 +30,7 @@ public class Day3SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(7845);
     }
 
     [Test]
