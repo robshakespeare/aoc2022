@@ -7,10 +7,8 @@ public class Day3Solver : SolverBase
     static int GetPriority(char c) => (c - '&') % 58;
 
     static char GetCommonCharacter(IReadOnlyCollection<string> group) => group
-        .SelectMany(sack => sack.Select(c => (c, sack)))
-        .GroupBy(x => x.c)
-        .First(g => g.Select(x => x.sack).Distinct().Count() == group.Count)
-        .Key;
+        .Aggregate((agg, cur) => string.Concat(agg.Intersect(cur)))
+        .Single();
 
     public override long? SolvePart1(PuzzleInput input) =>
         input.ReadLines()
