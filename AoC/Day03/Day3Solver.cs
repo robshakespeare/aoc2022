@@ -4,7 +4,7 @@ public class Day3Solver : SolverBase
 {
     public override string DayName => "Rucksack Reorganization";
 
-    static int GetPriority(char c) => char.IsLower(c) ? 1 + c - 'a' : 27 + c - 'A';
+    static int GetPriority(char c) => (27 + c - 'A') % 58;
 
     static char GetCommonCharacter(IReadOnlyCollection<string> group) => group
         .SelectMany(sack => sack.Select(c => (c, sack)))
@@ -14,7 +14,7 @@ public class Day3Solver : SolverBase
 
     public override long? SolvePart1(PuzzleInput input) =>
         input.ReadLines()
-            .Select(line => new[] {line[..(line.Length / 2)], line[(line.Length / 2)..]})
+            .Select(sack => new[] {sack[..(sack.Length / 2)], sack[(sack.Length / 2)..]})
             .Select(GetCommonCharacter)
             .Sum(GetPriority);
 
