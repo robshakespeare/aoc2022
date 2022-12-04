@@ -1,6 +1,6 @@
 namespace AoC.Day04;
 
-public partial class Day4Solver : SolverBase
+public class Day4Solver : SolverBase
 {
     public override string DayName => "Camp Cleanup";
 
@@ -17,11 +17,8 @@ public partial class Day4Solver : SolverBase
         public bool Intersects(Section other) => Start >= other.Start && Start <= other.End || End >= other.Start && End <= other.End;
     }
 
-    [GeneratedRegex(@"(?<start1>\d+)-(?<end1>\d+),(?<start2>\d+)-(?<end2>\d+)", RegexOptions.Compiled)]
-    private static partial Regex ParsePairsRegex();
-
     static IEnumerable<(Section Section1, Section Section2)> ParseSectionPairs(PuzzleInput input) =>
-        ParsePairsRegex().Matches(input.ToString()).Select(match => (
-            new Section(int.Parse(match.Groups["start1"].Value), int.Parse(match.Groups["end1"].Value)),
-            new Section(int.Parse(match.Groups["start2"].Value), int.Parse(match.Groups["end2"].Value))));
+        input.ReadLines().Select(l => l.Split('-', ',')).Select(x => (
+            new Section(int.Parse(x[0]), int.Parse(x[1])),
+            new Section(int.Parse(x[2]), int.Parse(x[3]))));
 }

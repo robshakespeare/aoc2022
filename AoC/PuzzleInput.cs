@@ -34,4 +34,6 @@ public class PuzzleInput
     public override string ToString() => _input;
 
     public static implicit operator PuzzleInput(string? input) => new(input);
+
+    public static implicit operator string(PuzzleInput input) => input.ToString();
 }
