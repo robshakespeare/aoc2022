@@ -17,15 +17,11 @@ public partial class Day4Solver : SolverBase
         public bool Intersects(Section other) => Start >= other.Start && Start <= other.End || End >= other.Start && End <= other.End;
     }
 
-    record SectionPair(Section Section1, Section Section2);
-
     [GeneratedRegex(@"(?<start1>\d+)-(?<end1>\d+),(?<start2>\d+)-(?<end2>\d+)", RegexOptions.Compiled)]
-    private static partial Regex BuildParsePairsRegex();
+    private static partial Regex ParsePairsRegex();
 
-    private static readonly Regex ParsePairsRegex = BuildParsePairsRegex();
-
-    static IEnumerable<SectionPair> ParseSectionPairs(PuzzleInput input) =>
-        ParsePairsRegex.Matches(input.ToString()).Select(match => new SectionPair(
+    static IEnumerable<(Section Section1, Section Section2)> ParseSectionPairs(PuzzleInput input) =>
+        ParsePairsRegex().Matches(input.ToString()).Select(match => (
             new Section(int.Parse(match.Groups["start1"].Value), int.Parse(match.Groups["end1"].Value)),
             new Section(int.Parse(match.Groups["start2"].Value), int.Parse(match.Groups["end2"].Value))));
 }
