@@ -18,7 +18,7 @@ public class Day4Solver : SolverBase
     }
 
     static IEnumerable<(Section Section1, Section Section2)> ParseSectionPairs(PuzzleInput input) =>
-        input.ReadLines().Select(l => l.Split('-', ',')).Select(x => (
-            new Section(int.Parse(x[0]), int.Parse(x[1])),
-            new Section(int.Parse(x[2]), int.Parse(x[3]))));
+        input.ReadLines().Select(line => line.Split('-', ',')).Select(parts => (
+            new Section(int.Parse(parts[0]), int.Parse(parts[1])),
+            new Section(int.Parse(parts[2]), int.Parse(parts[3]))));
 }
