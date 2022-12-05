@@ -13,7 +13,7 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    name: Build and Test
+    name: Test
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 7.0.100
-      - name: Test
+      - name: Run tests and collect coverage
         run: dotnet test AoC.Tests --configuration Release --verbosity normal --collect:"XPlat Code Coverage"
       - name: Publish unit test code coverage results
         uses: actions/upload-artifact@v3
