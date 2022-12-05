@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		build.cake = build.cake
+		.github\workflows\CI-apps-workflow.yml = .github\workflows\CI-apps-workflow.yml
 		.github\workflows\CI-workflow.yml = .github\workflows\CI-workflow.yml
 		Template\AoC\DayXXX\DayNNNSolver.cs = Template\AoC\DayXXX\DayNNNSolver.cs
 		Template\AoC.Tests\DayXXX\DayNNNSolverTests.cs = Template\AoC.Tests\DayXXX\DayNNNSolverTests.cs
