@@ -2,32 +2,29 @@ name: CI workflow
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [ main ]
+    branches: [main]
+    paths:
+      - "AoC/**"
+      - "AoC.Tests/**"
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    name: Build and Test
+    name: Test
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 7.0.100
-    - name: Workload restore
-      run: dotnet workload restore
-    - name: Restore
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --configuration Debug --no-restore # Note `Debug` to verify everything compiles, but avoid expensive linking operations performed by `Release` builds
-    - name: Test
-      run: dotnet test AoC.Tests --configuration Release --no-restore --verbosity normal --collect:"XPlat Code Coverage"
-    - name: Publish unit test code coverage results
-      uses: actions/upload-artifact@v3
-      with:
-        name: unit-test-code-coverage-results
-        path: AoC.Tests/TestResults/*/coverage.cobertura.xml
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.0.100
+      - name: Run tests and collect coverage
+        run: dotnet test AoC.Tests --configuration Release --verbosity normal --collect:"XPlat Code Coverage"
+      - name: Publish unit test code coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: unit-test-code-coverage-results
+          path: AoC.Tests/TestResults/*/coverage.cobertura.xml

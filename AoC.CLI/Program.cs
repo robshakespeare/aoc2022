@@ -1,6 +1,12 @@
 using AoC;
 using static Crayon.Output;
 
+if (args.ElementAtOrDefault(0) == "--most-recent-day-name")
+{
+    Console.WriteLine(SolverFactory.Instance.Solvers.Last(x => x.DayName != "").DayName);
+    return;
+}
+
 Console.OutputEncoding = System.Text.Encoding.Unicode;
 
 static void PrintTitle()
