@@ -1,4 +1,4 @@
-name: CI apps workflow
+name: CI Apps workflow
 
 on:
   push:
