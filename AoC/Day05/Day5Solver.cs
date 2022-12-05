@@ -2,7 +2,7 @@ using static System.Environment;
 
 namespace AoC.Day05;
 
-public partial class Day5Solver : SolverBase<string, long?>
+public partial class Day5Solver : SolverBase<string, string>
 {
     public override string DayName => "Supply Stacks";
 
@@ -23,9 +23,21 @@ public partial class Day5Solver : SolverBase<string, long?>
         return string.Concat(stacks.Select(stack => stack[0]));
     }
 
-    public override long? SolvePart2(PuzzleInput input)
+    public override string SolvePart2(PuzzleInput input)
     {
-        return null;
+        var (stacks, moves) = ParsePuzzleInput(input);
+
+        foreach (var (amount, from, to) in moves)
+        {
+            var sourceStack = stacks[from];
+
+            var toMove = string.Concat(sourceStack[..amount]);
+
+            stacks[from] = sourceStack[amount..];
+            stacks[to] = toMove + stacks[to];
+        }
+
+        return string.Concat(stacks.Select(stack => stack[0]));
     }
 
     record Move(int Amount, int From, int To);
