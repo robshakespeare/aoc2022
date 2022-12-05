@@ -6,7 +6,11 @@ public partial class Day5Solver : SolverBase<string, string>
 {
     public override string DayName => "Supply Stacks";
 
-    public override string SolvePart1(PuzzleInput input)
+    public override string SolvePart1(PuzzleInput input) => MovesCrates(input, false);
+
+    public override string SolvePart2(PuzzleInput input) => MovesCrates(input, true);
+
+    static string MovesCrates(PuzzleInput input, bool moveCratesInOneGo)
     {
         var (stacks, moves) = ParsePuzzleInput(input);
 
@@ -14,24 +18,11 @@ public partial class Day5Solver : SolverBase<string, string>
         {
             var sourceStack = stacks[from];
 
-            var toMove = string.Concat(sourceStack[..amount].Reverse());
-
-            stacks[from] = sourceStack[amount..];
-            stacks[to] = toMove + stacks[to];
-        }
-
-        return string.Concat(stacks.Select(stack => stack[0]));
-    }
-
-    public override string SolvePart2(PuzzleInput input)
-    {
-        var (stacks, moves) = ParsePuzzleInput(input);
-
-        foreach (var (amount, from, to) in moves)
-        {
-            var sourceStack = stacks[from];
-
-            var toMove = string.Concat(sourceStack[..amount]);
+            var toMove = sourceStack[..amount];
+            if (!moveCratesInOneGo)
+            {
+                toMove = string.Concat(toMove.Reverse());
+            }
 
             stacks[from] = sourceStack[amount..];
             stacks[to] = toMove + stacks[to];
@@ -48,7 +39,7 @@ public partial class Day5Solver : SolverBase<string, string>
         return (ParseStacks(parts[0]), ParseMoves(parts[1]));
     }
 
-    private static string[] ParseStacks(string input)
+    static string[] ParseStacks(string input)
     {
         var lines = input.Split(NewLine);
         var indexes =
