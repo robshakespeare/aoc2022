@@ -2,7 +2,7 @@ using static Crayon.Output;
 
 namespace AoC;
 
-public class InputLoader
+internal class InputLoader
 {
     private readonly Type _solverType;
     private readonly Lazy<PuzzleInput> _part1;
@@ -12,13 +12,14 @@ public class InputLoader
 
     public PuzzleInput PuzzleInputPart2 => _part2.Value;
 
-    public InputLoader(ISolver solver)
+    internal InputLoader(ISolverBase solver)
     {
         _solverType = solver.GetType();
-        _part1 = new Lazy<PuzzleInput>(() => LoadInput(GetInputResourceName($"input-day{solver.DayNumber}.txt")));
+        var dayNumber = solver.GetDayNumber();
+        _part1 = new Lazy<PuzzleInput>(() => LoadInput(GetInputResourceName($"input-day{dayNumber}.txt")));
         _part2 = new Lazy<PuzzleInput>(() =>
         {
-            var part2ResourceName = GetInputResourceName($"input-day{solver.DayNumber}-part-2.txt");
+            var part2ResourceName = GetInputResourceName($"input-day{dayNumber}-part-2.txt");
 
             if (_solverType.Assembly.GetManifestResourceInfo(part2ResourceName) == null)
             {

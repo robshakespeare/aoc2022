@@ -14,7 +14,7 @@ public class PuzzleInput
     /// <summary>
     /// Parses and returns each line in the puzzle input string.
     /// </summary>
-    public IEnumerable<string> ReadLines()
+    public IEnumerable<string> ReadLines() // rs-todo: move ReadLines and ReadLinesAsLongs to GeneralExtensions, and call from here (might as well COPY across tests for completeness)
     {
         using var sr = new StringReader(_input);
         while (sr.ReadLine() is { } line)

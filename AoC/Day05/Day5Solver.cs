@@ -2,13 +2,13 @@ using static System.Environment;
 
 namespace AoC.Day05;
 
-public partial class Day5Solver : SolverBase<string, string>
+public partial class Day5Solver : ISolver<string, string>
 {
-    public override string DayName => "Supply Stacks";
+    public string DayName => "Supply Stacks";
 
-    public override string SolvePart1(PuzzleInput input) => MoveCrates(input, false);
+    public string SolvePart1(PuzzleInput input) => MoveCrates(input, false);
 
-    public override string SolvePart2(PuzzleInput input) => MoveCrates(input, true);
+    public string SolvePart2(PuzzleInput input) => MoveCrates(input, true);
 
     static string MoveCrates(PuzzleInput input, bool moveCratesInOneGo)
     {

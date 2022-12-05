@@ -35,4 +35,8 @@ public static class GeneralExtensions
 
         dictionary[key] += amount;
     }
+
+    // rs-todo: comments, and tests
+    public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, Func<TValue> buildValue)
+        where TKey : notnull => dictionary.TryGetValue(key, out var value) ? value : dictionary[key] = buildValue();
 }

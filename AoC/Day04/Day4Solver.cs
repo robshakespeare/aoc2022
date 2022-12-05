@@ -1,13 +1,13 @@
 namespace AoC.Day04;
 
-public class Day4Solver : SolverBase
+public class Day4Solver : ISolver
 {
-    public override string DayName => "Camp Cleanup";
+    public string DayName => "Camp Cleanup";
 
-    public override long? SolvePart1(PuzzleInput input) =>
+    public long? SolvePart1(PuzzleInput input) =>
         ParseSectionPairs(input).Count(pair => pair.Section1.Contains(pair.Section2) || pair.Section2.Contains(pair.Section1));
 
-    public override long? SolvePart2(PuzzleInput input) =>
+    public long? SolvePart2(PuzzleInput input) =>
         ParseSectionPairs(input).Count(pair => pair.Section1.Intersects(pair.Section2) || pair.Section2.Intersects(pair.Section1));
 
     record Section(int Start, int End)

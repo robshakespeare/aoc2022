@@ -34,7 +34,7 @@ public partial class SolverFactory : ISolverFactory
         Solvers = _solvers
             .Select(solver => solver.Key)
             .Select(CreateSolver)
-            .Select(solver => (solver.DayNumber.ToString(), solver.DayName))
+            .Select(solver => (solver.GetDayNumber().ToString(), solver.DayName))
             .ToReadOnlyArray();
     }
 
@@ -56,13 +56,13 @@ public partial class SolverFactory : ISolverFactory
             _ => 1
         };
 
-    public ISolver? TryCreateSolver(string? dayNumber) => _solvers.TryGetValue(dayNumber ?? "", out var solverType)
-        ? (ISolver?) Activator.CreateInstance(solverType)
+    public ISolverBase? TryCreateSolver(string? dayNumber) => _solvers.TryGetValue(dayNumber ?? "", out var solverType)
+        ? (ISolverBase?) Activator.CreateInstance(solverType)
         : null;
 
-    public ISolver CreateSolver(string? dayNumber) => TryCreateSolver(dayNumber) ?? throw new InvalidOperationException($"No solver for day {dayNumber}.");
+    public ISolverBase CreateSolver(string? dayNumber) => TryCreateSolver(dayNumber) ?? throw new InvalidOperationException($"No solver for day {dayNumber}.");
 
-    private void AddSolver<TSolver>() where TSolver : ISolver => _solvers.Add(GetDayNumber(typeof(TSolver)).ToString(), typeof(TSolver));
+    private void AddSolver<TSolver>() where TSolver : ISolverBase => _solvers.Add(GetDayNumber(typeof(TSolver)).ToString(), typeof(TSolver));
 
     private static readonly Regex DayNumRegex = BuildDayNumRegex();
 
@@ -84,5 +84,5 @@ public partial class SolverFactory : ISolverFactory
         throw new InvalidOperationException("Unable to get day number from type name: " + fullName);
     }
 
-    internal static int GetDayNumber(ISolver solver) => GetDayNumber(solver.GetType());
+    internal static int GetDayNumber(ISolverBase solver) => GetDayNumber(solver.GetType());
 }
