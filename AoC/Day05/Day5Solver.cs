@@ -42,28 +42,21 @@ public partial class Day5Solver : SolverBase<string, string>
     static string[] ParseStacks(string input)
     {
         var lines = input.Split(NewLine);
-        var indexes =
-            lines.Last().Select((chr, charIndex) => (chr, charIndex))
-                .Where(x => x.chr != ' ')
-                .Select(x => (stackIndex: int.Parse(x.chr.ToString()) - 1, x.charIndex))
-                .ToArray();
+        var stacks = Enumerable.Range(0, StacksRegex().Matches(lines[0]).Count).Select(_ => new List<char>()).ToArray();
 
-        var stacks = Enumerable.Range(0, indexes.Length).Select(_ => new List<char>()).ToArray();
-
-        foreach (var line in lines[..^1])
+        foreach (var lineMatches in lines[..^1].Select(line => StacksRegex().Matches(line)))
         {
-            foreach (var (stackIndex, charIndex) in indexes)
+            foreach (var match in lineMatches.Where(match => match.Groups["crate"].Success))
             {
-                var crate = line[charIndex];
-                if (crate !=  ' ')
-                {
-                    stacks[stackIndex].Add(crate);
-                }
+                stacks[match.Index / 4].Add(match.Groups["crate"].Value[0]);
             }
         }
 
         return stacks.Select(stack => string.Concat(stack)).ToArray();
     }
+
+    [GeneratedRegex(@"(   |\[(?<crate>[A-Z])\]) ?", RegexOptions.Compiled)]
+    private static partial Regex StacksRegex();
 
     static IEnumerable<Move> ParseMoves(string input) =>
         MovesRegex().Matches(input).Select(match => new Move(
