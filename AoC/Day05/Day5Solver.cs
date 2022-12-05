@@ -6,11 +6,11 @@ public partial class Day5Solver : SolverBase<string, string>
 {
     public override string DayName => "Supply Stacks";
 
-    public override string SolvePart1(PuzzleInput input) => MovesCrates(input, false);
+    public override string SolvePart1(PuzzleInput input) => MoveCrates(input, false);
 
-    public override string SolvePart2(PuzzleInput input) => MovesCrates(input, true);
+    public override string SolvePart2(PuzzleInput input) => MoveCrates(input, true);
 
-    static string MovesCrates(PuzzleInput input, bool moveCratesInOneGo)
+    static string MoveCrates(PuzzleInput input, bool moveCratesInOneGo)
     {
         var (stacks, moves) = ParsePuzzleInput(input);
 
