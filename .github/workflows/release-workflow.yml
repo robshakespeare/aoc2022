@@ -22,13 +22,16 @@ jobs:
       run: dotnet publish AoC.MAUI -f:net7.0-android -c:Release
     - name: Publish Windows CLI
       run: dotnet publish AoC.CLI -c Release -r win-x64 --self-contained -p:PublishSingleFile=true
+    - name: Get most recent day name
+      id: vars
+      run: echo "MostRecentDayName=$(dotnet run --project AoC.CLI --most-recent-day-name)" >> $GITHUB_OUTPUT
     - uses: "marvinpinto/action-automatic-releases@latest"
       name: Create GitHub release
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         automatic_release_tag: "release-${{ github.run_number }}"
         prerelease: false
-        title: "Release ${{ github.run_number }}"
+        title: "Release ${{ github.run_number }} (${{ steps.vars.outputs.MostRecentDayName }})"
         files: |
           AoC.MAUI/bin/Release/net7.0-android/publish/com.rws.aoc2022-Signed.apk
           AoC.CLI/bin/Release/net7.0/win-x64/publish/AoC.CLI.exe
