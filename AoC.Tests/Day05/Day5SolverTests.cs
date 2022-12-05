@@ -6,7 +6,17 @@ public class Day5SolverTests
 {
     private readonly Day5Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = """
+            [D]    
+        [N] [C]    
+        [Z] [M] [P]
+         1   2   3 
+
+        move 1 from 2 to 1
+        move 3 from 1 to 3
+        move 2 from 2 to 1
+        move 1 from 1 to 2
+        """;
 
     [Test]
     public void Part1Example()
@@ -15,7 +25,7 @@ public class Day5SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be("CMZ");
     }
 
     [Test]
@@ -25,7 +35,7 @@ public class Day5SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be("SPFMVDTZT");
     }
 
     [Test]
