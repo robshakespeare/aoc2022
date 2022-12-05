@@ -6,7 +6,7 @@ public class Day6Solver : SolverBase
 
     public override long? SolvePart1(PuzzleInput input)
     {
-        return -1;
+        return null;
     }
 
     public override long? SolvePart2(PuzzleInput input)
