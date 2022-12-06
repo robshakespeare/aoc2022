@@ -24,6 +24,23 @@ public static class GeneralExtensions
     public static IReadOnlyList<TSource> ToReadOnlyArray<TSource>(this IEnumerable<TSource> source) => Array.AsReadOnly(source.ToArray());
 
     /// <summary>
+    /// Parses and returns each line in the input string.
+    /// </summary>
+    public static IEnumerable<string> ReadLines(this string input)
+    {
+        using var sr = new StringReader(input);
+        while (sr.ReadLine() is { } line)
+        {
+            yield return line;
+        }
+    }
+
+    /// <summary>
+    /// Parses and returns each line in the input string as an Int64.
+    /// </summary>
+    public static IEnumerable<long> ReadLinesAsLongs(this string input) => input.ReadLines().Select(long.Parse);
+
+    /// <summary>
     /// Increments the value in the dictionary matching the key by the specified amount, or adds the amount in to the dictionary if no matching key is found.
     /// </summary>
     public static void AddOrIncrement<TKey>(this Dictionary<TKey, long> dictionary, TKey key, long amount) where TKey : notnull
@@ -36,7 +53,9 @@ public static class GeneralExtensions
         dictionary[key] += amount;
     }
 
-    // rs-todo: comments, and tests
+    /// <summary>
+    /// Adds a key/value pair to the dictionary by using the specified function if the key does not already exist, or returns the existing value if the key exists.
+    /// </summary>
     public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, Func<TValue> buildValue)
         where TKey : notnull => dictionary.TryGetValue(key, out var value) ? value : dictionary[key] = buildValue();
 }
