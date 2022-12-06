@@ -18,12 +18,12 @@ else
 
     <div>
         <h2>
-            <NavLink href="list">@(_solver.Title)</NavLink>
+            <NavLink href="list">@(_solver.GetTitle())</NavLink>
         </h2>
 
-        <ResultDisplay PartNum="1" Result="_solver.Part1Result" />
+        <ResultDisplay PartNum="1" Result="_results.Part1Result" />
 
-        <ResultDisplay PartNum="2" Result="_solver.Part2Result" />
+        <ResultDisplay PartNum="2" Result="_results.Part2Result" />
     </div>
 }
 
@@ -31,7 +31,8 @@ else
     [Parameter]
     public string? DayNumber { get; set; }
 
-    private ISolver? _solver;
+    private ISolverBase? _solver;
+    private Results _results;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -44,8 +45,9 @@ else
 
         if (_solver != null)
         {
-            await _solver.RunAsync(async () =>
+            await _solver.RunAsync(async results =>
             {
+                _results = results;
                 await InvokeAsync(StateHasChanged);
                 await Task.Delay(25); // give the UI some time to catch up
             });

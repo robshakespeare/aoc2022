@@ -18,6 +18,48 @@ public class GeneralExtensionsTests
             opts => opts.WithStrictOrdering());
     }
 
+    [Test]
+    public void ReadLines_DoesParseEachLineOfStringIntoArrayElements_And_DoesNormalizeLineEndings()
+    {
+        // ACT
+        var result = "hello\nworld\r\n\r\nthis\ris\r\na\ntest".ReadLines();
+
+        // ASSERT
+        result.Should().BeEquivalentTo(
+            new[]
+            {
+                "hello",
+                "world",
+                "",
+                "this",
+                "is",
+                "a",
+                "test"
+            },
+            opts => opts.WithStrictOrdering());
+    }
+
+    [Test]
+    public void ReadLinesAsLongs_Does_ReadAndReturnsCollectionOfLongs_AsExpected()
+    {
+        const string input = @"1234
+3147483647
+4375734798348934
+87654";
+
+        // ACT
+        var result = input.ReadLinesAsLongs().ToArray();
+
+        // ASSERT
+        result.Should().BeEquivalentTo(new[]
+        {
+            1234,
+            3147483647,
+            4375734798348934,
+            87654
+        }, opts => opts.WithStrictOrdering());
+    }
+
     /// <summary>
     /// These tests verify that the method inbuilt to .NET does behave the same as the previous custom one.
     /// </summary>
@@ -92,7 +134,6 @@ public class GeneralExtensionsTests
         }
     }
 
-
     public class TheAddOrIncrementMethod
     {
         [Test]
@@ -124,6 +165,49 @@ public class GeneralExtensionsTests
 
             // ASSERT
             dict["example"].Should().Be(12 + 34);
+        }
+    }
+
+    public class TheGetOrAddMethod
+    {
+        [Test]
+        public void GetOrAdd_DoesAdd_AndReturnValue_IfNoKey()
+        {
+            var dict = new Dictionary<string, long>
+            {
+                {"example", 45}
+            };
+
+            // ACT
+            var result = dict.GetOrAdd("example2", () => 78);
+
+            // ASSERT
+            result.Should().Be(78);
+            dict["example"].Should().Be(45);
+            dict["example2"].Should().Be(78);
+        }
+
+        [Test]
+        public void GetOrAdd_DoesNotAdd_JustReturnsValue_IfHasKey()
+        {
+            var dict = new Dictionary<string, long>
+            {
+                {"example", 172}
+            };
+
+            var buildValueCallCount = 0;
+
+            // ACT
+            var result = dict.GetOrAdd("example", () =>
+            {
+                buildValueCallCount++;
+                return buildValueCallCount;
+            });
+
+            // ASSERT
+            result.Should().Be(172);
+            buildValueCallCount.Should().Be(0);
+            dict["example"].Should().Be(172);
         }
     }
 }

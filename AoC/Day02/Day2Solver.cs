@@ -1,8 +1,8 @@
 namespace AoC.Day02;
 
-public class Day2Solver : SolverBase
+public class Day2Solver : ISolver
 {
-    public override string DayName => "Rock Paper Scissors";
+    public string DayName => "Rock Paper Scissors";
 
     // Possible shapes, and the score for each: 1 for Rock, 2 for Paper, and 3 for Scissors
     enum Shape
@@ -64,9 +64,9 @@ public class Day2Solver : SolverBase
 
     static IEnumerable<Round> ParseRounds(PuzzleInput input) => input.ReadLines().Select(line => new Round(line[0], line[2]));
 
-    public override long? SolvePart1(PuzzleInput input) => ParseRounds(input).Sum(round => round.GetOurScore());
+    public long? SolvePart1(PuzzleInput input) => ParseRounds(input).Sum(round => round.GetOurScore());
 
-    public override long? SolvePart2(PuzzleInput input) => ParseRounds(input)
+    public long? SolvePart2(PuzzleInput input) => ParseRounds(input)
         // X means you need to lose, Y means you need to end the round in a draw, and Z means you need to win
         .Select(round => round with
         {

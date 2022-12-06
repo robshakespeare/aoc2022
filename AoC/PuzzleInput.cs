@@ -6,7 +6,7 @@ public class PuzzleInput
 
     public PuzzleInput(string? input)
     {
-        // Normalizes the line endings in the input string, so that all the line endings match the current environment's line endings;
+        // Normalizes the line endings in the puzzle input string, so that all the line endings match the current environment's line endings;
         // and remove all trailing white-space (including trailing line endings)
         _input = (input ?? "").ReplaceLineEndings().TrimEnd();
     }
@@ -14,19 +14,12 @@ public class PuzzleInput
     /// <summary>
     /// Parses and returns each line in the puzzle input string.
     /// </summary>
-    public IEnumerable<string> ReadLines()
-    {
-        using var sr = new StringReader(_input);
-        while (sr.ReadLine() is { } line)
-        {
-            yield return line;
-        }
-    }
+    public IEnumerable<string> ReadLines() => _input.ReadLines();
 
     /// <summary>
-    /// Parses and returns each line in the input string as an Int64.
+    /// Parses and returns each line in the puzzle input string as an Int64.
     /// </summary>
-    public IEnumerable<long> ReadLinesAsLongs() => ReadLines().Select(long.Parse);
+    public IEnumerable<long> ReadLinesAsLongs() => _input.ReadLinesAsLongs();
 
     /// <summary>
     /// Returns the puzzle input as a string.

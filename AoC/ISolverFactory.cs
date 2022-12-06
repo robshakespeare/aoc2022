@@ -6,7 +6,7 @@ public interface ISolverFactory
 
     string DefaultDay { get; }
 
-    ISolver? TryCreateSolver(string? dayNumber);
+    ISolverBase? TryCreateSolver(string? dayNumber);
 
-    ISolver CreateSolver(string? dayNumber);
+    ISolverBase CreateSolver(string? dayNumber);
 }

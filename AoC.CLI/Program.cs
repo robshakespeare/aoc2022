@@ -1,10 +1,15 @@
 using AoC;
 using static Crayon.Output;
 
-if (args.ElementAtOrDefault(0) == "--most-recent-day-name")
+switch (args.ElementAtOrDefault(0))
 {
-    Console.WriteLine(SolverFactory.Instance.Solvers.Last(x => x.DayName != "").DayName);
-    return;
+    case "--most-recent-day-name":
+        Console.WriteLine(SolverFactory.Instance.Solvers.Last(x => x.DayName != "").DayName);
+        return;
+
+    case "--pull":
+        await AoC.CLI.PullPuzzleInputCommand.DoAsync(args);
+        return;
 }
 
 Console.OutputEncoding = System.Text.Encoding.Unicode;

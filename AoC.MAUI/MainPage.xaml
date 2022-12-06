@@ -32,9 +32,9 @@
                 Margin="0,0,0,16">
             </Button>
 
-            <app:ResultDisplayView PartNum="1" Result="{Binding Part1Result}" />
+            <app:ResultDisplayView PartNum="1" Result="{Binding Results.Part1Result}" />
 
-            <app:ResultDisplayView PartNum="2" Result="{Binding Part2Result}" />
+            <app:ResultDisplayView PartNum="2" Result="{Binding Results.Part2Result}" />
 
         </VerticalStackLayout>
     </ScrollView>

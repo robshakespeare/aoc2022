@@ -5,27 +5,20 @@ namespace AoC.MAUI;
 
 public class SolverViewModel : INotifyPropertyChanged
 {
-    public SolverViewModel(ISolver solver)
+    public SolverViewModel(ISolverBase solver)
     {
-        Title = solver.Title;
+        Title = solver.GetTitle();
     }
 
-    private Result _part1Result;
-    private Result _part2Result;
+    private Results _results;
     private bool _isComplete;
 
     public string Title { get; }
 
-    public Result Part1Result
+    public Results Results
     {
-        get => _part1Result;
-        set => SetField(ref _part1Result, value);
-    }
-
-    public Result Part2Result
-    {
-        get => _part2Result;
-        set => SetField(ref _part2Result, value);
+        get => _results;
+        set => SetField(ref _results, value);
     }
 
     public bool IsComplete

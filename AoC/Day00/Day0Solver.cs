@@ -1,8 +1,8 @@
 namespace AoC.Day00;
 
-public class Day0Solver : SolverBase<long, string>
+public class Day0Solver : ISolver<long, string>
 {
-    public override string DayName => "Test Day";
+    public string DayName => "Test Day";
 
     public bool SimulateSlowness { get; set; } = true;
 
@@ -16,7 +16,7 @@ public class Day0Solver : SolverBase<long, string>
         }
     }
 
-    public override long SolvePart1(PuzzleInput input)
+    public long SolvePart1(PuzzleInput input)
     {
         SimulateLongRunning(800); // Simulate a short-ish task, to test wait handling / spinners
 
@@ -25,7 +25,7 @@ public class Day0Solver : SolverBase<long, string>
         return MathUtils.LeastCommonMultiple(numbers[0], numbers[1]);
     }
 
-    public override string SolvePart2(PuzzleInput input)
+    public string SolvePart2(PuzzleInput input)
     {
         SimulateLongRunning(1700); // Simulate a long-ish task, to test wait handling / spinners
 

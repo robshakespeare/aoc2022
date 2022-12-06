@@ -31,10 +31,9 @@ public partial class MainPage
 
         Task.Run(async () =>
         {
-            await solver.RunAsync(() =>
+            await solver.RunAsync(results =>
             {
-                solverViewModel.Part1Result = solver.Part1Result;
-                solverViewModel.Part2Result = solver.Part2Result;
+                solverViewModel.Results = results;
                 return Task.CompletedTask;
             });
             solverViewModel.IsComplete = true;

@@ -1,15 +1,15 @@
 namespace AoC.Day20;
 
-public class Day20Solver : SolverBase
+public class Day20Solver : ISolver
 {
-    public override string DayName => "";
+    public string DayName => "";
 
-    public override long? SolvePart1(PuzzleInput input)
+    public long? SolvePart1(PuzzleInput input)
     {
         return null;
     }
 
-    public override long? SolvePart2(PuzzleInput input)
+    public long? SolvePart2(PuzzleInput input)
     {
         return null;
     }
