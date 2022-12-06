@@ -8,7 +8,7 @@ switch (args.ElementAtOrDefault(0))
         return;
 
     case "--pull":
-        AoC.CLI.PullPuzzleInputCommand.Do();
+        await AoC.CLI.PullPuzzleInputCommand.DoAsync(args);
         return;
 }
 
