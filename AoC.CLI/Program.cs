@@ -3,8 +3,9 @@ using static Crayon.Output;
 
 switch (args.ElementAtOrDefault(0))
 {
-    case "--most-recent-day-name":
-        Console.WriteLine(SolverFactory.Instance.Solvers.Last(x => x.DayName != "").DayName);
+    case "--most-recent-day-title":
+        var mostRecent = SolverFactory.Instance.Solvers.Last(x => x.DayName != "");
+        Console.WriteLine($"Day {mostRecent.DayNumber}: {mostRecent.DayName}");
         return;
 
     case "--pull":
