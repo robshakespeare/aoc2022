@@ -15,7 +15,19 @@ public class Day7Solver : ISolver
 
     public long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        var rootDir = ParseFilesystem(input);
+
+        var totalAmountOfUsedSpace = rootDir.TotalSize;
+        var totalAmountOfUnusedSpace = 70000000 - totalAmountOfUsedSpace;
+        var minRequiredSizeToDelete = 30000000 - totalAmountOfUnusedSpace;
+
+
+        return rootDir.ListAll()
+            //.Select(dir => (dir, freeSpace: 70000000 - dir.TotalSize))
+            //.Where(x => x.freeSpace >= 30000000)
+            .Where(x => x.TotalSize >= minRequiredSizeToDelete)
+            .MinBy(x => x.TotalSize)
+            .TotalSize;
     }
 
     public class ElfDir
