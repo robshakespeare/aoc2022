@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace AoC.Day07;
 
 public class Day7Solver : ISolver
@@ -17,34 +15,37 @@ public class Day7Solver : ISolver
     {
         var rootDir = ParseFilesystem(input);
 
-        var totalAmountOfUsedSpace = rootDir.TotalSize;
-        var totalAmountOfUnusedSpace = 70000000 - totalAmountOfUsedSpace;
-        var minRequiredSizeToDelete = 30000000 - totalAmountOfUnusedSpace;
+        const int totalDiskSpaceAvailable = 70000000;
+        const int minRequiredUnusedSpace = 30000000;
 
+        var totalAmountOfUsedSpace = rootDir.TotalSize;
+        var totalAmountOfUnusedSpace = totalDiskSpaceAvailable - totalAmountOfUsedSpace;
+        var minRequiredSizeToDelete = minRequiredUnusedSpace - totalAmountOfUnusedSpace;
 
         return rootDir.ListAll()
-            //.Select(dir => (dir, freeSpace: 70000000 - dir.TotalSize))
-            //.Where(x => x.freeSpace >= 30000000)
             .Where(x => x.TotalSize >= minRequiredSizeToDelete)
             .MinBy(x => x.TotalSize)
-            .TotalSize;
+            ?.TotalSize;
     }
 
-    public class ElfDir
+    class ElfDir
     {
         private readonly Dictionary<string, ElfDir> _subDirectories = new();
         private readonly Dictionary<string, long> _files = new();
 
-        public string Path { get; }
+        string Path { get; }
 
         public ElfDir? Parent { get; }
 
+        public ElfDir Root { get; }
+
         public long TotalSize => _files.Values.Sum() + _subDirectories.Values.Sum(subDir => subDir.TotalSize);
 
-        public ElfDir(string path, ElfDir? parent)
+        private ElfDir(string path, ElfDir? parent)
         {
             Path = path;
             Parent = parent;
+            Root = parent?.Root ?? this;
         }
 
         public static ElfDir NewRoot() => new("/", null);
@@ -73,14 +74,9 @@ public class Day7Solver : ISolver
 
     static ElfDir ParseFilesystem(string input)
     {
-        //var currentDirectoryPath = new Stack<string>(new[] { "/" });
-
         var rootDirectory = ElfDir.NewRoot();
         var currentDirectory = rootDirectory;
-
         var inputLines = new Stack<string>(input.ReadLines().Reverse());
-
-        //using var lineReader = input.ReadLines().GetEnumerator();
 
         while (inputLines.Count > 0)
         {
@@ -95,48 +91,11 @@ public class Day7Solver : ISolver
                 {
                     case "cd":
                     {
-                        var arg = parts[2];
-
-                        switch (arg)
-                        {
-                            case "/":
-                                //currentDirectoryPath = new Stack<string>(new[] {"/"});
-                                currentDirectory = rootDirectory;
-                                break;
-                            case "..":
-                                currentDirectory = currentDirectory.Parent ?? throw new InvalidOperationException("Cannot move out one level from root");
-                                break;
-                            default:
-                                if (string.IsNullOrEmpty(arg))
-                                {
-                                    throw new InvalidOperationException("Unexpected change directory argument: " + command);
-                                }
-
-                                currentDirectory = currentDirectory.GetDirectory(arg);
-                                //currentDirectoryPath.Push(arg);
-                                break;
-                        }
-
+                        currentDirectory = ChangeDirectoryCommand(parts[2], currentDirectory);
                         break;
                     }
                     case "ls":
-                        while (inputLines.Count > 0 && !inputLines.Peek().StartsWith("$"))
-                        {
-                            var contents = inputLines.Pop().Split(" ");
-
-                            if (contents[0] == "dir")
-                            {
-                                currentDirectory.AddSubDirectory(contents[1]);
-                            }
-                            else
-                            {
-                                var fileSize = long.Parse(contents[0]);
-                                var fileName = contents[1];
-
-                                currentDirectory.AddFile(fileName, fileSize);
-                            }
-                        }
-
+                        ListCommand(inputLines, currentDirectory);
                         break;
                     default:
                         throw new InvalidOperationException("Unexpected command: " + command);
@@ -149,5 +108,44 @@ public class Day7Solver : ISolver
         }
 
         return rootDirectory;
+    }
+
+    private static ElfDir ChangeDirectoryCommand(string arg, ElfDir currentDirectory)
+    {
+        switch (arg)
+        {
+            case "/":
+                return currentDirectory.Root;
+            case "..":
+                return currentDirectory.Parent ??
+                       throw new InvalidOperationException("Cannot move out one level from root");
+            default:
+                if (string.IsNullOrEmpty(arg))
+                {
+                    throw new InvalidOperationException("Empty change directory argument");
+                }
+
+                return currentDirectory.GetDirectory(arg);
+        }
+    }
+
+    static void ListCommand(Stack<string> inputLines, ElfDir currentDirectory)
+    {
+        while (inputLines.Count > 0 && !inputLines.Peek().StartsWith("$"))
+        {
+            var contents = inputLines.Pop().Split(" ");
+
+            if (contents[0] == "dir")
+            {
+                currentDirectory.AddSubDirectory(contents[1]);
+            }
+            else
+            {
+                var fileSize = long.Parse(contents[0]);
+                var fileName = contents[1];
+
+                currentDirectory.AddFile(fileName, fileSize);
+            }
+        }
     }
 }
