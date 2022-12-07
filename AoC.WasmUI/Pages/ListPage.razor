@@ -6,7 +6,7 @@
 @foreach (var (dayNumber, dayName) in SolverFactory.Solvers.Where(x => !string.IsNullOrEmpty(x.DayName)))
 {
     <div>
-        <NavLink key="@($"day-link-{dayNumber}")" title=@dayName href="@dayNumber">
+        <NavLink key="@($"day-link-{dayNumber}")" href="@dayNumber">
             Day @dayNumber: @dayName
         </NavLink>
     </div>
