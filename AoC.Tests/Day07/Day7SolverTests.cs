@@ -6,7 +6,31 @@ public class Day7SolverTests
 {
     private readonly Day7Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = """
+        $ cd /
+        $ ls
+        dir a
+        14848514 b.txt
+        8504156 c.dat
+        dir d
+        $ cd a
+        $ ls
+        dir e
+        29116 f
+        2557 g
+        62596 h.lst
+        $ cd e
+        $ ls
+        584 i
+        $ cd ..
+        $ cd ..
+        $ cd d
+        $ ls
+        4060174 j
+        8033020 d.log
+        5626152 d.ext
+        7214296 k
+        """;
 
     [Test]
     public void Part1Example()
@@ -15,7 +39,7 @@ public class Day7SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(95437);
     }
 
     [Test]
