@@ -55,9 +55,17 @@ public class Day7Solver : ISolver
                 ? subDir
                 : throw new InvalidOperationException($"No sub directory called '{subDirName}' in '{Path}'");
 
-        public void AddSubDirectory(string subDirName) => _subDirectories.Add(subDirName, new ElfDir($"{Path}{subDirName}/", this));
+        public ElfDir AddSubDirectory(string subDirName)
+        {
+            _subDirectories.Add(subDirName, new ElfDir($"{Path}{subDirName}/", this));
+            return this;
+        }
 
-        public void AddFile(string fileName, long fileSize) => _files.Add(fileName, fileSize);
+        public ElfDir AddFile(string fileName, long fileSize)
+        {
+            _files.Add(fileName, fileSize);
+            return this;
+        }
 
         public IEnumerable<ElfDir> ListAllDirectories()
         {
@@ -75,74 +83,23 @@ public class Day7Solver : ISolver
     static ElfDir ParseFilesystem(string input)
     {
         var currentDirectory = ElfDir.NewRoot();
-        var inputLines = new Queue<string>(input.ReadLines());
 
-        while (inputLines.Count > 0)
+        foreach (var line in input.ReadLines())
         {
-            var line = inputLines.Dequeue();
             var parts = line.Split(" ");
-
-            if (parts[0] == "$")
+            currentDirectory = parts switch
             {
-                var command = parts[1];
-
-                switch (command)
-                {
-                    case "cd":
-                        currentDirectory = ChangeDirectoryCommand(parts[2], currentDirectory);
-                        break;
-                    case "ls":
-                        ListCommand(inputLines, currentDirectory);
-                        break;
-                    default:
-                        throw new InvalidOperationException("Unexpected command: " + command);
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException("Unexpected line: " + line);
-            }
+                ["$", "cd", "/"] => currentDirectory.Root,
+                ["$", "cd", ".."] => currentDirectory.Parent ??
+                                     throw new InvalidOperationException("Cannot move out one level from root"),
+                ["$", "cd", var dirName] => currentDirectory.GetDirectory(dirName),
+                ["$", "ls"] => currentDirectory,
+                ["dir", var dirName] => currentDirectory.AddSubDirectory(dirName),
+                [var fileSize, var fileName] => currentDirectory.AddFile(fileName, long.Parse(fileSize)),
+                _ => throw new InvalidOperationException("Unexpected line: " + line)
+            };
         }
 
         return currentDirectory.Root;
-    }
-
-    private static ElfDir ChangeDirectoryCommand(string arg, ElfDir currentDirectory)
-    {
-        switch (arg)
-        {
-            case "/":
-                return currentDirectory.Root;
-            case "..":
-                return currentDirectory.Parent ??
-                       throw new InvalidOperationException("Cannot move out one level from root");
-            default:
-                if (string.IsNullOrEmpty(arg))
-                {
-                    throw new InvalidOperationException("Empty change directory argument");
-                }
-
-                return currentDirectory.GetDirectory(arg);
-        }
-    }
-
-    static void ListCommand(Queue<string> inputLines, ElfDir currentDirectory)
-    {
-        while (inputLines.Count > 0 && !inputLines.Peek().StartsWith("$"))
-        {
-            var contents = inputLines.Dequeue().Split(" ");
-
-            if (contents[0] == "dir")
-            {
-                currentDirectory.AddSubDirectory(contents[1]);
-            }
-            else
-            {
-                var fileSize = long.Parse(contents[0]);
-                var fileName = contents[1];
-
-                currentDirectory.AddFile(fileName, fileSize);
-            }
-        }
     }
 }
