@@ -40,7 +40,7 @@ public partial class MainPage
         });
     }
 
-    private async void ChooseDayButtonClickedAsync(object? sender, EventArgs e)
+    private async void ChooseDayTappedAsync(object? sender, TappedEventArgs e)
     {
         const string cancel = "Cancel";
         var dayEntry = await DisplayActionSheet("Choose Day", cancel, null, _dayEntriesToNumbers.Keys.ToArray());

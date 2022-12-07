@@ -42,19 +42,12 @@ public partial class Day5Solver : ISolver<string, string>
     static string[] ParseStacks(string input)
     {
         var lines = input.Split(NewLine);
-        var indexes = lines.Last().Select((chr, charIndex) => (chr, charIndex)).Where(x => x.chr != ' ')
-            .Select(x => (stackIndex: int.Parse(x.chr.ToString()) - 1, x.charIndex)).ToArray();
-        var stacks = Enumerable.Range(0, indexes.Length).Select(_ => new List<char>()).ToArray();
+        var indexes = lines.Last().Select((chr, index) => (chr, index)).Where(x => x.chr != ' ').Select(x => x.index).ToArray();
 
-        foreach (var line in lines[..^1])
-        {
-            foreach (var (stackIndex, crate) in indexes.Select(x => (x.stackIndex, crate: line[x.charIndex])).Where(x => x.crate != ' '))
-            {
-                stacks[stackIndex].Add(crate);
-            }
-        }
-
-        return stacks.Select(stack => string.Concat(stack)).ToArray();
+        return indexes.Select(index => string.Concat(lines[..^1]
+            .Select(line => line[index])
+            .Where(crate => crate != ' ')))
+            .ToArray();
     }
 
     static IEnumerable<Move> ParseMoves(string input) =>
