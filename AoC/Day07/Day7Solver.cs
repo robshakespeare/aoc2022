@@ -71,9 +71,9 @@ public class Day7Solver : ISolver
         {
             yield return this;
 
-            foreach (var subSubDir in _subDirectories.Values.SelectMany(subDir => subDir.ListAllDirectories()))
+            foreach (var subDir in _subDirectories.Values.SelectMany(x => x.ListAllDirectories()))
             {
-                yield return subSubDir;
+                yield return subDir;
             }
         }
 
