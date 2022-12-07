@@ -18,19 +18,15 @@
                 </Label.GestureRecognizers>
             </Label>
 
-            <Button
+            <Label
                 Text="{Binding Title}"
-                Clicked="ChooseDayButtonClickedAsync"
                 SemanticProperties.HeadingLevel="Level2"
-                BorderWidth="0"
-                BackgroundColor="{StaticResource AoCBackground}"
-                FontFamily="Consolas"
-                TextColor="{StaticResource TextBright}"
-                FontSize="18"
-                HorizontalOptions="Start"
-                Padding="0"
-                Margin="0,0,0,16">
-            </Button>
+                Margin="0,0,0,16"
+                TextColor="{StaticResource TextBright}" >
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="ChooseDayTappedAsync" />
+                </Label.GestureRecognizers>
+            </Label>
 
             <app:ResultDisplayView PartNum="1" Result="{Binding Results.Part1Result}" />
 
