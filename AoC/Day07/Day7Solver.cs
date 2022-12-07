@@ -50,7 +50,7 @@ public class Day7Solver : ISolver
 
         public static ElfDir NewRoot() => new("/", null);
 
-        public ElfDir GetDirectory(string subDirName) =>
+        public ElfDir GetSubDirectory(string subDirName) =>
             _subDirectories.TryGetValue(subDirName, out var subDir)
                 ? subDir
                 : throw new InvalidOperationException($"No sub directory called '{subDirName}' in '{Path}'");
@@ -80,26 +80,17 @@ public class Day7Solver : ISolver
         public override string ToString() => Path;
     }
 
-    static ElfDir ParseFilesystem(string input)
-    {
-        var currentDirectory = ElfDir.NewRoot();
-
-        foreach (var line in input.ReadLines())
+    static ElfDir ParseFilesystem(string input) => input.ReadLines()
+        .Select(line => line.Split(" "))
+        .Aggregate(ElfDir.NewRoot(), (currentDirectory, parts) => parts switch
         {
-            var parts = line.Split(" ");
-            currentDirectory = parts switch
-            {
-                ["$", "cd", "/"] => currentDirectory.Root,
-                ["$", "cd", ".."] => currentDirectory.Parent ??
-                                     throw new InvalidOperationException("Cannot move out one level from root"),
-                ["$", "cd", var dirName] => currentDirectory.GetDirectory(dirName),
-                ["$", "ls"] => currentDirectory,
-                ["dir", var dirName] => currentDirectory.AddSubDirectory(dirName),
-                [var fileSize, var fileName] => currentDirectory.AddFile(fileName, long.Parse(fileSize)),
-                _ => throw new InvalidOperationException("Unexpected line: " + line)
-            };
-        }
-
-        return currentDirectory.Root;
-    }
+            ["$", "cd", "/"] => currentDirectory.Root,
+            ["$", "cd", ".."] => currentDirectory.Parent ??
+                                 throw new InvalidOperationException("Cannot move out one level from root"),
+            ["$", "cd", var dirName] => currentDirectory.GetSubDirectory(dirName),
+            ["$", "ls"] => currentDirectory,
+            ["dir", var dirName] => currentDirectory.AddSubDirectory(dirName),
+            [var fileSize, var fileName] => currentDirectory.AddFile(fileName, long.Parse(fileSize)),
+            _ => throw new InvalidOperationException("Unexpected line: " + string.Join(" ", parts))
+        }).Root;
 }
