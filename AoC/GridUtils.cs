@@ -202,4 +202,28 @@ public static class GridUtils
         var line = grid[y];
         return x < 0 || x >= line.Length ? null : line[x];
     }
+
+    /// <summary>
+    /// rs-todo: comment and tests
+    /// </summary>
+    public static char? SafeGet(this string[] grid, Vector2 position)
+    {
+        var y = (int) position.Y;
+
+        if (y < 0 || y >= grid.Length)
+            return null;
+
+        var x = (int) position.X;
+        var line = grid[y];
+        return x < 0 || x >= line.Length ? null : line[x];
+    }
+
+    // rs-todo: to extension method:
+    //public void DisplayGrid(int[][] grid)
+    //{
+    //    foreach (var row in grid)
+    //    {
+    //        Console.WriteLine(string.Concat(row));
+    //    }
+    //}
 }
