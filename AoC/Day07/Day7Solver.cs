@@ -85,8 +85,7 @@ public class Day7Solver : ISolver
         .Aggregate(ElfDir.NewRoot(), (currentDirectory, parts) => parts switch
         {
             ["$", "cd", "/"] => currentDirectory.Root,
-            ["$", "cd", ".."] => currentDirectory.Parent ??
-                                 throw new InvalidOperationException("Cannot move out one level from root"),
+            ["$", "cd", ".."] => currentDirectory.Parent ?? throw new InvalidOperationException("Cannot move out one level from root"),
             ["$", "cd", var dirName] => currentDirectory.GetSubDirectory(dirName),
             ["$", "ls"] => currentDirectory,
             ["dir", var dirName] => currentDirectory.AddSubDirectory(dirName),

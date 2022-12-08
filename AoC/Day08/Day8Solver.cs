@@ -2,15 +2,63 @@ namespace AoC.Day08;
 
 public class Day8Solver : ISolver
 {
-    public string DayName => "";
+    public string DayName => "Treetop Tree House";
 
-    public long? SolvePart1(PuzzleInput input)
+    public long? SolvePart1(PuzzleInput input) => ParseTrees(input).Count(tree => tree.IsVisible);
+
+    public long? SolvePart2(PuzzleInput input) => ParseTrees(input).Max(tree => tree.ScenicScore);
+
+    public record Tree(Vector2 Position, char Height, bool IsVisible, int ScenicScore);
+
+    static IReadOnlyList<Tree> ParseTrees(PuzzleInput input)
     {
-        return null;
+        var grid = input.ReadLines().ToArray();
+
+        var gridWidth = grid[0].Length;
+        var gridHeight = grid.Length;
+
+        return Enumerable.Range(0, gridHeight)
+            .SelectMany(y => Enumerable.Range(0, gridWidth).Select(x =>
+            {
+                var position = new Vector2(x, y);
+                var treeUnderConsideration = grid.Get(position);
+
+                var isVisible = false;
+                var scenicScore = 1;
+
+                foreach (var direction in GridUtils.DirectionsExcludingDiagonal)
+                {
+                    var (treesInDirection, edgeReached) = GetVisibleTreesInDirection(grid, position, direction, treeUnderConsideration);
+                    isVisible |= edgeReached;
+                    scenicScore *= treesInDirection.Count;
+                }
+
+                return new Tree(position, treeUnderConsideration, isVisible, scenicScore);
+            }))
+            .ToArray();
     }
 
-    public long? SolvePart2(PuzzleInput input)
+    static (IReadOnlyList<char> Trees, bool EdgeReached) GetVisibleTreesInDirection(
+        string[] grid,
+        Vector2 position,
+        Vector2 direction,
+        char treeUnderConsideration)
     {
-        return null;
+        var trees = new List<char>();
+
+        bool edgeReached;
+        char currentTree;
+        do
+        {
+            position += direction;
+            edgeReached = !grid.SafeGet(position, out currentTree);
+
+            if (!edgeReached)
+            {
+                trees.Add(currentTree);
+            }
+        } while (!edgeReached && currentTree < treeUnderConsideration);
+
+        return (trees, edgeReached);
     }
 }

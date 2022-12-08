@@ -29,7 +29,7 @@ public partial class ResultDisplayView
     private async void CopyResultEventAsync(object? sender, TappedEventArgs e)
     {
         await Clipboard.Default.SetTextAsync($"{Result.Value}");
-        var toast = Toast.Make($"✔️ Part {PartNum} copied to clipboard", ToastDuration.Short, 18);
+        var toast = Toast.Make($"✔️ Part {PartNum} copied to clipboard", ToastDuration.Short, textSize: 18);
         await toast.Show();
     }
 }
