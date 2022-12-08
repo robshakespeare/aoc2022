@@ -552,4 +552,116 @@ public class GridUtilsTests
             resultString.Should().Be(expectedResultString);
         }
     }
+
+    public class TheRenderGridToConsoleMethod
+    {
+        [Test]
+        public void RenderGridToConsole_Test()
+        {
+            var grid = """
+                30373
+                25512
+                65332
+                33549
+                35390
+                """.ReadLines().ToArray();
+
+            // ACT
+            var result = grid.RenderGridToConsole();
+
+            Console.WriteLine("Hello world, this is for manual eyeballing");
+
+            // ASSERT
+            result.Should().Be("""
+                30373
+                25512
+                65332
+                33549
+                35390
+                """.ReplaceLineEndings());
+        }
+    }
+
+    public class TheGetCharacterMethod
+    {
+        [TestCase(0, 0, 'a')]
+        [TestCase(1, 0, 'b')]
+        [TestCase(2, 0, 'c')]
+        [TestCase(3, 0, 'd')]
+        [TestCase(0, 1, 'e')]
+        [TestCase(1, 1, 'f')]
+        [TestCase(2, 1, 'g')]
+        [TestCase(3, 1, 'h')]
+        public void Get_ReturnsValueAsExpected(float x, float y, char expectedChar)
+        {
+            var grid = """
+                abcd
+                efgh
+                """.ReadLines().ToArray();
+
+            // ACT
+            var actualChar = grid.Get(new Vector2(x, y));
+
+            // ASSERT
+            actualChar.Should().Be(expectedChar);
+        }
+
+        [TestCase(-1, 0)]
+        [TestCase(0, -1)]
+        [TestCase(4, 0)]
+        [TestCase(0, 2)]
+        [TestCase(-99, -99)]
+        [TestCase(99, 99)]
+        [TestCase(-10, 10)]
+        [TestCase(10, -10)]
+        public void Get_ThrowsWhenExpected(float x, float y)
+        {
+            var grid = """
+                abcd
+                efgh
+                """.ReadLines().ToArray();
+
+            var action = () => grid.Get(new Vector2(x, y));
+
+            // ACT & ASSERT
+            action.Should().Throw<IndexOutOfRangeException>();
+        }
+    }
+
+    public class TheSafeGetCharacterMethod
+    {
+        [TestCase(0, 0, true, 'a')]
+        [TestCase(1, 0, true, 'b')]
+        [TestCase(2, 0, true, 'c')]
+        [TestCase(3, 0, true, 'd')]
+        [TestCase(0, 1, true, 'e')]
+        [TestCase(1, 1, true, 'f')]
+        [TestCase(2, 1, true, 'g')]
+        [TestCase(3, 1, true, 'h')]
+        [TestCase(-1, 0, false, (char)0)]
+        [TestCase(0, -1, false, (char)0)]
+        [TestCase(4, 0, false, (char)0)]
+        [TestCase(0, 2, false, (char)0)]
+        [TestCase(-99, -99, false, (char)0)]
+        [TestCase(99, 99, false, (char)0)]
+        [TestCase(-10, 10, false, (char)0)]
+        [TestCase(10, -10, false, (char)0)]
+        public void SafeGet_ReturnsValueAsExpected(float x, float y, bool expectedIsRetrieved, char expectedChar)
+        {
+            var grid = """
+                abcd
+                efgh
+                """.ReadLines().ToArray();
+
+            // ACT
+            var actualIsRetrieved = grid.SafeGet(new Vector2(x, y), out var actualChar);
+
+            // ASSERT
+            using (new AssertionScope())
+            {
+                actualIsRetrieved.Should().Be(expectedIsRetrieved);
+                actualChar.Should().Be(expectedChar);
+            }
+        }
+    }
 }

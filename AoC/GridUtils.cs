@@ -40,7 +40,7 @@ public static class GridUtils
     };
 
     /// <summary>
-    /// None diagonal directions in a 2D plane (i.e. North, East, South, West).
+    /// None diagonal directions in a 2D plane (i.e. North, West, East, South).
     /// </summary>
     public static readonly Vector2[] DirectionsExcludingDiagonal = {North, West, East, South};
 
@@ -204,26 +204,52 @@ public static class GridUtils
     }
 
     /// <summary>
-    /// rs-todo: comment and tests
+    /// Gets the item from the grid at the specified position
+    /// NOTE: Throws exception if that position is out of the bounds of the grid, use <see cref="SafeGet"/> if the position is not yet checked.
     /// </summary>
-    public static char? SafeGet(this string[] grid, Vector2 position)
+    /// <exception cref="IndexOutOfRangeException" />
+    public static char Get(this string[] grid, Vector2 position) => grid[(int) position.Y][(int) position.X];
+
+    /// <summary>
+    /// Gets the character from the grid at the specified position, or null if that position is out of the bounds of the grid.
+    /// </summary>
+    public static bool SafeGet(this string[] grid, Vector2 position, out char chr)
     {
         var y = (int) position.Y;
 
         if (y < 0 || y >= grid.Length)
-            return null;
+        {
+            chr = default;
+            return false;
+        }
 
         var x = (int) position.X;
         var line = grid[y];
-        return x < 0 || x >= line.Length ? null : line[x];
+
+        if (x < 0 || x >= line.Length)
+        {
+            chr = default;
+            return false;
+        }
+
+        chr = line[x];
+        return true;
     }
 
-    // rs-todo: to extension method:
-    //public void DisplayGrid(int[][] grid)
-    //{
-    //    foreach (var row in grid)
-    //    {
-    //        Console.WriteLine(string.Concat(row));
-    //    }
-    //}
+    /// <summary>
+    /// Renders the specified grid of characters to a string and returns that string.
+    /// </summary>
+    public static string RenderGridToString(this IEnumerable<IEnumerable<char>> grid) =>
+        string.Join(Environment.NewLine, grid.Select(line => string.Concat(line)));
+
+    /// <summary>
+    /// Renders the specified grid of characters to the console.
+    /// </summary>
+    public static string RenderGridToConsole(this IEnumerable<IEnumerable<char>> grid)
+    {
+        var renderedGrid = grid.RenderGridToString();
+        Console.WriteLine(renderedGrid);
+        Console.WriteLine();
+        return renderedGrid;
+    }
 }
