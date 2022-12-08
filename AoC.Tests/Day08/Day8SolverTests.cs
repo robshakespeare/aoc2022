@@ -6,7 +6,13 @@ public class Day8SolverTests
 {
     private readonly Day8Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = """
+        30373
+        25512
+        65332
+        33549
+        35390
+        """;
 
     [Test]
     public void Part1Example()
@@ -15,7 +21,7 @@ public class Day8SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(21);
     }
 
     [Test]
@@ -25,6 +31,8 @@ public class Day8SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
+        part1Result.Should().NotBe(625);
+        part1Result.Should().NotBe(620);
         part1Result.Should().Be(null);
     }
 
