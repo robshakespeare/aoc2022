@@ -1,5 +1,4 @@
 namespace AoC.Day08;
-using MoreLinq;
 
 public class Day8Solver : ISolver
 {
@@ -18,45 +17,48 @@ public class Day8Solver : ISolver
         var gridWidth = grid[0].Length;
         var gridHeight = grid.Length;
 
-        var trees = new List<Tree>();
-
-        for (var y = 0; y < gridHeight; y++)
-        {
-            for (var x = 0; x < gridWidth; x++)
+        return Enumerable.Range(0, gridHeight)
+            .SelectMany(y => Enumerable.Range(0, gridWidth).Select(x =>
             {
-                var treeHeight = grid[y][x];
                 var position = new Vector2(x, y);
-
-                bool IsShorter(char otherTreeHeight) => otherTreeHeight < treeHeight;
-                bool IsTallerOrEqual(char otherTreeHeight) => otherTreeHeight >= treeHeight;
+                var treeUnderConsideration = grid.Get(position);
 
                 var isVisible = false;
                 var scenicScore = 1;
 
                 foreach (var direction in GridUtils.DirectionsExcludingDiagonal)
                 {
-                    var dirTrees = GetTreesInDirection(grid, new Vector2(x, y), direction);
-
-                    isVisible |= dirTrees.TakeWhile(IsShorter).Count() == dirTrees.Count;
-                    scenicScore *= dirTrees.TakeUntil(IsTallerOrEqual).Count();
+                    var (treesInDirection, edgeReached) = GetVisibleTreesInDirection(grid, position, direction, treeUnderConsideration);
+                    isVisible |= edgeReached;
+                    scenicScore *= treesInDirection.Count;
                 }
 
-                trees.Add(new Tree(position, treeHeight, isVisible, scenicScore));
-            }
-        }
-
-        return trees;
+                return new Tree(position, treeUnderConsideration, isVisible, scenicScore);
+            }))
+            .ToArray();
     }
 
-    static IReadOnlyList<char> GetTreesInDirection(string[] grid, Vector2 position, Vector2 direction)
+    static (IReadOnlyList<char> Trees, bool EdgeReached) GetVisibleTreesInDirection(
+        string[] grid,
+        Vector2 position,
+        Vector2 direction,
+        char treeUnderConsideration)
     {
         var trees = new List<char>();
-        char? tree;
-        while ((tree = grid.SafeGet(position += direction)) != null)
-        {
-            trees.Add(tree.Value);
-        }
 
-        return trees;
+        bool edgeReached;
+        char currentTree;
+        do
+        {
+            position += direction;
+            edgeReached = !grid.SafeGet(position, out currentTree);
+
+            if (!edgeReached)
+            {
+                trees.Add(currentTree);
+            }
+        } while (!edgeReached && currentTree < treeUnderConsideration);
+
+        return (trees, edgeReached);
     }
 }
