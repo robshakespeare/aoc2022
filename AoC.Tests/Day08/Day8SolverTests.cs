@@ -33,7 +33,7 @@ public class Day8SolverTests
         // ASSERT
         part1Result.Should().NotBe(625);
         part1Result.Should().NotBe(620);
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(1688);
     }
 
     [Test]
@@ -43,7 +43,7 @@ public class Day8SolverTests
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(8);
     }
 
     [Test]
@@ -53,6 +53,6 @@ public class Day8SolverTests
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(410400);
     }
 }
