@@ -205,15 +205,15 @@ public static class GridUtils
 
     /// <summary>
     /// Gets the item from the grid at the specified position
-    /// NOTE: Throws exception if the position is out of the bounds of the grid, use <see cref="SafeGet"/> if the position is not yet checked.
+    /// NOTE: Throws exception if the position is out of the bounds of the grid, use <see cref="TryGet"/> if the position is not yet checked.
     /// </summary>
     /// <exception cref="IndexOutOfRangeException" />
     public static char Get(this string[] grid, Vector2 position) => grid[(int) position.Y][(int) position.X];
 
     /// <summary>
-    /// Gets the character from the grid at the specified position, or null if that position is out of the bounds of the grid.
+    /// Gets the character from the grid at the specified position and returns `true`, or returns `false` if that position is out of the bounds of the grid.
     /// </summary>
-    public static bool SafeGet(this string[] grid, Vector2 position, out char chr)
+    public static bool TryGet(this string[] grid, Vector2 position, out char chr)
     {
         var y = (int) position.Y;
 
