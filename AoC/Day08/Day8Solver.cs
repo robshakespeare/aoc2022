@@ -10,7 +10,7 @@ public class Day8Solver : ISolver
 
     public record Tree(Vector2 Position, char Height, bool IsVisible, int ScenicScore);
 
-    static IReadOnlyList<Tree> ParseTrees(PuzzleInput input)
+    static IEnumerable<Tree> ParseTrees(PuzzleInput input)
     {
         var grid = input.ReadLines().ToArray();
 
@@ -34,8 +34,7 @@ public class Day8Solver : ISolver
                 }
 
                 return new Tree(position, treeUnderConsideration, isVisible, scenicScore);
-            }))
-            .ToArray();
+            }));
     }
 
     static (IReadOnlyList<char> Trees, bool EdgeReached) GetVisibleTreesInDirection(
