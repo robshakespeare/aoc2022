@@ -1,6 +1,6 @@
 namespace AoC.Day09;
 
-public class Day9Solver : ISolver
+public class Day9Solver : ISolver, IVisualize
 {
     public string DayName => "Rope Bridge";
 
@@ -12,27 +12,24 @@ public class Day9Solver : ISolver
     /// Simulates the complete hypothetical series of motions, for the specified rope length.
     /// Returns the number of positions that the tail of the rope visits at least once.
     /// </summary>
-    static long SimulateRopeMovement(PuzzleInput input, int numKnotsInRope)
+    static long SimulateRopeMovement(PuzzleInput input, int numKnotsInRope, Action<Vector2[]>? update = null)
     {
-        var head = new Vector2(0, 0);
-        var otherKnots = Enumerable.Range(1, numKnotsInRope - 1).Select(_ => new Vector2(0, 0)).ToArray();
+        var knots = Enumerable.Range(0, numKnotsInRope).Select(_ => new Vector2(0, 0)).ToArray();
         var tailVisited = new HashSet<Vector2>();
 
         foreach (var (dir, amount) in ParseMovements(input))
         {
             for (var move = 0; move < amount; move++)
             {
-                // Move the head
-                head += dir;
-
-                // And now use the process to move the other knots in turn, using each previous knot as the "base" reference
-                var prevKnot = head;
-                for (var knot = 0; knot < otherKnots.Length; knot++)
+                // Move the head, and then use the process to move the other knots in turn, using each previous knot as the "base" reference
+                var prevKnot = knots[0] += dir;
+                for (var knotIdx = 1; knotIdx < knots.Length; knotIdx++)
                 {
-                    otherKnots[knot] = prevKnot = MoveKnot(otherKnots[knot], prevKnot);
+                    knots[knotIdx] = prevKnot = MoveKnot(knots[knotIdx], prevKnot);
                 }
 
-                tailVisited.Add(otherKnots[^1]);
+                tailVisited.Add(knots[^1]);
+                update?.Invoke(knots);
             }
         }
 
@@ -43,17 +40,12 @@ public class Day9Solver : ISolver
     {
         if (Are2StepsAway(prevKnot, knot) && AreInSameRowOrColumn(prevKnot, knot))
         {
-            // Move ONE step in that direction to keep up
-            return knot + Vector2.Normalize(prevKnot - knot);
+            return knot + Vector2.Normalize(prevKnot - knot); // Move ONE step in that direction to keep up
         }
 
         if (!AreTouching(prevKnot, knot) && !AreInSameRowOrColumn(prevKnot, knot))
         {
-            // Move ONE step DIAGONALLY to keep up
-            var changeX = prevKnot.X > knot.X ? 1 : -1;
-            var changeY = prevKnot.Y > knot.Y ? 1 : -1;
-            var diagonal = new Vector2(changeX, changeY);
-            return knot + diagonal;
+            return knot + Vector2.Clamp(prevKnot - knot, new(-1, -1), new(1, 1)); // Move ONE step DIAGONALLY to keep up
         }
 
         return knot;
@@ -89,4 +81,12 @@ public class Day9Solver : ISolver
                     _ => throw new InvalidOperationException("Invalid dir: " + parts[0])
                 },
                 int.Parse(parts[1])));
+
+    public IReadOnlyCollection<string> GetVisualization(PuzzleInput input)
+    {
+        var frames = new List<string>();
+        SimulateRopeMovement(input, 10, knots =>
+            frames.Add(knots.Select((v, i) => (v, i)).Reverse().ToStringGrid(x => x.v, x => x.i == 0 ? 'H' : $"{x.i}"[0], ' ').RenderGridToString()));
+        return frames;
+    }
 }

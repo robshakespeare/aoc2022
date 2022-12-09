@@ -27,7 +27,7 @@
     private IReadOnlyList<Pixel>? _pixels;
     private IReadOnlyList<IReadOnlyList<Pixel>>? _grid;
 
-    private Timer _tick = new(50);
+    private readonly Timer _tick = new(50);
 
     protected override void OnInitialized()
     {

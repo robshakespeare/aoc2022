@@ -1,0 +1,43 @@
+﻿@if (_frame != null)
+{
+    <pre>
+        <code class="hilight">
+            @(_frame)
+        </code>
+    </pre>
+}
+
+@code {
+
+    [Parameter]
+    public IVisualize? Visualizer { get; set; }
+    
+    private string? _frame;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _frame = null;
+
+        if (Visualizer != null)
+        {
+            var visualizer = Visualizer;
+            _frame = "Building visualization...";
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(Visualizer.FrameDelayMilliseconds);
+
+            var frames = Visualizer.GetVisualization();
+
+            foreach (var frame in frames)
+            {
+                if (visualizer != Visualizer)
+                {
+                    return; // Exit out if our visualizer has changed, so we don't keep showing the old frames
+                }
+
+                _frame = frame;
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(Visualizer.FrameDelayMilliseconds);
+            }
+        }
+    }
+}
