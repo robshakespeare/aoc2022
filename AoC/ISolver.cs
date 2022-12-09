@@ -27,6 +27,15 @@ public interface ISolver<out TOutputPart1, out TOutputPart2> : ISolverBase
     object? ISolverBase.SolvePart2AsObject(PuzzleInput input) => SolvePart2(input);
 }
 
+public interface IVisualize : ISolverBase
+{
+    public IReadOnlyCollection<string> GetVisualization(PuzzleInput input);
+
+    public IReadOnlyCollection<string> GetVisualization() => GetVisualization(this.GetInputLoader().PuzzleInputPart2);
+
+    public int FrameDelayMilliseconds => 10;
+}
+
 public static class SolverBaseExtensions
 {
     private static readonly Dictionary<Type, int> DayNumberCache = new();
@@ -38,7 +47,7 @@ public static class SolverBaseExtensions
     public static string GetTitle(this ISolverBase solver) =>
         $"--- Day {solver.GetDayNumber()}{(solver.DayName is null or "" ? "" : ": ")}{solver.DayName} ---";
 
-    private static InputLoader GetInputLoader(this ISolverBase solver) =>
+    internal static InputLoader GetInputLoader(this ISolverBase solver) =>
         InputLoaderCache.GetOrAdd(solver.GetType(), () => new InputLoader(solver));
 
     public static async Task RunAsync(
