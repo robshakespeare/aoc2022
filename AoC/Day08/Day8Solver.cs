@@ -50,7 +50,7 @@ public class Day8Solver : ISolver
         do
         {
             position += direction;
-            edgeReached = !grid.SafeGet(position, out currentTree);
+            edgeReached = !grid.TryGet(position, out currentTree);
 
             if (!edgeReached)
             {

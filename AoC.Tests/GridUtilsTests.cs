@@ -628,7 +628,7 @@ public class GridUtilsTests
         }
     }
 
-    public class TheSafeGetCharacterMethod
+    public class TheTryGetCharacterMethod
     {
         [TestCase(0, 0, true, 'a')]
         [TestCase(1, 0, true, 'b')]
@@ -646,7 +646,7 @@ public class GridUtilsTests
         [TestCase(99, 99, false, (char)0)]
         [TestCase(-10, 10, false, (char)0)]
         [TestCase(10, -10, false, (char)0)]
-        public void SafeGet_ReturnsValueAsExpected(float x, float y, bool expectedIsRetrieved, char expectedChar)
+        public void TryGet_ReturnsValueAsExpected(float x, float y, bool expectedIsRetrieved, char expectedChar)
         {
             var grid = """
                 abcd
@@ -654,7 +654,7 @@ public class GridUtilsTests
                 """.ReadLines().ToArray();
 
             // ACT
-            var actualIsRetrieved = grid.SafeGet(new Vector2(x, y), out var actualChar);
+            var actualIsRetrieved = grid.TryGet(new Vector2(x, y), out var actualChar);
 
             // ASSERT
             using (new AssertionScope())
