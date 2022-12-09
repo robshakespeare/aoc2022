@@ -37,13 +37,30 @@ R 2";
     }
 
     [Test]
-    public void Part2Example()
+    public void Part2Example1()
     {
         // ACT
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(1);
+    }
+
+    [Test]
+    public void Part2Example2()
+    {
+        // ACT
+        var part2ExampleResult = _sut.SolvePart2(@"R 5
+U 8
+L 8
+D 3
+R 17
+D 10
+L 25
+U 20");
+
+        // ASSERT
+        part2ExampleResult.Should().Be(36);
     }
 
     [Test]
@@ -53,6 +70,6 @@ R 2";
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(2604);
     }
 }
