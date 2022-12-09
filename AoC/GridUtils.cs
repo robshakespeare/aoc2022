@@ -128,15 +128,35 @@ public static class GridUtils
         Func<T, char> charSelector,
         char defaultChar)
     {
-        return items.ToGrid(positionSelector, charSelector, _ => defaultChar)
-            .Select(line => string.Concat(line))
-            .ToArray();
+        items = items.ToArray();
+
+        var topLeft = new Vector2(items.Min(p => positionSelector(p).X), items.Min(p => positionSelector(p).Y));
+        var bottomRight = new Vector2(items.Max(p => positionSelector(p).X), items.Max(p => positionSelector(p).Y));
+
+        var size = bottomRight - topLeft + Vector2.One;
+        var width = (int) size.X;
+        var height = (int) size.Y;
+
+        var grid = Enumerable.Range(0, height).Select(_ =>
+        {
+            var line = new char[width];
+            Array.Fill(line, defaultChar);
+            return line;
+        }).ToArray();
+
+        foreach (var item in items)
+        {
+            var pos = positionSelector(item) - topLeft;
+            grid[(int) pos.Y][(int) pos.X] = charSelector(item);
+        }
+
+        return grid.Select(line => string.Concat(line)).ToArray();
     }
 
     /// <summary>
     /// Builds and returns 2D grid of items from the specified list of items that have a position.
     /// </summary>
-    public static IReadOnlyList<IReadOnlyList<TOut>> ToGrid<TIn, TOut>(
+    public static IReadOnlyList<IReadOnlyList<TOut>> ToGrid<TIn, TOut>( // rs-todo: tests
         this IEnumerable<TIn> items,
         Func<TIn, Vector2> positionSelector,
         Func<TIn, TOut> resultItemSelector,
@@ -239,13 +259,12 @@ public static class GridUtils
     /// <summary>
     /// Renders the specified grid of characters to a string and returns that string.
     /// </summary>
-    public static string RenderGridToString(this IEnumerable<IEnumerable<char>> grid) =>
-        string.Join(Environment.NewLine, grid.Select(line => string.Concat(line)));
+    public static string RenderGridToString(this IEnumerable<string> grid) => string.Join(Environment.NewLine, grid);
 
     /// <summary>
     /// Renders the specified grid of characters to the console.
     /// </summary>
-    public static string RenderGridToConsole(this IEnumerable<IEnumerable<char>> grid)
+    public static string RenderGridToConsole(this IEnumerable<string> grid)
     {
         var renderedGrid = grid.RenderGridToString();
         Console.WriteLine(renderedGrid);
