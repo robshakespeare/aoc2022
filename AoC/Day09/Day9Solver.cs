@@ -86,7 +86,7 @@ public class Day9Solver : ISolver, IVisualize
     {
         var frames = new List<string>();
         SimulateRopeMovement(input, 10, knots =>
-            frames.Add(knots.Select((v, i) => (v, i)).Reverse().ToStringGrid(x => x.v, x => x.i == 0 ? 'H' : $"{x.i}"[0], ' ').RenderGridToString()));
+            frames.Add(knots.Select((v, i) => (v, i)).Reverse().ToStringGrid(x => x.v, x => x.i == 0 ? 'H' : (char) ('0' + x.i), ' ').RenderGridToString()));
         return frames;
     }
 }

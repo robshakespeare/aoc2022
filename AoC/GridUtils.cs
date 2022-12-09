@@ -116,7 +116,7 @@ public static class GridUtils
             newPixels[lp.Y.Round()][lp.X.Round()] = c;
         }
 
-        return newPixels.Select(newLine => new string(newLine)).ToArray();
+        return newPixels.Select(newLine => string.Concat(newLine)).ToArray();
     }
 
     /// <summary>
@@ -129,7 +129,7 @@ public static class GridUtils
         char defaultChar)
     {
         return items.ToGrid(positionSelector, charSelector, _ => defaultChar)
-            .Select(line => new string(line.ToArray()))
+            .Select(line => string.Concat(line))
             .ToArray();
     }
 
