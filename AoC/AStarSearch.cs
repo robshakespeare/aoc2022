@@ -17,7 +17,7 @@ public class AStarSearch
         public int TotalCost { get; }
         public Node CurrentNode { get; }
 
-        public Path Append(Node node) => new(Nodes.Concat(new[] { node }), node, TotalCost + node.Cost);
+        public Path Append(Node node) => new(Nodes.Append(node), node, TotalCost + node.Cost);
 
         public static Path Begin(Node begin) => new(new[] { begin }, begin, 0);
     }
