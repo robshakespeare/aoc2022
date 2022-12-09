@@ -6,7 +6,14 @@ public class Day9SolverTests
 {
     private readonly Day9Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = @"R 4
+U 4
+L 3
+D 1
+R 4
+D 1
+L 5
+R 2";
 
     [Test]
     public void Part1Example()
@@ -15,7 +22,7 @@ public class Day9SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(13);
     }
 
     [Test]
@@ -25,7 +32,8 @@ public class Day9SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().NotBe(7015);
+        part1Result.Should().Be(6464);
     }
 
     [Test]
