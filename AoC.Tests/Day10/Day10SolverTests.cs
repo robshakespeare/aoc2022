@@ -36,7 +36,7 @@ public class Day10SolverTests
             #####.....#####.....#####.....#####.....
             ######......######......######......####
             #######.......#######.......#######.....
-            """.ReplaceLineEndings();
+            """.Replace('.', ' ').ReplaceLineEndings();
 
         // ACT
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
@@ -55,7 +55,7 @@ public class Day10SolverTests
             #....#..#.#..#.###..#..#..#...#....#..#.
             #....#..#.#..#.#.#..#..#.#....#..#.#..#.
             #....###...##..#..#.#..#.####..##..#..#.
-            """.ReplaceLineEndings();
+            """.Replace('.', ' ').ReplaceLineEndings();
 
         // ACT
         var part2Result = _sut.SolvePart2();
