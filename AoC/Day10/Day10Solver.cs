@@ -6,7 +6,7 @@ public class Day10Solver : ISolver<long, string>
 
     public long SolvePart1(PuzzleInput input) => EnumerateOutputs(input)
         .Where(output => (output.CycleNumber + 20) % 40 == 0)
-        .Aggregate(0L, (agg, cur) => agg + cur.CycleNumber * cur.RegisterX);
+        .Aggregate(0, (agg, cur) => agg + cur.CycleNumber * cur.RegisterX);
 
     public string SolvePart2(PuzzleInput input)
     {
@@ -27,28 +27,26 @@ public class Day10Solver : ISolver<long, string>
         return string.Join(Environment.NewLine, grid.Select(line => string.Concat(line)));
     }
 
-    static IEnumerable<(long CycleNumber, long RegisterX)> EnumerateOutputs(PuzzleInput input)
+    static IEnumerable<(int CycleNumber, int RegisterX)> EnumerateOutputs(PuzzleInput input)
     {
         var registerX = 1;
         var cycleNumber = 0;
-        foreach (var instruction in ParseInstructions(input))
+        foreach (var (cycleLength, registerXDelta) in ParseInstructions(input))
         {
-            for (var tick = 0; tick < instruction.CycleLength; tick++)
+            for (var tick = 0; tick < cycleLength; tick++)
             {
                 yield return (++cycleNumber, registerX);
             }
 
-            registerX += instruction.RegisterXDelta;
+            registerX += registerXDelta;
         }
     }
 
-    record Instruction(int RegisterXDelta, int CycleLength);
-
-    static IEnumerable<Instruction> ParseInstructions(PuzzleInput input) => input.ReadLines()
+    static IEnumerable<(int CycleLength, int RegisterXDelta)> ParseInstructions(PuzzleInput input) => input.ReadLines()
         .Select(line => line.Split(" "))
         .Select(parts => parts switch
         {
-            ["addx", var amount] => new Instruction(int.Parse(amount), 2),
-            _ => new Instruction(0, 1)
+            ["addx", var amount] => (2, int.Parse(amount)),
+            _ => (1, 0)
         });
 }
