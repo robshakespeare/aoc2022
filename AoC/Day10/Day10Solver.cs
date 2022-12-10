@@ -4,7 +4,7 @@ public class Day10Solver : ISolver<long, string>
 {
     public string DayName => "Cathode-Ray Tube";
 
-    public long SolvePart1(PuzzleInput input) => ParseAndProcessInstructions(input)
+    public long SolvePart1(PuzzleInput input) => EnumerateOutputs(input)
         .Where(output => (output.CycleNumber + 20) % 40 == 0)
         .Aggregate(0L, (agg, cur) => agg + cur.CycleNumber * cur.RegisterX);
 
@@ -16,7 +16,7 @@ public class Day10Solver : ISolver<long, string>
         var grid = Enumerable.Range(0, height).Select(_ => new char[width]).ToArray();
 
         // Process the commands. Assume all inputs produce 240 cycles.
-        foreach (var (cycleNumber, registerX) in ParseAndProcessInstructions(input))
+        foreach (var (cycleNumber, registerX) in EnumerateOutputs(input))
         {
             var x = (cycleNumber - 1) % width;
             var y = (cycleNumber - 1) / width;
@@ -27,7 +27,7 @@ public class Day10Solver : ISolver<long, string>
         return string.Join(Environment.NewLine, grid.Select(line => string.Concat(line)));
     }
 
-    static IEnumerable<(long CycleNumber, long RegisterX)> ParseAndProcessInstructions(PuzzleInput input)
+    static IEnumerable<(long CycleNumber, long RegisterX)> EnumerateOutputs(PuzzleInput input)
     {
         var registerX = 1;
         var cycleNumber = 0;
@@ -42,14 +42,13 @@ public class Day10Solver : ISolver<long, string>
         }
     }
 
-    public record Instruction(string Command, int RegisterXDelta, int CycleLength);
+    record Instruction(int RegisterXDelta, int CycleLength);
 
     static IEnumerable<Instruction> ParseInstructions(PuzzleInput input) => input.ReadLines()
         .Select(line => line.Split(" "))
         .Select(parts => parts switch
         {
-            ["addx", var amount] => new Instruction("addx", int.Parse(amount), 2),
-            ["noop"] => new Instruction("noop", 0, 1),
-            _ => throw new InvalidOperationException("Invalid command: " + parts[0])
+            ["addx", var amount] => new Instruction(int.Parse(amount), 2),
+            _ => new Instruction(0, 1)
         });
 }
