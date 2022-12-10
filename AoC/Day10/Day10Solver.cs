@@ -4,17 +4,9 @@ public class Day10Solver : ISolver<long, string>
 {
     public string DayName => "Cathode-Ray Tube";
 
-    public long SolvePart1(PuzzleInput input)
-    {
-        foreach (var output in ParseAndProcessInstructions(input))
-        {
-            Console.WriteLine(output);
-        }
-
-        return ParseAndProcessInstructions(input)
-            .Where(output => (output.CycleNumber + 20) % 40 == 0)
-            .Aggregate(0L, (agg, cur) => agg + cur.CycleNumber * cur.RegisterX);
-    }
+    public long SolvePart1(PuzzleInput input) => ParseAndProcessInstructions(input)
+        .Where(output => (output.CycleNumber + 20) % 40 == 0)
+        .Aggregate(0L, (agg, cur) => agg + cur.CycleNumber * cur.RegisterX);
 
     public string SolvePart2(PuzzleInput input)
     {
@@ -23,7 +15,7 @@ public class Day10Solver : ISolver<long, string>
 
         var grid = Enumerable.Range(0, height).Select(_ => new char[width]).ToArray();
 
-        // Process the commands. Assume inputs produce 240 cycles.
+        // Process the commands. Assume all inputs produce 240 cycles.
         foreach (var (cycleNumber, registerX) in ParseAndProcessInstructions(input))
         {
             var x = (cycleNumber - 1) % width;
@@ -43,8 +35,7 @@ public class Day10Solver : ISolver<long, string>
         {
             for (var tick = 0; tick < instruction.CycleLength; tick++)
             {
-                cycleNumber++;
-                yield return (cycleNumber, registerX);
+                yield return (++cycleNumber, registerX);
             }
 
             registerX += instruction.RegisterXDelta;
