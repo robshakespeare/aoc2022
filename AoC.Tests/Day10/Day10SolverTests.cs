@@ -29,21 +29,39 @@ public class Day10SolverTests
     [Test]
     public void Part2Example()
     {
+        var expected = """
+            ##..##..##..##..##..##..##..##..##..##..
+            ###...###...###...###...###...###...###.
+            ####....####....####....####....####....
+            #####.....#####.....#####.....#####.....
+            ######......######......######......####
+            #######.......#######.......#######.....
+            """.ReplaceLineEndings();
+
         // ACT
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(expected);
     }
 
     [Test]
     public void Part2ReTest()
     {
+        var expected = """
+            ####.###..#..#.###..#..#.####..##..#..#.
+            #....#..#.#..#.#..#.#..#....#.#..#.#..#.
+            ###..###..#..#.#..#.####...#..#....####.
+            #....#..#.#..#.###..#..#..#...#....#..#.
+            #....#..#.#..#.#.#..#..#.#....#..#.#..#.
+            #....###...##..#..#.#..#.####..##..#..#.
+            """.ReplaceLineEndings();
+
         // ACT
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(expected);
     }
 
     private const string ExampleInput = """
