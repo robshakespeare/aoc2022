@@ -29,11 +29,9 @@ public interface ISolver<out TOutputPart1, out TOutputPart2> : ISolverBase
 
 public interface IVisualize : ISolverBase
 {
-    public IReadOnlyCollection<string> GetVisualization(PuzzleInput input);
+    public IAsyncEnumerable<string> GetVisualizationAsync(PuzzleInput input);
 
-    public IReadOnlyCollection<string> GetVisualization() => GetVisualization(this.GetInputLoader().PuzzleInputPart2);
-
-    public int FrameDelayMilliseconds => 10;
+    public IAsyncEnumerable<string> GetVisualizationAsync() => GetVisualizationAsync(this.GetInputLoader().PuzzleInputPart2);
 }
 
 public static class SolverBaseExtensions

@@ -664,4 +664,86 @@ public class GridUtilsTests
             }
         }
     }
+
+    public class TheRenderWorldToViewportMethod
+    {
+        public record ExampleWorldItem(Vector2 Position, char Char);
+
+        [Test]
+        public void RenderWorldToViewport_DoesCenterWorldInViewport()
+        {
+            var input = new ExampleWorldItem[]
+            {
+                new(new(23, 23), 'M'),
+                new(new(22, 21), 'A'),
+                new(new(25, 24), 'B')
+            };
+
+            // ACT
+            var result = input.RenderWorldToViewport(x => x.Position, x => x.Char, '.', viewportWidth: 8, viewportHeight: 6);
+
+            Console.WriteLine(result);
+
+            // ASSERT
+            result.Should().Be("""
+                ........
+                ..A.....
+                ........
+                ...M....
+                .....B..
+                ........
+                """.ReplaceLineEndings());
+        }
+
+        [Test]
+        public void RenderWorldToViewport_CanAdditionallyRenderCenterOfWorld()
+        {
+            var input = new ExampleWorldItem[]
+            {
+                new(new(-1, -1), '*'),
+                new(new(1, 1), '@')
+            };
+
+            // ACT
+            var result = input.RenderWorldToViewport(x => x.Position, x => x.Char, '.', viewportWidth: 5, viewportHeight: 5, centerChar: 'X');
+
+            Console.WriteLine(result);
+
+            // ASSERT
+            result.Should().Be("""
+                .....
+                .*...
+                ..X..
+                ...@.
+                .....
+                """.ReplaceLineEndings());
+        }
+
+        [Test]
+        public void RenderWorldToViewport_DoesClipExtremitiesOfWorld()
+        {
+            var input = new ExampleWorldItem[]
+            {
+                new(new(-100, -100), '*'),
+                new(new(0, 0), '['),
+                new(new(1, 0), ']'),
+                new(new(0, 1), '{'),
+                new(new(1, 1), '}'),
+                new(new(100, 100), '*'),
+            };
+
+            // ACT
+            var result = input.RenderWorldToViewport(x => x.Position, x => x.Char, '_', viewportWidth: 4, viewportHeight: 4);
+
+            Console.WriteLine(result);
+
+            // ASSERT
+            result.Should().Be("""
+                ____
+                _[]_
+                _{}_
+                ____
+                """.ReplaceLineEndings());
+        }
+    }
 }

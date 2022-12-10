@@ -239,17 +239,70 @@ public static class GridUtils
     /// <summary>
     /// Renders the specified grid of characters to a string and returns that string.
     /// </summary>
-    public static string RenderGridToString(this IEnumerable<IEnumerable<char>> grid) =>
-        string.Join(Environment.NewLine, grid.Select(line => string.Concat(line)));
+    public static string RenderGridToString(this IEnumerable<string> grid) => string.Join(Environment.NewLine, grid);
 
     /// <summary>
     /// Renders the specified grid of characters to the console.
     /// </summary>
-    public static string RenderGridToConsole(this IEnumerable<IEnumerable<char>> grid)
+    public static string RenderGridToConsole(this IEnumerable<string> grid)
     {
         var renderedGrid = grid.RenderGridToString();
         Console.WriteLine(renderedGrid);
         Console.WriteLine();
         return renderedGrid;
+    }
+
+    /// <summary>
+    /// Builds and returns a 2D view within the specified world of items that have a position and character.
+    /// </summary>
+    public static string RenderWorldToViewport<T>(
+        this IEnumerable<T> items,
+        Func<T, Vector2> positionSelector,
+        Func<T, char> charSelector,
+        char defaultChar,
+        int viewportWidth = 100,
+        int viewportHeight = 25,
+        char? centerChar = null)
+    {
+        items = items.ToArray();
+
+        var worldTopLeft = new Vector2(items.Min(p => positionSelector(p).X), items.Min(p => positionSelector(p).Y));
+        var worldBottomRight = new Vector2(items.Max(p => positionSelector(p).X), items.Max(p => positionSelector(p).Y));
+        var worldSize = worldBottomRight - worldTopLeft + Vector2.One;
+        var worldMiddle = worldTopLeft + worldSize / 2;
+
+        var viewSize = new Vector2(viewportWidth, viewportHeight);
+        var viewMiddle = Vector2.Zero + viewSize / 2;
+
+        var translateWorldToView = viewMiddle - worldMiddle;
+
+        var grid = Enumerable.Range(0, viewportHeight).Select(_ =>
+        {
+            var line = new char[viewportWidth];
+            Array.Fill(line, defaultChar);
+            return line;
+        }).ToArray();
+
+        void RenderPixel(Vector2 worldPosition, char chr)
+        {
+            var viewPosition = worldPosition + translateWorldToView;
+            if (viewPosition.Y >= 0 && viewPosition.Y < grid.Length &&
+                viewPosition.X >= 0 && viewPosition.X < grid[(int)viewPosition.Y].Length)
+            {
+                grid[(int)viewPosition.Y][(int)viewPosition.X] = chr;
+            }
+        }
+
+        if (centerChar != null)
+        {
+            RenderPixel(Vector2.Zero, centerChar.Value);
+        }
+
+        foreach (var item in items)
+        {
+            RenderPixel(positionSelector(item), charSelector(item));
+        }
+
+        return grid.Select(line => string.Concat(line)).RenderGridToString();
     }
 }

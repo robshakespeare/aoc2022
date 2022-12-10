@@ -23,11 +23,9 @@
             var visualizer = Visualizer;
             _frame = "Building visualization...";
             await InvokeAsync(StateHasChanged);
-            await Task.Delay(Visualizer.FrameDelayMilliseconds);
+            await Task.Delay(30);
 
-            var frames = Visualizer.GetVisualization();
-
-            foreach (var frame in frames)
+            await foreach (var frame in Visualizer.GetVisualizationAsync())
             {
                 if (visualizer != Visualizer)
                 {
@@ -36,7 +34,6 @@
 
                 _frame = frame;
                 await InvokeAsync(StateHasChanged);
-                await Task.Delay(Visualizer.FrameDelayMilliseconds);
             }
         }
     }
