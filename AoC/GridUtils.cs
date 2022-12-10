@@ -119,6 +119,61 @@ public static class GridUtils
         return newPixels.Select(newLine => string.Concat(newLine)).ToArray();
     }
 
+    // rs-todo: tests:
+    /// <summary>
+    /// Builds and returns 2D grid of text from the specified list of items that have a position.
+    /// </summary>
+    public static IReadOnlyList<string> ToStringViewPort<T>(
+        this IEnumerable<T> items,
+        Func<T, Vector2> positionSelector,
+        Func<T, char> charSelector,
+        char defaultChar,
+        int viewportWidth = 100,
+        int viewportHeight = 25,
+        char? centerChar = null)
+    {
+        items = items.ToArray();
+
+        var worldTopLeft = new Vector2(items.Min(p => positionSelector(p).X), items.Min(p => positionSelector(p).Y));
+        var worldBottomRight = new Vector2(items.Max(p => positionSelector(p).X), items.Max(p => positionSelector(p).Y));
+        var worldSize = worldBottomRight - worldTopLeft + Vector2.One;
+        var worldMiddle = worldTopLeft + worldSize / 2;
+
+        var viewSize = new Vector2(viewportWidth, viewportHeight);
+        var viewMiddle = Vector2.Zero + viewSize / 2;
+
+        var translateWorldToView = viewMiddle - worldMiddle;
+
+        var grid = Enumerable.Range(0, viewportHeight).Select(_ =>
+        {
+            var line = new char[viewportWidth];
+            Array.Fill(line, defaultChar);
+            return line;
+        }).ToArray();
+
+        void RenderPixel(Vector2 worldPosition, char chr)
+        {
+            var viewPosition = worldPosition + translateWorldToView;
+            if (viewPosition.Y >= 0 && viewPosition.Y < grid.Length &&
+                viewPosition.X >= 0 && viewPosition.X < grid[(int) viewPosition.Y].Length)
+            {
+                grid[(int) viewPosition.Y][(int) viewPosition.X] = chr;
+            }
+        }
+
+        if (centerChar != null)
+        {
+            RenderPixel(Vector2.Zero, centerChar.Value);
+        }
+
+        foreach (var item in items)
+        {
+            RenderPixel(positionSelector(item), charSelector(item));
+        }
+
+        return grid.Select(line => string.Concat(line)).ToArray();
+    }
+
     /// <summary>
     /// Builds and returns 2D grid of text from the specified list of items that have a position.
     /// </summary>
@@ -128,35 +183,15 @@ public static class GridUtils
         Func<T, char> charSelector,
         char defaultChar)
     {
-        items = items.ToArray();
-
-        var topLeft = new Vector2(items.Min(p => positionSelector(p).X), items.Min(p => positionSelector(p).Y));
-        var bottomRight = new Vector2(items.Max(p => positionSelector(p).X), items.Max(p => positionSelector(p).Y));
-
-        var size = bottomRight - topLeft + Vector2.One;
-        var width = (int) size.X;
-        var height = (int) size.Y;
-
-        var grid = Enumerable.Range(0, height).Select(_ =>
-        {
-            var line = new char[width];
-            Array.Fill(line, defaultChar);
-            return line;
-        }).ToArray();
-
-        foreach (var item in items)
-        {
-            var pos = positionSelector(item) - topLeft;
-            grid[(int) pos.Y][(int) pos.X] = charSelector(item);
-        }
-
-        return grid.Select(line => string.Concat(line)).ToArray();
+        return items.ToGrid(positionSelector, charSelector, _ => defaultChar)
+            .Select(line => string.Concat(line))
+            .ToArray();
     }
 
     /// <summary>
     /// Builds and returns 2D grid of items from the specified list of items that have a position.
     /// </summary>
-    public static IReadOnlyList<IReadOnlyList<TOut>> ToGrid<TIn, TOut>( // rs-todo: tests
+    public static IReadOnlyList<IReadOnlyList<TOut>> ToGrid<TIn, TOut>(
         this IEnumerable<TIn> items,
         Func<TIn, Vector2> positionSelector,
         Func<TIn, TOut> resultItemSelector,

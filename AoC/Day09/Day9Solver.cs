@@ -12,10 +12,12 @@ public class Day9Solver : ISolver, IVisualize
     /// Simulates the complete hypothetical series of motions, for the specified rope length.
     /// Returns the number of positions that the tail of the rope visits at least once.
     /// </summary>
-    static long SimulateRopeMovement(PuzzleInput input, int numKnotsInRope, Action<Vector2[]>? update = null)
+    static long SimulateRopeMovement(PuzzleInput input, int numKnotsInRope) =>
+        SimulateRopeMovements(input, numKnotsInRope).Select(knots => knots[^1]).Distinct().Count();
+
+    static IEnumerable<Vector2[]> SimulateRopeMovements(PuzzleInput input, int numKnotsInRope)
     {
         var knots = Enumerable.Range(0, numKnotsInRope).Select(_ => new Vector2(0, 0)).ToArray();
-        var tailVisited = new HashSet<Vector2>();
 
         foreach (var (dir, amount) in ParseMovements(input))
         {
@@ -28,15 +30,12 @@ public class Day9Solver : ISolver, IVisualize
                     knots[knotIdx] = prevKnot = MoveKnot(knots[knotIdx], prevKnot);
                 }
 
-                tailVisited.Add(knots[^1]);
-                update?.Invoke(knots);
+                yield return knots;
             }
         }
-
-        return tailVisited.Count;
     }
 
-    private static Vector2 MoveKnot(Vector2 knot, Vector2 prevKnot)
+    static Vector2 MoveKnot(Vector2 knot, Vector2 prevKnot)
     {
         if (Are2StepsAway(prevKnot, knot) && AreInSameRowOrColumn(prevKnot, knot))
         {
@@ -82,22 +81,14 @@ public class Day9Solver : ISolver, IVisualize
                 },
                 int.Parse(parts[1])));
 
-    public IReadOnlyCollection<string> GetVisualization(PuzzleInput input)
+    public async IAsyncEnumerable<string> GetVisualizationAsync(PuzzleInput input)
     {
-        var frames = new List<string>();
-        SimulateRopeMovement(input, 10, knots =>
-            frames.Add(knots.Append(Vector2.Zero).Select((v, i) => (v, i)).Reverse()
-                .ToStringGrid(x => x.v, x =>
-                {
-                    Console.WriteLine(x);
-                    return x.i switch
-                    {
-                        0 => 'H',
-                        _ when x.v == Vector2.Zero => 's',
-                        _ => (char) ('0' + x.i)
-                    };
-                }, ' ')
-                .RenderGridToString()));
-        return frames;
+        const int frameDelayMilliseconds = 20;
+        foreach (var knots in SimulateRopeMovements(input, 10))
+        {
+            yield return knots.Select((v, i) => (v, i)).Reverse()
+                .ToStringViewPort(x => x.v, x => x.i == 0 ? 'H' : (char) ('0' + x.i), ' ', centerChar: 's').RenderGridToString();
+            await Task.Delay(frameDelayMilliseconds);
+        }
     }
 }
