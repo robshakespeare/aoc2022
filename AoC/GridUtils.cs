@@ -119,61 +119,6 @@ public static class GridUtils
         return newPixels.Select(newLine => string.Concat(newLine)).ToArray();
     }
 
-    // rs-todo: tests:
-    /// <summary>
-    /// Builds and returns 2D grid of text from the specified list of items that have a position.
-    /// </summary>
-    public static IReadOnlyList<string> ToStringViewPort<T>(
-        this IEnumerable<T> items,
-        Func<T, Vector2> positionSelector,
-        Func<T, char> charSelector,
-        char defaultChar,
-        int viewportWidth = 100,
-        int viewportHeight = 25,
-        char? centerChar = null)
-    {
-        items = items.ToArray();
-
-        var worldTopLeft = new Vector2(items.Min(p => positionSelector(p).X), items.Min(p => positionSelector(p).Y));
-        var worldBottomRight = new Vector2(items.Max(p => positionSelector(p).X), items.Max(p => positionSelector(p).Y));
-        var worldSize = worldBottomRight - worldTopLeft + Vector2.One;
-        var worldMiddle = worldTopLeft + worldSize / 2;
-
-        var viewSize = new Vector2(viewportWidth, viewportHeight);
-        var viewMiddle = Vector2.Zero + viewSize / 2;
-
-        var translateWorldToView = viewMiddle - worldMiddle;
-
-        var grid = Enumerable.Range(0, viewportHeight).Select(_ =>
-        {
-            var line = new char[viewportWidth];
-            Array.Fill(line, defaultChar);
-            return line;
-        }).ToArray();
-
-        void RenderPixel(Vector2 worldPosition, char chr)
-        {
-            var viewPosition = worldPosition + translateWorldToView;
-            if (viewPosition.Y >= 0 && viewPosition.Y < grid.Length &&
-                viewPosition.X >= 0 && viewPosition.X < grid[(int) viewPosition.Y].Length)
-            {
-                grid[(int) viewPosition.Y][(int) viewPosition.X] = chr;
-            }
-        }
-
-        if (centerChar != null)
-        {
-            RenderPixel(Vector2.Zero, centerChar.Value);
-        }
-
-        foreach (var item in items)
-        {
-            RenderPixel(positionSelector(item), charSelector(item));
-        }
-
-        return grid.Select(line => string.Concat(line)).ToArray();
-    }
-
     /// <summary>
     /// Builds and returns 2D grid of text from the specified list of items that have a position.
     /// </summary>
@@ -305,5 +250,59 @@ public static class GridUtils
         Console.WriteLine(renderedGrid);
         Console.WriteLine();
         return renderedGrid;
+    }
+
+    /// <summary>
+    /// Builds and returns a 2D view within the specified world of items that have a position and character.
+    /// </summary>
+    public static string RenderWorldToViewport<T>(
+        this IEnumerable<T> items,
+        Func<T, Vector2> positionSelector,
+        Func<T, char> charSelector,
+        char defaultChar,
+        int viewportWidth = 100,
+        int viewportHeight = 25,
+        char? centerChar = null)
+    {
+        items = items.ToArray();
+
+        var worldTopLeft = new Vector2(items.Min(p => positionSelector(p).X), items.Min(p => positionSelector(p).Y));
+        var worldBottomRight = new Vector2(items.Max(p => positionSelector(p).X), items.Max(p => positionSelector(p).Y));
+        var worldSize = worldBottomRight - worldTopLeft + Vector2.One;
+        var worldMiddle = worldTopLeft + worldSize / 2;
+
+        var viewSize = new Vector2(viewportWidth, viewportHeight);
+        var viewMiddle = Vector2.Zero + viewSize / 2;
+
+        var translateWorldToView = viewMiddle - worldMiddle;
+
+        var grid = Enumerable.Range(0, viewportHeight).Select(_ =>
+        {
+            var line = new char[viewportWidth];
+            Array.Fill(line, defaultChar);
+            return line;
+        }).ToArray();
+
+        void RenderPixel(Vector2 worldPosition, char chr)
+        {
+            var viewPosition = worldPosition + translateWorldToView;
+            if (viewPosition.Y >= 0 && viewPosition.Y < grid.Length &&
+                viewPosition.X >= 0 && viewPosition.X < grid[(int)viewPosition.Y].Length)
+            {
+                grid[(int)viewPosition.Y][(int)viewPosition.X] = chr;
+            }
+        }
+
+        if (centerChar != null)
+        {
+            RenderPixel(Vector2.Zero, centerChar.Value);
+        }
+
+        foreach (var item in items)
+        {
+            RenderPixel(positionSelector(item), charSelector(item));
+        }
+
+        return grid.Select(line => string.Concat(line)).RenderGridToString();
     }
 }

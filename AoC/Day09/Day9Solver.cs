@@ -87,7 +87,7 @@ public class Day9Solver : ISolver, IVisualize
         foreach (var knots in SimulateRopeMovements(input, 10))
         {
             yield return knots.Select((v, i) => (v, i)).Reverse()
-                .ToStringViewPort(x => x.v, x => x.i == 0 ? 'H' : (char) ('0' + x.i), ' ', centerChar: 's').RenderGridToString();
+                .RenderWorldToViewport(x => x.v, x => x.i == 0 ? 'H' : (char) ('0' + x.i), ' ', centerChar: 's');
             await Task.Delay(frameDelayMilliseconds);
         }
     }
