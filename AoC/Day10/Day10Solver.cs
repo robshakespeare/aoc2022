@@ -21,7 +21,7 @@ public class Day10Solver : ISolver<long, string>
             var x = (cycleNumber - 1) % width;
             var y = (cycleNumber - 1) / width;
             var isLit = x >= registerX - 1 && x <= registerX + 1;
-            grid[y][x] = isLit ? '#' : ' ';
+            grid[y][x] = isLit ? '█' : ' ';
         }
 
         return string.Join(Environment.NewLine, grid.Select(line => string.Concat(line)));

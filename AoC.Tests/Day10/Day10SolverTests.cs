@@ -36,7 +36,7 @@ public class Day10SolverTests
             #####.....#####.....#####.....#####.....
             ######......######......######......####
             #######.......#######.......#######.....
-            """.Replace('.', ' ').ReplaceLineEndings();
+            """.Replace('.', ' ').Replace('#', '█').ReplaceLineEndings();
 
         // ACT
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
@@ -48,20 +48,30 @@ public class Day10SolverTests
     [Test]
     public void Part2ReTest()
     {
-        var expected = """
+        var expected1 = """
             ####.###..#..#.###..#..#.####..##..#..#.
             #....#..#.#..#.#..#.#..#....#.#..#.#..#.
             ###..###..#..#.#..#.####...#..#....####.
             #....#..#.#..#.###..#..#..#...#....#..#.
             #....#..#.#..#.#.#..#..#.#....#..#.#..#.
             #....###...##..#..#.#..#.####..##..#..#.
-            """.Replace('.', ' ').ReplaceLineEndings();
+            """.Replace('.', ' ').Replace('#', '█').ReplaceLineEndings();
+
+        var expected2 = """
+            ████ ███  █  █ ███  █  █ ████  ██  █  █ 
+            █    █  █ █  █ █  █ █  █    █ █  █ █  █ 
+            ███  ███  █  █ █  █ ████   █  █    ████ 
+            █    █  █ █  █ ███  █  █  █   █    █  █ 
+            █    █  █ █  █ █ █  █  █ █    █  █ █  █ 
+            █    ███   ██  █  █ █  █ ████  ██  █  █ 
+            """.ReplaceLineEndings();
 
         // ACT
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(expected);
+        part2Result.Should().Be(expected1);
+        part2Result.Should().Be(expected2);
     }
 
     private const string ExampleInput = """
