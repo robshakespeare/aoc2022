@@ -7,59 +7,31 @@ public class Day11Solver : ISolver
     public long? SolvePart1(PuzzleInput input)
     {
         var monkeys = ParseInputToMonkeys(input);
-
-        for (var i = 0; i < 20; i++)
-        {
-            foreach (var monkey in monkeys)
-            {
-                monkey.TakeTurn(monkeys, itemWorryLevel => itemWorryLevel / 3);
-            }
-
-            //Console.WriteLine($"After round {i+1}, the monkeys are holding items with these worry levels:");
-            //Console.WriteLine(string.Join(Environment.NewLine, monkeys.Select(m => $"Monkey {m.Index}: {string.Join(", ", m.Items)}")));
-            //Console.WriteLine();
-        }
-
-        var mostActive = monkeys.Select(x => x.InspectedItemsCount).OrderDescending().Take(2).ToArray();
-        return mostActive[0] * mostActive[1];
+        return CalculateMonkeyBusiness(monkeys, 20, itemWorryLevel => itemWorryLevel / 3);
     }
 
     public long? SolvePart2(PuzzleInput input)
     {
         var monkeys = ParseInputToMonkeys(input);
+        // rs-todo: util method
+        var leastCommonMultiple = monkeys.Aggregate(1L, (lcm, monkey) => MathUtils.LeastCommonMultiple(lcm, monkey.TestDivisor));
+        return CalculateMonkeyBusiness(monkeys, 10000, itemWorryLevel => itemWorryLevel % leastCommonMultiple);
+    }
 
-        //var greatestCommonDivisor = monkeys.Skip(1).Aggregate(monkeys.First().TestDivisor, (gcd, monkey) => MathUtils.GreatestCommonDivisor(gcd, monkey.TestDivisor));
-
-        //var leastCommonMultiple = monkeys.Skip(1).Aggregate(monkeys.First().TestDivisor, (gcd, monkey) => MathUtils.LeastCommonMultiple(gcd, monkey.TestDivisor));
-
-        var leastCommonMultiple = monkeys.Aggregate(1L, (gcd, monkey) => MathUtils.LeastCommonMultiple(gcd, monkey.TestDivisor));
-
-        for (var i = 0; i < 10000; i++)
+    static long CalculateMonkeyBusiness(IReadOnlyList<Monkey> monkeys, int numberOfRounds, Func<long, long> manageWorryLevel)
+    {
+        for (var i = 0; i < numberOfRounds; i++)
         {
             foreach (var monkey in monkeys)
             {
-                monkey.TakeTurn(monkeys, itemWorryLevel => itemWorryLevel % leastCommonMultiple);
+                monkey.TakeTurn(monkeys, manageWorryLevel);
             }
-
-            //Console.WriteLine($"After round {i+1}, the monkeys are holding items with these worry levels:");
-            //Console.WriteLine(string.Join(Environment.NewLine, monkeys.Select(m => $"Monkey {m.Index}: {string.Join(", ", m.Items)}")));
-            //Console.WriteLine();
-
-            //Console.WriteLine($"== After round {i + 1} ==");
-            //Console.WriteLine(string.Join(Environment.NewLine, monkeys.Select(m => $"Monkey {m.Index} inspected items {m.InspectedItemsCount} times.")));
-            //Console.WriteLine();
-
-            //if (i >= 21)
-            //{
-            //    return null;
-            //}
         }
 
         var mostActive = monkeys.Select(x => x.InspectedItemsCount).OrderDescending().Take(2).ToArray();
         var monkeyBusiness = mostActive[0] * mostActive[1];
 
-        Console.WriteLine($"{mostActive[0]} * {mostActive[1]} = {monkeyBusiness}");
-
+        Console.WriteLine($"MonkeyBusiness = {mostActive[0]} * {mostActive[1]} = {monkeyBusiness}");
         return monkeyBusiness;
     }
 
@@ -78,32 +50,27 @@ public class Day11Solver : ISolver
         public Monkey(int index, IEnumerable<long> startingItems, Func<long, long> operation, long testDivisor, int throwToIndexIfTrue, int throwToIndexIfFalse)
         {
             Index = index;
-            _items =  new Queue<long>(startingItems);
+            _items = new Queue<long>(startingItems);
             _operation = operation;
             TestDivisor = testDivisor;
             ThrowToIndexIfTrue = throwToIndexIfTrue;
             ThrowToIndexIfFalse = throwToIndexIfFalse;
         }
 
-        public void TakeTurn(IReadOnlyList<Monkey> monkeys, Func<long, long> worryLevelManager)
+        public void TakeTurn(IReadOnlyList<Monkey> monkeys, Func<long, long> manageWorryLevel)
         {
             while (_items.TryDequeue(out var itemWorryLevel))
             {
                 InspectedItemsCount++;
-                itemWorryLevel = worryLevelManager(_operation(itemWorryLevel));
-                //if (divideBy3)
-                //{
-                //    itemWorryLevel /= 3;
-                //}
-                //else
-                //{
-                //    itemWorryLevel /= 9;
-                //}
-
+                itemWorryLevel = manageWorryLevel(_operation(itemWorryLevel));
                 var throwToIndex = itemWorryLevel % TestDivisor == 0 ? ThrowToIndexIfTrue : ThrowToIndexIfFalse;
                 monkeys[throwToIndex]._items.Enqueue(itemWorryLevel);
             }
         }
+
+        public string Debug1() => $"Monkey {Index}: {string.Join(", ", Items)}";
+
+        public string Debug2() => $"Monkey {Index} inspected items {InspectedItemsCount} times.";
     }
 
     static IReadOnlyList<Monkey> ParseInputToMonkeys(string input) => ParseInputRegex.Matches(input).Select(match =>
@@ -127,12 +94,12 @@ public class Day11Solver : ISolver
         );
     }).ToReadOnlyArray();
 
-    private static readonly Regex ParseInputRegex = new("""
+    static readonly Regex ParseInputRegex = new("""
         Monkey (?<monkeyIndex>\d):
           Starting items: (?<startingItems>.+)
           Operation: new = (?<left>[^ ]+) (?<operator>[^ ]+) (?<right>[^ ]+)
           Test: divisible by (?<testDivisor>\d+)
             If true: throw to monkey (?<monkeyIfTrue>\d+)
             If false: throw to monkey (?<monkeyIfFalse>\d+)
-        """.ReplaceLineEndings(), RegexOptions.Compiled); // rs-todo: .ReplaceLineEndings() ?
+        """.ReplaceLineEndings(), RegexOptions.Compiled);
 }
