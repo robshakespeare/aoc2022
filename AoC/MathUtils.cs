@@ -18,6 +18,11 @@ public static class MathUtils
     public static long LeastCommonMultiple(long a, long b, long c) => LeastCommonMultiple(LeastCommonMultiple(a, b), c);
 
     /// <summary>
+    /// Returns the least common multiple (LCM) of the specified numbers.
+    /// </summary>
+    public static long LeastCommonMultiple(IEnumerable<long> numbers) => numbers.Aggregate(1L, LeastCommonMultiple);
+
+    /// <summary>
     /// Calculates the angle, in degrees, between the two specified vectors.
     /// </summary>
     public static double AngleBetween(Vector2 vector1, Vector2 vector2)

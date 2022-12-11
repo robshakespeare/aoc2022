@@ -13,14 +13,13 @@ public class Day11Solver : ISolver
     public long? SolvePart2(PuzzleInput input)
     {
         var monkeys = ParseInputToMonkeys(input);
-        // rs-todo: util method
-        var leastCommonMultiple = monkeys.Aggregate(1L, (lcm, monkey) => MathUtils.LeastCommonMultiple(lcm, monkey.TestDivisor));
+        var leastCommonMultiple = MathUtils.LeastCommonMultiple(monkeys.Select(monkey => monkey.TestDivisor));
         return CalculateMonkeyBusiness(monkeys, 10000, itemWorryLevel => itemWorryLevel % leastCommonMultiple);
     }
 
     static long CalculateMonkeyBusiness(IReadOnlyList<Monkey> monkeys, int numberOfRounds, Func<long, long> manageWorryLevel)
     {
-        for (var i = 0; i < numberOfRounds; i++)
+        for (var roundNumber = 1; roundNumber <= numberOfRounds; roundNumber++)
         {
             foreach (var monkey in monkeys)
             {
