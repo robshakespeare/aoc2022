@@ -58,7 +58,58 @@ public class Day12Solver : ISolver
 
     public long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        var grid = input.ReadLines().Select((line, y) => line.Select((chr, x) => (Pos: new Vector2(x, y), Chr: chr)).ToArray()).ToArray();
+
+        var cellLookup = grid.SelectMany(x => x).ToArray();
+
+        var startCells = cellLookup.Where(x => x.Chr == 'a');
+        var goalCell = cellLookup.Single(x => x.Chr == 'E');
+
+        var mockStart = new Vector2(-99, -99);
+
+        char Transform(char c) => c switch
+        {
+            'S' => 'a',
+            'E' => 'z',
+            _ => c
+        };
+
+        var search = new AStarSearch(
+            node =>
+            {
+                if (node.Position == mockStart)
+                {
+                    return startCells.Select(x => new Node(x.Pos, 0));
+                }
+
+                var currentLevel = grid[(int)node.Position.Y][(int)node.Position.X];
+
+                var currentLevelChar = Transform(currentLevel.Chr);
+
+                return GridUtils.DirectionsExcludingDiagonal.Select(nextDir =>
+                    {
+                        var nextPosition = nextDir + currentLevel.Pos;
+
+                        (Vector2 Pos, char Chr) nextLevel;
+                        try
+                        {
+                            nextLevel = grid[(int)nextPosition.Y][(int)nextPosition.X];
+                        }
+                        catch (IndexOutOfRangeException)
+                        {
+                            nextLevel = (nextPosition, '-');
+                        }
+
+                        return (nextPosition, chr: Transform(nextLevel.Chr));
+                    })
+                    .Where(x => x.chr != '-' && x.chr <= (currentLevelChar + 1))
+                    .Select(x => new Node(x.nextPosition, 1));
+            },
+            (_, _) => 1);
+
+        return search.FindShortestPath(
+            new Node(mockStart, 0),
+            new Node(goalCell.Pos, 1)).TotalCost;
     }
 
     ///// <summary>
