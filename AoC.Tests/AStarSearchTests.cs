@@ -82,7 +82,7 @@ public class AStarSearchTests
 
     public class AStarSearchExtraFeaturesTests
     {
-        private const string AdvancedTestCasesInput = """
+        private const string ElevationsGrid = """
             aabqponm
             abcryxxl
             accszzxk
@@ -100,15 +100,11 @@ public class AStarSearchTests
 
         public AStarSearchExtraFeaturesTests()
         {
-            // rs-todo: a ToGrid extension would be useful!
-            _grid = AdvancedTestCasesInput.ReadLines().Select(
-                (line, y) => line.Select(
-                    (c, x) => new Node2(new Vector2(x, y), c)).ToArray()).ToArray();
+            _grid = ElevationsGrid.ToGrid((pos, c) => new Node2(pos, c));
 
             _search = new AStarSearch<Node2>(getSuccessors: node =>
             {
-                // rs-todo: a Get extension would be useful, can the existing would be reused?
-                var currentNode = _grid[(int) node.Position.Y][(int) node.Position.X];
+                var currentNode = _grid.Get(node.Position);
                 return _grid
                     .GetAdjacent(currentNode.Position, GridUtils.DirectionsExcludingDiagonal)
                     .Where(nextNode => nextNode.Char <= currentNode.Char + 1);

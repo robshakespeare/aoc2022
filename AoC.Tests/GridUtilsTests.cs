@@ -483,6 +483,32 @@ public class GridUtilsTests
         }
     }
 
+    public class TheToGridFromStringMethod
+    {
+        public record Cell(char Char, Vector2 Position);
+
+        [Test]
+        public void ToGrid_FromString_ReturnsExpectedResult()
+        {
+            const string input = """
+                abc
+                xyz
+                """;
+
+            // ACT
+            var result = input.ToGrid((pos, chr) => new Cell(chr, pos));
+
+            // ASSERT
+            result.Should().BeEquivalentTo(
+                new[]
+                {
+                    new Cell[] {new('a', new(0, 0)), new('b', new(1, 0)), new('c', new(2, 0))},
+                    new Cell[] {new('x', new(0, 1)), new('y', new(1, 1)), new('z', new(2, 1))}
+                },
+                opts => opts.WithStrictOrdering());
+        }
+    }
+
     public class TheGetAdjacentMethod
     {
         [TestCase(-10, -10, "")]
@@ -581,6 +607,55 @@ public class GridUtilsTests
                 33549
                 35390
                 """.ReplaceLineEndings());
+        }
+    }
+
+    public class TheGetItemMethod
+    {
+        public record Item(char Char);
+
+        private readonly Item[][] _grid;
+
+        public TheGetItemMethod()
+        {
+            _grid = """
+                abcd
+                efgh
+                """.ReadLines().Select(line => line.Select(c => new Item(c)).ToArray()).ToArray();
+        }
+
+        [TestCase(0, 0, 'a')]
+        [TestCase(1, 0, 'b')]
+        [TestCase(2, 0, 'c')]
+        [TestCase(3, 0, 'd')]
+        [TestCase(0, 1, 'e')]
+        [TestCase(1, 1, 'f')]
+        [TestCase(2, 1, 'g')]
+        [TestCase(3, 1, 'h')]
+        public void Get_ReturnsValueAsExpected(float x, float y, char expectedChar)
+        {
+            // ACT
+            var actualChar = _grid.Get(new Vector2(x, y));
+
+            // ASSERT
+            actualChar.Should().BeEquivalentTo(new Item(expectedChar));
+            actualChar.Should().Be(new Item(expectedChar));
+        }
+
+        [TestCase(-1, 0)]
+        [TestCase(0, -1)]
+        [TestCase(4, 0)]
+        [TestCase(0, 2)]
+        [TestCase(-99, -99)]
+        [TestCase(99, 99)]
+        [TestCase(-10, 10)]
+        [TestCase(10, -10)]
+        public void Get_ThrowsWhenExpected(float x, float y)
+        {
+            var action = () => _grid.Get(new Vector2(x, y));
+
+            // ACT & ASSERT
+            action.Should().Throw<Exception>().Which.Should().Match(e => e is IndexOutOfRangeException || e is ArgumentOutOfRangeException);
         }
     }
 

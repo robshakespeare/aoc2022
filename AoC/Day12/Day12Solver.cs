@@ -18,7 +18,7 @@ public class Day12Solver : ISolver
         return FindShortestPathToEnd(heightmap, starts, end);
     }
 
-    static (Node[][] Heightmap, Node[] Nodes, Node End) ParseHeightmap(PuzzleInput input)
+    static (Node[][] Heightmap, Node[] Nodes, Node End) ParseHeightmap(string input)
     {
         static char TransformElevation(char c) => c switch
         {
@@ -27,8 +27,7 @@ public class Day12Solver : ISolver
             _ => c
         };
 
-        var heightmap = input.ReadLines().Select(
-            (line, y) => line.Select((chr, x) => new Node(new Vector2(x, y), TransformElevation(chr), chr)).ToArray()).ToArray();
+        var heightmap = input.ToGrid((position, chr) => new Node(position, TransformElevation(chr), chr));
         var nodes = heightmap.SelectMany(line => line).ToArray();
         var end = nodes.Single(node => node.Char == 'E');
         return (heightmap, nodes, end);
@@ -39,16 +38,12 @@ public class Day12Solver : ISolver
         public int Cost => 1;
     }
 
-    static long FindShortestPathToEnd(Node[][] heightmap, IEnumerable<Node> starts, Node end)
-    {
-        var search = new AStarSearch<Node>(node =>
+    static long FindShortestPathToEnd(Node[][] heightmap, IEnumerable<Node> starts, Node end) =>
+        new AStarSearch<Node>(node =>
         {
-            var currentNode = heightmap[(int) node.Position.Y][(int) node.Position.X];
+            var currentNode = heightmap.Get(node.Position);
             return heightmap
                 .GetAdjacent(currentNode.Position, GridUtils.DirectionsExcludingDiagonal)
                 .Where(nextNode => nextNode.Elevation <= currentNode.Elevation + 1);
-        });
-
-        return search.FindShortestPath(starts, end).TotalCost;
-    }
+        }).FindShortestPath(starts, end).TotalCost;
 }
