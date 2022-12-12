@@ -1,48 +1,67 @@
 namespace AoC;
 
-public class AStarSearch
+/// <summary>
+/// Represents a node in the A* Search algorithm.
+/// IMPORTANT: Must have value equality, so either be a struct, record or implement object equality.
+/// </summary>
+public interface IAStarSearchNode
 {
-    public record Node(Vector2 Position, int Cost);
+    int Cost { get; }
+}
 
+public class AStarSearch<TNode> where TNode : IAStarSearchNode, IEquatable<TNode>
+{
     public class Path
     {
-        private Path(IEnumerable<Node> nodes, Node currentNode, int totalCost)
+        private Path(IEnumerable<TNode> nodes, TNode currentNode, int totalCost)
         {
             Nodes = nodes;
             CurrentNode = currentNode;
             TotalCost = totalCost;
         }
 
-        public IEnumerable<Node> Nodes { get; }
+        public IEnumerable<TNode> Nodes { get; }
         public int TotalCost { get; }
-        public Node CurrentNode { get; }
+        public TNode CurrentNode { get; }
 
-        public Path Append(Node node) => new(Nodes.Append(node), node, TotalCost + node.Cost);
+        public Path Append(TNode node) => new(Nodes.Append(node), node, TotalCost + node.Cost);
 
-        public static Path Begin(Node begin) => new(new[] { begin }, begin, 0);
+        public static Path Begin(TNode begin) => new(new[] {begin}, begin, 0);
     }
 
-    public delegate long Heuristic(Node child, Node goal);
+    public delegate long Heuristic(TNode child, TNode goal);
 
-    private readonly Func<Node, IEnumerable<Node>> _getSuccessors;
-    private readonly Heuristic _heuristic;
+    private readonly Func<TNode, IEnumerable<TNode>> _getSuccessors;
+    private readonly Heuristic _getHeuristic;
 
-    public AStarSearch(Func<Node, IEnumerable<Node>> getSuccessors, Heuristic heuristic)
+    /// <summary>
+    /// Initializes a class to do quick searching using A* Search algorithm.
+    /// IMPORTANT: Generic type T must have value equality, so either be a struct, record or implement object equality.
+    /// </summary>
+    /// <param name="getSuccessors">Delegate to call to get the next possible moves from the specified current node.</param>
+    /// <param name="getHeuristic">
+    ///     Delegate to call to get the heuristic for reaching the goal from the specified current node;
+    ///     or null to use no heuristic (i.e. no heuristic will strictly be a Dijkstra Search).
+    /// </param>
+    public AStarSearch(Func<TNode, IEnumerable<TNode>> getSuccessors, Heuristic? getHeuristic = null)
     {
         _getSuccessors = getSuccessors;
-        _heuristic = heuristic;
+        _getHeuristic = getHeuristic ?? ((_, _) => 0);
     }
 
     /// <summary>
     /// Finds the shortest path between the two specified locations in the specified grid.
+    /// </summary>
+    public Path FindShortestPath(TNode start, TNode goal) => FindShortestPath(new[] {start}, goal);
+
+    /// <summary>
+    /// Finds the shortest path between any number of start points and a goal in the specified grid.
     /// Written from the pseudocode at: https://cse442-17f.github.io/A-Star-Search-and-Dijkstras-Algorithm/
     /// </summary>
-    public Path FindShortestPath(Node start, Node goal)
+    public Path FindShortestPath(IEnumerable<TNode> starts, TNode goal)
     {
-        var explore = new PriorityQueue<Path, long>();
-        explore.Enqueue(Path.Begin(start), 0);
-
-        var seen = new HashSet<Node>();
+        var explore = new PriorityQueue<Path, long>(starts.Select(start => (Path.Begin(start), 0L)));
+        var seen = new HashSet<TNode>();
 
         while (explore.Count > 0)
         {
@@ -50,7 +69,7 @@ public class AStarSearch
             var node = path.CurrentNode;
 
             // if node is the goal return the path
-            if (node == goal)
+            if (node.Equals(goal))
             {
                 return path;
             }
@@ -61,7 +80,7 @@ public class AStarSearch
                 foreach (var child in _getSuccessors(node))
                 {
                     var childPath = path.Append(child);
-                    explore.Enqueue(childPath, childPath.TotalCost + _heuristic(child, goal)); // the heuristic is added here as a part of the priority
+                    explore.Enqueue(childPath, childPath.TotalCost + _getHeuristic(child, goal)); // the heuristic is added here as a part of the priority
                 }
 
                 seen.Add(node);

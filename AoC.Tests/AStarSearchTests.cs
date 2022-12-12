@@ -1,23 +1,23 @@
-using static AoC.AStarSearch;
-
 namespace AoC.Tests;
 
 public class AStarSearchTests
 {
-    private static (Node[][] grid, AStarSearch search) Parse(string gridLevels)
+    record Node(Vector2 Position, int Cost) : IAStarSearchNode;
+
+    private static (Node[][] grid, AStarSearch<Node> search) Parse(string gridLevels)
     {
-        var grid = new PuzzleInput(gridLevels).ReadLines().Select(
+        var grid = gridLevels.ReadLines().Select(
             (line, y) => line.Select(
                 (c, x) => new Node(new Vector2(x, y), int.Parse(c.ToString()))).ToArray()).ToArray();
 
-        var search = new AStarSearch(
-            getSuccessors: node => grid.GetAdjacent(GridUtils.DirectionsExcludingDiagonal, node.Position),
-            heuristic: (node, goal) => MathUtils.ManhattanDistance(node.Position, goal.Position));
+        var search = new AStarSearch<Node>(
+            getSuccessors: node => grid.GetAdjacent(node.Position, GridUtils.DirectionsExcludingDiagonal),
+            getHeuristic: (node, goal) => MathUtils.ManhattanDistance(node.Position, goal.Position));
 
         return (grid, search);
     }
 
-    private static void DisplayPathAsGrid(AStarSearch.Path path)
+    private static void DisplayPathAsGrid(AStarSearch<Node>.Path path)
     {
         var lines = path.Nodes.ToStringGrid(x => x.Position, x => x.Cost.ToString().Single(), '.');
 
@@ -78,5 +78,61 @@ public class AStarSearchTests
         DisplayPathAsGrid(result);
 
         result.TotalCost.Should().Be(22);
+    }
+
+    public class AStarSearchExtraFeaturesTests
+    {
+        private const string ElevationsGrid = """
+            aabqponm
+            abcryxxl
+            accszzxk
+            acctuvwj
+            abdefghi
+            """;
+
+        private record Node2(Vector2 Position, char Char) : IAStarSearchNode
+        {
+            public int Cost => 1;
+        }
+
+        private readonly Node2[][] _grid;
+        private readonly AStarSearch<Node2> _search;
+
+        public AStarSearchExtraFeaturesTests()
+        {
+            _grid = ElevationsGrid.ToGrid((pos, c) => new Node2(pos, c));
+
+            _search = new AStarSearch<Node2>(getSuccessors: node =>
+            {
+                var currentNode = _grid.Get(node.Position);
+                return _grid
+                    .GetAdjacent(currentNode.Position, GridUtils.DirectionsExcludingDiagonal)
+                    .Where(nextNode => nextNode.Char <= currentNode.Char + 1);
+            });
+        }
+
+        [Test]
+        public void FindShortestPath_CanHaveNoHeuristic()
+        {
+            // ACT
+            var result = _search.FindShortestPath(_grid[0][0], _grid[2][5]);
+
+            // ASSERT
+            result.TotalCost.Should().Be(31);
+            string.Concat(result.Nodes.Select(x => x.Char)).Should().Be("aabcccdefghijklmnopqrstuvwxxxyzz");
+        }
+
+        [Test]
+        public void FindShortestPath_CanHaveMultipleStartPoints()
+        {
+            // ACT
+            var result = _search.FindShortestPath(
+                _grid.SelectMany(row => row).Where(x => x.Char == 'a'),
+                _grid[2][5]);
+
+            // ASSERT
+            result.TotalCost.Should().Be(29);
+            string.Concat(result.Nodes.Select(x => x.Char)).Should().Be("abccdefghijklmnopqrstuvwxxxyzz");
+        }
     }
 }
