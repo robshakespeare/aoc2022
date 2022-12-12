@@ -1,5 +1,3 @@
-using static AoC.AStarSearch;
-
 namespace AoC.Day12;
 
 public class Day12Solver : ISolver
@@ -8,145 +6,49 @@ public class Day12Solver : ISolver
 
     public long? SolvePart1(PuzzleInput input)
     {
-        // rs-todo: need tidy!
-        var grid = input.ReadLines().Select((line, y) => line.Select((chr, x) => (Pos: new Vector2(x, y), Chr: chr)).ToArray()).ToArray();
-
-        var cellLookup = grid.SelectMany(x => x).ToArray();
-
-        var startCell = cellLookup.Single(x => x.Chr == 'S');
-        var goalCell = cellLookup.Single(x => x.Chr == 'E');
-
-        char Transform(char c) => c switch
-        {
-            'S' => 'a',
-            'E' => 'z',
-            _ => c
-        };
-
-        var search = new AStarSearch(
-            node =>
-            {
-                var currentLevel = grid[(int) node.Position.Y][(int) node.Position.X];
-
-                var currentLevelChar = Transform(currentLevel.Chr);
-
-                return GridUtils.DirectionsExcludingDiagonal.Select(nextDir =>
-                    {
-                        var nextPosition = nextDir + currentLevel.Pos;
-
-                        (Vector2 Pos, char Chr) nextLevel;
-                        try
-                        {
-                            nextLevel = grid[(int) nextPosition.Y][(int) nextPosition.X];
-                        }
-                        catch (IndexOutOfRangeException)
-                        {
-                            nextLevel = (nextPosition, '-');
-                        }
-
-                        return (nextPosition, chr: Transform(nextLevel.Chr));
-                    })
-                    .Where(x => x.chr != '-' && x.chr <= (currentLevelChar + 1))
-                    .Select(x => new Node(x.nextPosition, 1));
-            },
-            (_, _) => 1);
-
-        return search.FindShortestPath(
-            new Node(startCell.Pos, 1),
-            new Node(goalCell.Pos, 1)).TotalCost;
+        var (heightmap, nodes, end) = ParseHeightmap(input);
+        var start = nodes.Single(node => node.Char == 'S');
+        return FindShortestPathToEnd(heightmap, new[] {start}, end);
     }
 
     public long? SolvePart2(PuzzleInput input)
     {
-        var grid = input.ReadLines().Select((line, y) => line.Select((chr, x) => (Pos: new Vector2(x, y), Chr: chr)).ToArray()).ToArray();
+        var (heightmap, nodes, end) = ParseHeightmap(input);
+        var starts = nodes.Where(node => node.Char == 'a');
+        return FindShortestPathToEnd(heightmap, starts, end);
+    }
 
-        var cellLookup = grid.SelectMany(x => x).ToArray();
-
-        var startCells = cellLookup.Where(x => x.Chr == 'a');
-        var goalCell = cellLookup.Single(x => x.Chr == 'E');
-
-        var mockStart = new Vector2(-99, -99);
-
-        char Transform(char c) => c switch
+    static (Node[][] Heightmap, Node[] Nodes, Node End) ParseHeightmap(PuzzleInput input)
+    {
+        static char TransformElevation(char c) => c switch
         {
             'S' => 'a',
             'E' => 'z',
             _ => c
         };
 
-        var search = new AStarSearch(
-            node =>
-            {
-                if (node.Position == mockStart)
-                {
-                    return startCells.Select(x => new Node(x.Pos, 0));
-                }
-
-                var currentLevel = grid[(int)node.Position.Y][(int)node.Position.X];
-
-                var currentLevelChar = Transform(currentLevel.Chr);
-
-                return GridUtils.DirectionsExcludingDiagonal.Select(nextDir =>
-                    {
-                        var nextPosition = nextDir + currentLevel.Pos;
-
-                        (Vector2 Pos, char Chr) nextLevel;
-                        try
-                        {
-                            nextLevel = grid[(int)nextPosition.Y][(int)nextPosition.X];
-                        }
-                        catch (IndexOutOfRangeException)
-                        {
-                            nextLevel = (nextPosition, '-');
-                        }
-
-                        return (nextPosition, chr: Transform(nextLevel.Chr));
-                    })
-                    .Where(x => x.chr != '-' && x.chr <= (currentLevelChar + 1))
-                    .Select(x => new Node(x.nextPosition, 1));
-            },
-            (_, _) => 1);
-
-        return search.FindShortestPath(
-            new Node(mockStart, 0),
-            new Node(goalCell.Pos, 1)).TotalCost;
+        var heightmap = input.ReadLines().Select(
+            (line, y) => line.Select((chr, x) => new Node(new Vector2(x, y), TransformElevation(chr), chr)).ToArray()).ToArray();
+        var nodes = heightmap.SelectMany(line => line).ToArray();
+        var end = nodes.Single(node => node.Char == 'E');
+        return (heightmap, nodes, end);
     }
 
-    ///// <summary>
-    ///// Finds the shortest path between the two specified locations in the specified grid.
-    ///// Written from the pseudocode at: https://cse442-17f.github.io/A-Star-Search-and-Dijkstras-Algorithm/
-    ///// </summary>
-    //public Path FindShortestPath(Node start, Node goal)
-    //{
-    //    var explore = new PriorityQueue<Path, long>();
-    //    explore.Enqueue(Path.Begin(start), 0);
+    record Node(Vector2 Position, char Elevation, char Char) : IAStarSearchNode
+    {
+        public int Cost => 1;
+    }
 
-    //    var seen = new HashSet<Node>();
+    static long FindShortestPathToEnd(Node[][] heightmap, IEnumerable<Node> starts, Node end)
+    {
+        var search = new AStarSearch<Node>(node =>
+        {
+            var currentNode = heightmap[(int) node.Position.Y][(int) node.Position.X];
+            return heightmap
+                .GetAdjacent(currentNode.Position, GridUtils.DirectionsExcludingDiagonal)
+                .Where(nextNode => nextNode.Elevation <= currentNode.Elevation + 1);
+        });
 
-    //    while (explore.Count > 0)
-    //    {
-    //        var path = explore.Dequeue(); // this takes out the top priority node
-    //        var node = path.CurrentNode;
-
-    //        // if node is the goal return the path
-    //        if (node == goal)
-    //        {
-    //            return path;
-    //        }
-
-    //        // if we've not already seen the node
-    //        if (!seen.Contains(node))
-    //        {
-    //            foreach (var child in _getSuccessors(node))
-    //            {
-    //                var childPath = path.Append(child);
-    //                explore.Enqueue(childPath, childPath.TotalCost + _heuristic(child, goal)); // the heuristic is added here as a part of the priority
-    //            }
-
-    //            seen.Add(node);
-    //        }
-    //    }
-
-    //    throw new InvalidOperationException("No paths found");
-    //}
+        return search.FindShortestPath(starts, end).TotalCost;
+    }
 }

@@ -171,12 +171,12 @@ public static class GridUtils
     /// Gets the adjacent items in the grid, from all directions including diagonal.
     /// </summary>
     public static IEnumerable<T> GetAdjacent<T>(this T[][] grid, Vector2 position) where T : class =>
-        grid.GetAdjacent(DirectionsIncludingDiagonal, position);
+        grid.GetAdjacent(position, DirectionsIncludingDiagonal);
 
     /// <summary>
     /// Gets the adjacent items in the grid, from any of the specified directions.
     /// </summary>
-    public static IEnumerable<T> GetAdjacent<T>(this T[][] grid, Vector2[] directions, Vector2 position) where T : class
+    public static IEnumerable<T> GetAdjacent<T>(this T[][] grid, Vector2 position, Vector2[] directions) where T : class
     {
         foreach (var dir in directions)
         {

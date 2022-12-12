@@ -535,11 +535,13 @@ public class GridUtilsTests
         [TestCase(4, 3, "")]
         public void GetAdjacent_Tests(int posX, int posY, string expectedResultString)
         {
-            const string gridData = "123 " +
-                                    "456 " +
-                                    "789";
+            const string gridData = """
+                123
+                456
+                789
+                """;
 
-            var grid = gridData.Split(" ")
+            var grid = gridData.ReadLines()
                 .Select((line, y) => line.Select((c, x) => new { Char = c, Position = new Vector2(x, y) }).ToArray())
                 .ToArray();
 
