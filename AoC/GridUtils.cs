@@ -170,13 +170,13 @@ public static class GridUtils
     /// <summary>
     /// Gets the adjacent items in the grid, from all directions including diagonal.
     /// </summary>
-    public static IEnumerable<T> GetAdjacent<T>(this T[][] grid, Vector2 position) where T : class =>
+    public static IEnumerable<T> GetAdjacent<T>(this IReadOnlyList<IReadOnlyList<T>> grid, Vector2 position) where T : class =>
         grid.GetAdjacent(position, DirectionsIncludingDiagonal);
 
     /// <summary>
     /// Gets the adjacent items in the grid, from any of the specified directions.
     /// </summary>
-    public static IEnumerable<T> GetAdjacent<T>(this T[][] grid, Vector2 position, Vector2[] directions) where T : class
+    public static IEnumerable<T> GetAdjacent<T>(this IReadOnlyList<IReadOnlyList<T>> grid, Vector2 position, Vector2[] directions) where T : class
     {
         foreach (var dir in directions)
         {
@@ -191,16 +191,16 @@ public static class GridUtils
     /// <summary>
     /// Gets the item from the grid at the specified position, or null if that position is out of the bounds of the grid.
     /// </summary>
-    public static T? SafeGet<T>(this T[][] grid, Vector2 position) where T : class
+    public static T? SafeGet<T>(this IReadOnlyList<IReadOnlyList<T>> grid, Vector2 position) where T : class
     {
-        var y = position.Y.Round();
+        var y = (int) position.Y;
 
-        if (y < 0 || y >= grid.Length)
+        if (y < 0 || y >= grid.Count)
             return null;
 
-        var x = position.X.Round();
+        var x = (int) position.X;
         var line = grid[y];
-        return x < 0 || x >= line.Length ? null : line[x];
+        return x < 0 || x >= line.Count ? null : line[x];
     }
 
     /// <summary>
@@ -208,16 +208,16 @@ public static class GridUtils
     /// NOTE: Throws exception if the position is out of the bounds of the grid, use <see cref="TryGet"/> if the position is not yet checked.
     /// </summary>
     /// <exception cref="IndexOutOfRangeException" />
-    public static char Get(this string[] grid, Vector2 position) => grid[(int) position.Y][(int) position.X];
+    public static char Get(this IReadOnlyList<string> grid, Vector2 position) => grid[(int) position.Y][(int) position.X];
 
     /// <summary>
     /// Gets the character from the grid at the specified position and returns `true`, or returns `false` if that position is out of the bounds of the grid.
     /// </summary>
-    public static bool TryGet(this string[] grid, Vector2 position, out char chr)
+    public static bool TryGet(this IReadOnlyList<string> grid, Vector2 position, out char chr)
     {
         var y = (int) position.Y;
 
-        if (y < 0 || y >= grid.Length)
+        if (y < 0 || y >= grid.Count)
         {
             chr = default;
             return false;

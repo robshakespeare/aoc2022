@@ -626,7 +626,7 @@ public class GridUtilsTests
             var action = () => grid.Get(new Vector2(x, y));
 
             // ACT & ASSERT
-            action.Should().Throw<IndexOutOfRangeException>();
+            action.Should().Throw<Exception>().Which.Should().Match(e => e is IndexOutOfRangeException || e is ArgumentOutOfRangeException);
         }
     }
 
