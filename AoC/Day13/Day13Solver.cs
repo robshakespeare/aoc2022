@@ -10,7 +10,7 @@ public partial class Day13Solver : ISolver
         input.ToString().Split($"{NewLine}{NewLine}")
             .Select(chunk => chunk.Split(NewLine))
             .Select((pair, index) => (index: index + 1, left: ParsePacket(pair[0]), right: ParsePacket(pair[1])))
-            .Where(pair => pair.left.CompareElements(pair.right) == true)
+            .Where(pair => pair.left.CompareToElement(pair.right) == true)
             .Sum(pair => pair.index);
 
     public long? SolvePart2(PuzzleInput input)
@@ -34,11 +34,13 @@ public partial class Day13Solver : ISolver
 
     public abstract class Element
     {
-        public ListElement? Parent { get; private set; }
+        public ListElement? Parent { get; set; }
 
-        public virtual void SetParent(ListElement parent) => Parent = parent;
-
-        public abstract bool? CompareElements(Element right);
+        /// <summary>
+        /// Returns true if they are in the right order (this, i.e. left, is before right),
+        /// false if they are in the wrong order, or if neither, returns null meaning continue checking.
+        /// </summary>
+        public abstract bool? CompareToElement(Element right);
     }
 
     public class ListElement : Element, IComparable<ListElement>
@@ -50,17 +52,17 @@ public partial class Day13Solver : ISolver
         public void AddChild(Element child)
         {
             _elements.Add(child);
-            child.SetParent(this);
+            child.Parent = this;
         }
 
-        public int CompareTo(ListElement? other) => CompareElements(other ?? throw new InvalidOperationException("Unexpected null other")) switch
+        public int CompareTo(ListElement? other) => CompareToElement(other ?? throw new InvalidOperationException("Unexpected null other")) switch
         {
             true => -1,
             false => 1,
             _ => 0
         };
 
-        public override bool? CompareElements(Element right) => right switch
+        public override bool? CompareToElement(Element right) => right switch
         {
             ListElement rightList => CompareLists(Elements, rightList.Elements),
             IntegerElement rightInteger => CompareLists(Elements, new[] {rightInteger}),
@@ -81,7 +83,7 @@ public partial class Day13Solver : ISolver
                     return false;
                 }
 
-                var compare = left[i].CompareElements(right[i]);
+                var compare = left[i].CompareToElement(right[i]);
                 if (compare != null)
                 {
                     return compare;
@@ -107,7 +109,7 @@ public partial class Day13Solver : ISolver
 
         public override string ToString() => Value.ToString();
 
-        public override bool? CompareElements(Element right) => right switch
+        public override bool? CompareToElement(Element right) => right switch
         {
             IntegerElement rightInteger when Value < rightInteger.Value => true,
             IntegerElement rightInteger when Value > rightInteger.Value => false,
@@ -121,19 +123,17 @@ public partial class Day13Solver : ISolver
 
     static Packet ParsePacket(string line, bool isDivider)
     {
-        var parts = PartsRegex.Matches(line[1..^1]).Select(match => match.Value);
+        var tokens = PartsRegex.Matches(line[1..^1]).Select(match => match.Value);
         var root = new Packet {IsDivider = isDivider};
         ListElement currentList = root;
 
-        foreach (var part in parts)
-        {
-            switch (part)
+        foreach (var token in tokens)
+            switch (token)
             {
                 case "[":
                 {
                     // new list
                     var newList = new ListElement();
-                    newList.SetParent(currentList);
                     currentList.AddChild(newList);
                     currentList = newList;
                     break;
@@ -147,10 +147,9 @@ public partial class Day13Solver : ISolver
                     break;
                 default:
                     // assume this must be an integer
-                    currentList.AddChild(new IntegerElement(int.Parse(part)));
+                    currentList.AddChild(new IntegerElement(int.Parse(token)));
                     break;
             }
-        }
 
         return root;
     }
@@ -158,6 +157,6 @@ public partial class Day13Solver : ISolver
     static readonly Regex PartsRegex = BuildPartsRegex();
 
     // Read a line, [ means new list, \d means an int, comma means next item, ] means end current list
-    [GeneratedRegex("\\[|\\d+|,|\\]", RegexOptions.Compiled)]
+    [GeneratedRegex(@"\[|\d+|,|\]", RegexOptions.Compiled)]
     private static partial Regex BuildPartsRegex();
 }
