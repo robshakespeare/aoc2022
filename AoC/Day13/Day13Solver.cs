@@ -10,7 +10,7 @@ public partial class Day13Solver : ISolver
         input.ToString().Split($"{NewLine}{NewLine}")
             .Select(chunk => chunk.Split(NewLine))
             .Select((pair, index) => (index: index + 1, left: ParsePacket(pair[0]), right: ParsePacket(pair[1])))
-            .Where(pair => pair.left.CompareElements(pair.right) == true)
+            .Where(pair => pair.left.CompareToElement(pair.right) == true)
             .Sum(pair => pair.index);
 
     public long? SolvePart2(PuzzleInput input)
@@ -38,7 +38,11 @@ public partial class Day13Solver : ISolver
 
         public virtual void SetParent(ListElement parent) => Parent = parent;
 
-        public abstract bool? CompareElements(Element right);
+        /// <summary>
+        /// Returns true if they are in the right order (this, i.e. left, is before right),
+        /// false if they are in the wrong order, or if neither, returns null meaning continue checking.
+        /// </summary>
+        public abstract bool? CompareToElement(Element right);
     }
 
     public class ListElement : Element, IComparable<ListElement>
@@ -53,14 +57,14 @@ public partial class Day13Solver : ISolver
             child.SetParent(this);
         }
 
-        public int CompareTo(ListElement? other) => CompareElements(other ?? throw new InvalidOperationException("Unexpected null other")) switch
+        public int CompareTo(ListElement? other) => CompareToElement(other ?? throw new InvalidOperationException("Unexpected null other")) switch
         {
             true => -1,
             false => 1,
             _ => 0
         };
 
-        public override bool? CompareElements(Element right) => right switch
+        public override bool? CompareToElement(Element right) => right switch
         {
             ListElement rightList => CompareLists(Elements, rightList.Elements),
             IntegerElement rightInteger => CompareLists(Elements, new[] {rightInteger}),
@@ -81,7 +85,7 @@ public partial class Day13Solver : ISolver
                     return false;
                 }
 
-                var compare = left[i].CompareElements(right[i]);
+                var compare = left[i].CompareToElement(right[i]);
                 if (compare != null)
                 {
                     return compare;
@@ -107,7 +111,7 @@ public partial class Day13Solver : ISolver
 
         public override string ToString() => Value.ToString();
 
-        public override bool? CompareElements(Element right) => right switch
+        public override bool? CompareToElement(Element right) => right switch
         {
             IntegerElement rightInteger when Value < rightInteger.Value => true,
             IntegerElement rightInteger when Value > rightInteger.Value => false,
