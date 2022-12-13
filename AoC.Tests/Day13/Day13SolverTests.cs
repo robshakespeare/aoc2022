@@ -6,7 +6,31 @@ public class Day13SolverTests
 {
     private readonly Day13Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = """
+        [1,1,3,1,1]
+        [1,1,5,1,1]
+
+        [[1],[2,3,4]]
+        [[1],4]
+
+        [9]
+        [[8,7,6]]
+
+        [[4,4],4,4]
+        [[4,4],4,4,4]
+
+        [7,7,7,7]
+        [7,7,7]
+
+        []
+        [3]
+
+        [[[]]]
+        [[]]
+
+        [1,[2,[3,[4,[5,6,7]]]],8,9]
+        [1,[2,[3,[4,[5,6,0]]]],8,9]
+        """;
 
     [Test]
     public void Part1Example()
@@ -15,7 +39,7 @@ public class Day13SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(13);
     }
 
     [Test]
@@ -25,7 +49,7 @@ public class Day13SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(6046);
     }
 
     [Test]
