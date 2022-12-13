@@ -15,7 +15,7 @@ public class Day13Solver : ISolver
 
         foreach (var pair in pairs)
         {
-            if (pair.LeftList.CompareTo(pair.RightList) == true)
+            if (pair.LeftList.CompareToElement(pair.RightList) == true)
             {
                 correctPairs.Add(pair);
             }
@@ -26,8 +26,30 @@ public class Day13Solver : ISolver
 
     public long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        var dividers = """
+            [[2]]
+            [[6]]
+            """.ReadLines().Select(ParseLine).ToArray();
+        dividers[0].IsDivider = dividers[1].IsDivider = true; // rs-todo: do better!!!
+
+        var listElements = input.ReadLines()
+            .Where(line => line != "")
+            .Select(ParseLine)
+            .Concat(dividers)
+            .ToArray();
+
+        Array.Sort(listElements);
+
+        return listElements
+            .Select((list, i) => (list, index: i + 1))
+            .Where(x => x.list.IsDivider)
+            .Aggregate(1, (agg, cur) => agg * cur.index);
     }
+
+    //public class ListElementComparer : IComparer<ListElement>
+    //{
+        
+    //}
 
     // Packet
     // Packet data consists of lists and integers
@@ -47,11 +69,13 @@ public class Day13Solver : ISolver
             Level = parent.Level + 1;
         }
 
-        public abstract bool? CompareTo(Element right);
+        public abstract bool? CompareToElement(Element right);
     }
 
-    public class ListElement : Element
+    public class ListElement : Element, IComparable<ListElement>
     {
+        public bool IsDivider { get; set; }
+
         private readonly List<Element> _elements = new();
 
         public IReadOnlyList<Element> Elements => _elements;
@@ -62,9 +86,25 @@ public class Day13Solver : ISolver
             child.SetParent(this);
         }
 
+        public int CompareTo(ListElement? other)
+        {
+            // Less than zero	The current instance precedes the object specified by the CompareTo method in the sort order.
+            // Zero This current instance occurs in the same position in the sort order as the object specified by the CompareTo method.
+            // Greater than zero This current instance follows the object specified by the CompareTo method in the sort order.
+
+            var compare = CompareToElement(other);
+
+            return compare switch
+            {
+                true => -1,
+                false => 1,
+                _ => 0
+            };
+        }
+
         public override string ToString() => $"[{string.Join(",", Elements)}]";
 
-        public override bool? CompareTo(Element right)
+        public override bool? CompareToElement(Element right)
         {
             return right switch
             {
@@ -93,7 +133,7 @@ public class Day13Solver : ISolver
                     return false;
                 }
 
-                var compare = left[i].CompareTo(right[i]);
+                var compare = left[i].CompareToElement(right[i]);
                 if (compare != null)
                 {
                     return compare;
@@ -115,7 +155,7 @@ public class Day13Solver : ISolver
 
         public override string ToString() => Value.ToString();
 
-        public override bool? CompareTo(Element right)
+        public override bool? CompareToElement(Element right)
         {
             return right switch
             {
