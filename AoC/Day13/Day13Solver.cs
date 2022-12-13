@@ -34,9 +34,7 @@ public partial class Day13Solver : ISolver
 
     public abstract class Element
     {
-        public ListElement? Parent { get; private set; }
-
-        public virtual void SetParent(ListElement parent) => Parent = parent;
+        public ListElement? Parent { get; set; }
 
         /// <summary>
         /// Returns true if they are in the right order (this, i.e. left, is before right),
@@ -54,7 +52,7 @@ public partial class Day13Solver : ISolver
         public void AddChild(Element child)
         {
             _elements.Add(child);
-            child.SetParent(this);
+            child.Parent = this;
         }
 
         public int CompareTo(ListElement? other) => CompareToElement(other ?? throw new InvalidOperationException("Unexpected null other")) switch
@@ -125,19 +123,17 @@ public partial class Day13Solver : ISolver
 
     static Packet ParsePacket(string line, bool isDivider)
     {
-        var parts = PartsRegex.Matches(line[1..^1]).Select(match => match.Value);
+        var tokens = PartsRegex.Matches(line[1..^1]).Select(match => match.Value);
         var root = new Packet {IsDivider = isDivider};
         ListElement currentList = root;
 
-        foreach (var part in parts)
-        {
-            switch (part)
+        foreach (var token in tokens)
+            switch (token)
             {
                 case "[":
                 {
                     // new list
                     var newList = new ListElement();
-                    newList.SetParent(currentList);
                     currentList.AddChild(newList);
                     currentList = newList;
                     break;
@@ -151,10 +147,9 @@ public partial class Day13Solver : ISolver
                     break;
                 default:
                     // assume this must be an integer
-                    currentList.AddChild(new IntegerElement(int.Parse(part)));
+                    currentList.AddChild(new IntegerElement(int.Parse(token)));
                     break;
             }
-        }
 
         return root;
     }
@@ -162,6 +157,6 @@ public partial class Day13Solver : ISolver
     static readonly Regex PartsRegex = BuildPartsRegex();
 
     // Read a line, [ means new list, \d means an int, comma means next item, ] means end current list
-    [GeneratedRegex("\\[|\\d+|,|\\]", RegexOptions.Compiled)]
+    [GeneratedRegex(@"\[|\d+|,|\]", RegexOptions.Compiled)]
     private static partial Regex BuildPartsRegex();
 }
