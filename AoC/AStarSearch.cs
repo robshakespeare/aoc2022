@@ -50,12 +50,12 @@ public class AStarSearch<TNode> where TNode : IAStarSearchNode, IEquatable<TNode
     }
 
     /// <summary>
-    /// Finds the shortest path between the two specified locations in the specified grid.
+    /// Finds the shortest path between a start point and a goal.
     /// </summary>
     public Path FindShortestPath(TNode start, TNode goal) => FindShortestPath(new[] {start}, goal);
 
     /// <summary>
-    /// Finds the shortest path between any number of start points and a goal in the specified grid.
+    /// Finds the shortest path between any number of start points and a goal.
     /// Written from the pseudocode at: https://cse442-17f.github.io/A-Star-Search-and-Dijkstras-Algorithm/
     /// </summary>
     public Path FindShortestPath(IEnumerable<TNode> starts, TNode goal)
