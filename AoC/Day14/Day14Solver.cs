@@ -1,60 +1,77 @@
-using System.Linq;
-
 namespace AoC.Day14;
 
-public class Day14Solver : ISolver
+public class Day14Solver : ISolver, IVisualize
 {
     public string DayName => "Regolith Reservoir";
 
-    static readonly Vector2 StartPoint = new(500, 0);
+    static readonly Vector2 SandSource = new(500, 0);
 
-    public long? SolvePart1(PuzzleInput input)
+    static readonly Vector2[] PossibleDirections =
     {
-        var map = ParseMap(input);
+        GridUtils.South,
+        GridUtils.South + GridUtils.West,
+        GridUtils.South + GridUtils.East
+    };
+
+    const char SourceChar = '+';
+    const char RockChar = '#';
+    const char AirChar = '.';
+    const char SandChar = 'o';
+
+    /// <summary>
+    /// How many units of sand come to rest before sand starts flowing into the abyss below?
+    /// </summary>
+    public long? SolvePart1(PuzzleInput input) => SimulateSandPouring(ParseMap(input, includeFloor: false)).RestingSandCount;
+
+    /// <summary>
+    /// How many units of sand come to rest before the source of the sand becomes blocked?
+    /// </summary>
+    public long? SolvePart2(PuzzleInput input) => SimulateSandPouring(ParseMap(input, includeFloor: true)).RestingSandCount;
+
+    /// <summary>
+    /// Simulate the sand pouring until sand starts flowing into the abyss below or the source of the sand becomes blocked.
+    /// Returns how many units of sand come to rest.
+    /// </summary>
+    static (int RestingSandCount, Cell[][] Grid) SimulateSandPouring(string map)
+    {
         var grid = map.ToGrid((pos, chr) => new Cell(pos, chr));
-        var gridStartPoint = new Vector2(grid[0].Select((c, x) => (c, x)).Single(p => p.c.Char == '+').x, 0); // rs-todo: yuk!
-
-        // Simulate the sand pouring until sand starts flowing into the abyss below
-        // How many units of sand come to rest before sand starts flowing into the abyss below?
+        var sandSource = new Vector2(x: grid[0].Select(c => c.Char).ToList().IndexOf(SourceChar), y: 0);
         var abyssReached = false;
+        var sourceBlocked = false;
         var restingSandCount = 0;
-        var possibleDirections = new[]
-        {
-            GridUtils.South,
-            GridUtils.South + GridUtils.West,
-            GridUtils.South + GridUtils.East
-        };
 
-        while (!abyssReached)
+        while (!abyssReached && !sourceBlocked)
         {
-            var position = gridStartPoint;
+            var position = sandSource;
             var comeToRest = false;
 
             while (!abyssReached && !comeToRest)
             {
-                var nextCell = possibleDirections
-                    .Select(dir => position + dir)
-                    .Select(nextPosition => grid.SafeGet(nextPosition) ?? new Cell(nextPosition, '.') {IsOutOfBounds = true})
-                    .FirstOrDefault(cell => cell.IsAir);
+                var nextAirSpace = GetNextAirSpace(grid, position);
 
-                if (nextCell == null)
+                if (nextAirSpace == null)
                 {
                     comeToRest = true;
                     restingSandCount++;
-                    grid[(int)position.Y][(int)position.X].Char = 'o';
+                    grid[(int) position.Y][(int) position.X].Char = SandChar;
+
+                    if (position == sandSource)
+                    {
+                        sourceBlocked = true;
+                    }
                 }
-                else if (nextCell.IsOutOfBounds)
+                else if (nextAirSpace.IsOutOfBounds)
                 {
                     abyssReached = true;
                 }
                 else
                 {
-                    position = nextCell.Position;
+                    position = nextAirSpace.Position;
                 }
             }
         }
 
-        return restingSandCount;
+        return (restingSandCount, grid);
     }
 
     class Cell
@@ -62,7 +79,7 @@ public class Day14Solver : ISolver
         public Vector2 Position { get; }
         public char Char { get; set; }
         public bool IsOutOfBounds { get; init; }
-        public bool IsAir => Char == '.';
+        public bool IsAir => Char == AirChar;
 
         public Cell(Vector2 position, char chr)
         {
@@ -71,100 +88,59 @@ public class Day14Solver : ISolver
         }
     }
 
-    public long? SolvePart2(PuzzleInput input)
+    static Cell? GetNextAirSpace(Cell[][] grid, Vector2 position)
     {
-        //var map = ParseMap(input);
-        var grid =
-            input.ReadLines()
-                .Select(ParseLineToPath)
-                .SelectMany(PlotPath)
-                .Distinct()
-                //.SelectMany((line, y) => line.Select((chr, x) => (chr, pos: new Vector2(x, y))))
-                .ToDictionary(x => x, x => new Cell(x, '#'));
-        //var gridStartPoint = new Vector2(grid[0].Select((c, x) => (c, x)).Single(p => p.c.Char == '+').x, 0); // rs-todo: yuk!
-
-        var gridStartPoint = StartPoint;
-
-        // Simulate the sand pouring until sand starts flowing into the abyss below
-        // How many units of sand come to rest before sand starts flowing into the abyss below?
-        var abyssReached = false;
-        var restingSandCount = 0;
-        var possibleDirections = new[]
+        foreach (var direction in PossibleDirections)
         {
-            GridUtils.South,
-            GridUtils.South + GridUtils.West,
-            GridUtils.South + GridUtils.East
-        };
+            var nextPosition = position + direction;
+            var x = (int) nextPosition.X;
+            var y = (int) nextPosition.Y;
 
-        var height = grid.Values.Max(x => (int)x.Position.Y);
-        var maxHeight = height + 2;
-
-        //grid.ToStringGrid(x => x.Key, x => x.Value.Char, 'X')
-        //    .RenderGridToConsole();
-        //return null;
-
-        while (!abyssReached)
-        {
-            var position = gridStartPoint;
-            var comeToRest = false;
-
-            while (!abyssReached && !comeToRest)
+            var outOfBounds = y >= grid.Length || x < 0 || x >= grid[y].Length;
+            if (outOfBounds)
             {
-                var nextCell = possibleDirections
-                    .Select(dir => position + dir)
-                    //.Select(nextPosition => grid.SafeGet(nextPosition) ?? new Cell(nextPosition, ((int)nextPosition.Y) == maxHeight ? '#' : '.') { IsOutOfBounds = false })
+                return new Cell(nextPosition, AirChar) {IsOutOfBounds = true};
+            }
 
-                    .Select(nextPosition => grid.TryGetValue(nextPosition, out var cell)
-                                            ? cell
-                                            : new Cell(nextPosition, ((int)nextPosition.Y) == maxHeight ? '#' : '.') { IsOutOfBounds = false })
-
-                    .FirstOrDefault(cell => cell.IsAir);
-
-                if (nextCell == null)
-                {
-                    if (position == gridStartPoint)
-                    {
-                        abyssReached = true;
-                    }
-
-                    comeToRest = true;
-                    restingSandCount++;
-                    //grid[(int)position.Y][(int)position.X].Char = 'o';
-
-                    grid[position] = new Cell(position, 'o');
-
-                    //if (restingSandCount == 93)
-                    //{
-                    //    grid.ToStringGrid(x => x.Key, x => x.Value.Char, '.')
-                    //            .RenderGridToConsole();
-                    //    return null;
-                    //}
-                }
-                else if (nextCell.IsOutOfBounds)
-                {
-                    abyssReached = true;
-                }
-                else
-                {
-                    position = nextCell.Position;
-                }
+            var nextCell = grid[y][x];
+            if (nextCell.IsAir)
+            {
+                return nextCell;
             }
         }
 
-        return restingSandCount;
+        return null;
     }
 
-    static string ParseMap(string input) =>
-        input.ReadLines()
+    static string ParseMap(string input, bool includeFloor)
+    {
+        var rocks = input.ReadLines()
             .Select(ParseLineToPath)
             .SelectMany(PlotPath)
-            .Append(StartPoint)
-            .ToStringGrid(x => x, p => p == StartPoint ? '+' : '#', '.')
-            .RenderGridToString();
+            .ToArray();
 
-    static IEnumerable<Vector2> PlotPath(IReadOnlyList<Vector2> path)
+        if (includeFloor)
+        {
+            var height = rocks.Max(rock => (int) rock.Y);
+            var floorY = height + 2;
+            var floorWidth = floorY + 1 + floorY;
+
+            rocks = rocks.Concat(PlotPath(new[]
+            {
+                new Vector2(SandSource.X - (int) (floorWidth / 2f), floorY),
+                new Vector2(SandSource.X + (int) (floorWidth / 2f), floorY)
+            })).ToArray();
+        }
+
+        return rocks
+            .Append(SandSource)
+            .ToStringGrid(p => p, p => p == SandSource ? SourceChar : RockChar, AirChar)
+            .RenderGridToString();
+    }
+
+    static IEnumerable<Vector2> PlotPath(Vector2[] path)
     {
-        var current = path.First();
+        var current = path[0];
         yield return current;
 
         foreach (var target in path.Skip(1))
@@ -178,9 +154,26 @@ public class Day14Solver : ISolver
         }
     }
 
-    static IReadOnlyList<Vector2> ParseLineToPath(string line) =>
-        line.Split(" -> ")
-            .Select(chunk => chunk.Split(","))
-            .Select(pair => new Vector2(int.Parse(pair[0]), int.Parse(pair[1])))
-            .ToArray();
+    static Vector2[] ParseLineToPath(string line) => line.Split(" -> ")
+        .Select(chunk => chunk.Split(","))
+        .Select(pair => new Vector2(int.Parse(pair[0]), int.Parse(pair[1])))
+        .ToArray();
+
+    public async IAsyncEnumerable<string> GetVisualizationAsync(PuzzleInput input)
+    {
+        var newLine = Environment.NewLine;
+
+        string Render(string message, bool includeFloor)
+        {
+            var grid = SimulateSandPouring(ParseMap(input, includeFloor))
+                .Grid.SelectMany(line => line).ToStringGrid(x => x.Position, x => x.Char, AirChar).RenderGridToString();
+            return $"{message}{newLine}{newLine}{grid}{newLine}";
+        }
+
+        var part1 = Render("Part 1 (without floor):", includeFloor: false);
+        yield return $"{part1}{newLine}Rendering part 2...";
+        await Task.Delay(50);
+        var part2 = Render("Part 2 (with floor):", includeFloor: true);
+        yield return $"{part1}{newLine}{part2}";
+    }
 }
