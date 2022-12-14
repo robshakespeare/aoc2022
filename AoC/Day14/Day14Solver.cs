@@ -32,13 +32,19 @@ public class Day14Solver : ISolver, IVisualize
     /// Simulate the sand pouring until sand starts flowing into the abyss below or the source of the sand becomes blocked.
     /// Returns how many units of sand come to rest.
     /// </summary>
-    static (int RestingSandCount, Cell[][] Grid) SimulateSandPouring(string map)
+    static (int RestingSandCount, List<string> Frames) SimulateSandPouring(string map, bool renderFrames = false)
     {
         var grid = map.ToGrid((pos, chr) => new Cell(pos, chr));
         var sandSource = new Vector2(x: grid[0].Select(c => c.Char).ToList().IndexOf(SourceChar), y: 0);
         var abyssReached = false;
         var sourceBlocked = false;
         var restingSandCount = 0;
+
+        var height = grid.Length;
+        var width = grid[0].Length;
+        var frames = new List<string>();
+
+        void Render() => grid.SelectMany(line => line).RenderWorldToViewport(x => x.Position, x => x.Char, AirChar, width, height);
 
         while (!abyssReached && !sourceBlocked)
         {
@@ -55,23 +61,15 @@ public class Day14Solver : ISolver, IVisualize
                     restingSandCount++;
                     grid[(int) position.Y][(int) position.X].Char = SandChar;
 
-                    if (position == sandSource)
-                    {
-                        sourceBlocked = true;
-                    }
+                    if (position == sandSource) sourceBlocked = true;
+                    if (renderFrames) Render();
                 }
-                else if (nextAirSpace.IsOutOfBounds)
-                {
-                    abyssReached = true;
-                }
-                else
-                {
-                    position = nextAirSpace.Position;
-                }
+                else if (nextAirSpace.IsOutOfBounds) abyssReached = true;
+                else position = nextAirSpace.Position;
             }
         }
 
-        return (restingSandCount, grid);
+        return (restingSandCount, frames);
     }
 
     class Cell
@@ -161,19 +159,87 @@ public class Day14Solver : ISolver, IVisualize
 
     public async IAsyncEnumerable<string> GetVisualizationAsync(PuzzleInput input)
     {
-        var newLine = Environment.NewLine;
+        var frames = SimulateSandPouring(ParseMap(input, includeFloor: false), renderFrames: true).Frames;
 
-        string Render(string message, bool includeFloor)
+        foreach (var frame in frames)
         {
-            var grid = SimulateSandPouring(ParseMap(input, includeFloor))
-                .Grid.SelectMany(line => line).ToStringGrid(x => x.Position, x => x.Char, AirChar).RenderGridToString();
-            return $"{message}{newLine}{newLine}{grid}{newLine}";
+            yield return frame;
+            await Task.Delay(1);
         }
 
-        var part1 = Render("Part 1 (without floor):", includeFloor: false);
-        yield return $"{part1}{newLine}Rendering part 2...";
-        await Task.Delay(50);
-        var part2 = Render("Part 2 (with floor):", includeFloor: true);
-        yield return $"{part1}{newLine}{part2}";
+        //var map = ParseMap(input, includeFloor: false);
+        //var grid = map.ToGrid((pos, chr) => new Cell(pos, chr));
+        //var sandSource = new Vector2(x: grid[0].Select(c => c.Char).ToList().IndexOf(SourceChar), y: 0);
+        //var abyssReached = false;
+        //var sourceBlocked = false;
+        ////var restingSandCount = 0;
+
+        //var height = grid.Length;
+        //var width = grid[0].Length;
+
+        //string Render(Cell[][] grid) => grid.SelectMany(line => line).RenderWorldToViewport(x => x.Position, x => x.Char, AirChar, width, height);
+
+        //while (!abyssReached && !sourceBlocked)
+        //{
+        //    var position = sandSource;
+        //    var comeToRest = false;
+
+        //    while (!abyssReached && !comeToRest)
+        //    {
+        //        var nextAirSpace = GetNextAirSpace(grid, position);
+
+        //        if (nextAirSpace == null)
+        //        {
+        //            comeToRest = true;
+        //            //restingSandCount++;
+        //            grid[(int)position.Y][(int)position.X].Char = SandChar;
+
+        //            yield return Render(grid);
+        //            await Task.Delay(1);
+
+        //            if (position == sandSource)
+        //            {
+        //                sourceBlocked = true;
+        //            }
+        //        }
+        //        else if (nextAirSpace.IsOutOfBounds)
+        //        {
+        //            abyssReached = true;
+        //        }
+        //        else
+        //        {
+        //            position = nextAirSpace.Position;
+        //        }
+        //    }
+        //}
+
+        //var newLine = Environment.NewLine;
+
+        //string Render(Cell[][] grid) => grid.SelectMany(line => line).ToStringGrid(x => x.Position, x => x.Char, AirChar).RenderGridToString();
+        //string RenderFrame(string message, string grid) => $"{message}{newLine}{newLine}{grid}{newLine}";
+
+        //var part1Frames = new List<string>();
+        //SimulateSandPouring(ParseMap(input, includeFloor: false), grid => part1Frames.Add(Render(grid)));
+
+        //var count = 0;
+        //foreach (var part1Frame in part1Frames)
+        //{
+        //    yield return RenderFrame("Part 1 (without floor):", part1Frame);
+        //    await Task.Delay(1);
+        //    count++;
+
+        //    if (count > 30)
+        //    {
+        //        break;
+        //    }
+        //}
+
+        //var part1 = RenderFrame("Part 1 (without floor):", part1Frames[^1]);
+        //yield return $"{part1}{newLine}Rendering part 2...";
+        //await Task.Delay(1);
+
+        //var part2FinalFrame = Render(SimulateSandPouring(ParseMap(input, includeFloor: true)).Grid);
+        //var part2 = RenderFrame("Part 2 (with floor):", part2FinalFrame);
+        //yield return $"{part1}{newLine}{part2}";
     }
 }
