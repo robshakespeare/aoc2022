@@ -50,7 +50,7 @@ public class Day15SolverTests
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(56000011);
     }
 
     [Test]
@@ -60,6 +60,7 @@ public class Day15SolverTests
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().NotBe(-1327031365); // Obviously an Int32 overflow, should know better to use Int64!
+        part2Result.Should().Be(12518502636475);
     }
 }
