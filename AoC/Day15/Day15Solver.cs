@@ -1,3 +1,5 @@
+using Microsoft.VisualBasic;
+
 namespace AoC.Day15;
 
 public class Day15Solver : ISolver
@@ -15,8 +17,13 @@ public class Day15Solver : ISolver
 
         var map = new Dictionary<Vector2, char>();
 
+        var minList = new List<int>();
+        var maxList = new List<int>();
+
         foreach (var sensorReport in sensorReports)
         {
+
+
             //if (map.ContainsKey(sensorReport.SensorPosition))
             //{
             //    throw new InvalidOperationException($"Sensor at {sensorReport.SensorPosition} would overlap {map[sensorReport.SensorPosition]} which is already there");
@@ -30,16 +37,29 @@ public class Day15Solver : ISolver
             //map.Add(sensorReport.SensorPosition, SensorChar);
             //map.Add(sensorReport.BeaconPosition, BeaconChar);
 
+            ////=====
             map[sensorReport.SensorPosition] = SensorChar;
             map[sensorReport.BeaconPosition] = BeaconChar;
 
-            PlotSensorReportCoverage(sensorReport, map, targetY);
+            var bounds = sensorReport.GetMinMaxXForY(targetY);
+            if (bounds != null)
+            {
+                minList.Add(bounds.Value.MinX);
+                maxList.Add(bounds.Value.MaxX);
+            }
+            //PlotSensorReportCoverage(sensorReport, map, targetY);
         }
 
-        return map.Count(p => (int) p.Key.Y == targetY && p.Value == NoBeaconChar);
+        var numSensorsOrBeaconsOnLine = map.Count(p => (int)p.Key.Y == targetY);
+
+        Console.WriteLine(new { numSensorsOrBeaconsOnLine });
+
+        return maxList.Max() - minList.Min() + 1 - numSensorsOrBeaconsOnLine;
+
+        //return map.Count(p => (int) p.Key.Y == targetY && p.Value == NoBeaconChar);
     }
 
-    static void PlotSensorReportCoverage(SensorReport sensorReport, Dictionary<Vector2, char> map, int targetY)
+    static void PlotSensorReportCoverage(SensorReport sensorReport, Dictionary<Vector2, char> map, int? targetY)
     {
         var width = sensorReport.DistanceBetweenSensorAndBeacon * 2 + 1;
 
@@ -52,7 +72,7 @@ public class Day15Solver : ISolver
             var northY = sensorY - relativeY;
             var southY = sensorY + relativeY;
 
-            if (northY == targetY)
+            if (northY == targetY || targetY == null)
             {
                 PlotPath(
                     new Vector2(sensorX - (int)(width / 2f), northY),
@@ -60,7 +80,7 @@ public class Day15Solver : ISolver
                     map);
             }
 
-            if (southY == targetY)
+            if (southY == targetY || targetY == null)
             {
                 PlotPath(
                     new Vector2(sensorX - (int)(width / 2f), southY),
@@ -93,14 +113,103 @@ public class Day15Solver : ISolver
         }
     }
 
+    /*
+     * Where there are >1 sensors for that y
+     * Work out whether there is a gap in X
+     * Can easily get MinX and MaxX of each sensor
+     * Can easily get MinX and MaxX of the whole line
+     *
+     *
+     */
     public long? SolvePart2(PuzzleInput input)
     {
+        var sensorReports = ParseSensorReports(input);
+        var target = sensorReports.Length < 30 ? 20 : 4000000;
+
+        var minY = sensorReports.Min(x => x.MinSensorY);
+        var maxY = sensorReports.Max(x => x.MaxSensorY);
+        Console.WriteLine(new { minY, maxY });
+
+        var minX = sensorReports.Min(x => x.MinSensorX);
+        var maxX = sensorReports.Max(x => x.MaxSensorX);
+        Console.WriteLine(new { minX, maxX });
+
+        var count = 0;
+
+        for (var i = 0; i <= target; i++)
+        {
+            //count += sensorReports.Count(x => x.MinSensorY >= y && x.MaxSensorY <= y);
+            var sensorsOnThisLine = sensorReports.Count(x => i >= x.MinSensorX && i <= x.MaxSensorX &&
+                                                             i >= x.MinSensorY && i <= x.MaxSensorY);
+
+            if (sensorsOnThisLine > 1)
+            {
+                count++;
+            }
+        }
+
+        Console.WriteLine(new { count });
+
+        foreach (var sensorReport in sensorReports)
+        {
+            Console.WriteLine(sensorReport.DistanceBetweenSensorAndBeacon);
+        }
+
         return null;
     }
+
+    //public long? SolvePart2(PuzzleInput input)
+    //{
+    //    var sensorReports = ParseSensorReports(input);
+    //    //var targetY = sensorReports.Length < 30 ? 10 : 2000000;
+
+    //    var map = new Dictionary<Vector2, char>();
+
+    //    foreach (var sensorReport in sensorReports)
+    //    {
+    //        PlotSensorReportCoverage(sensorReport, map, null);
+
+    //        map[sensorReport.BeaconPosition] = BeaconChar;
+    //        map[sensorReport.SensorPosition] = SensorChar;
+    //    }
+
+    //    var minBounds = new Vector2(map.Min(i => i.Key.X), map.Min(i => i.Key.Y));
+    //    var maxBounds = new Vector2(map.Max(i => i.Key.X), map.Max(i => i.Key.Y));
+
+    //    Console.WriteLine(minBounds);
+    //    map.ToStringGrid(p => p.Key, p => p.Value, '.').RenderGridToConsole();
+    //    Console.WriteLine(maxBounds);
+
+    //    return null;
+    //}
 
     public record SensorReport(Vector2 SensorPosition, Vector2 BeaconPosition)
     {
         public long DistanceBetweenSensorAndBeacon { get; } = MathUtils.ManhattanDistance(BeaconPosition, SensorPosition);
+
+        public long MinSensorY { get; } = (int) SensorPosition.Y - MathUtils.ManhattanDistance(BeaconPosition, SensorPosition);
+
+        public long MaxSensorY { get; } = (int) SensorPosition.Y + MathUtils.ManhattanDistance(BeaconPosition, SensorPosition);
+
+        public long MinSensorX { get; } = (int) SensorPosition.X - MathUtils.ManhattanDistance(BeaconPosition, SensorPosition);
+
+        public long MaxSensorX { get; } = (int) SensorPosition.X + MathUtils.ManhattanDistance(BeaconPosition, SensorPosition);
+
+        public (int MinX, int MaxX)? GetMinMaxXForY(int y)
+        {
+            if (y >= MinSensorY && y <= MaxSensorY)
+            {
+                var delta = Math.Abs(y - (int) SensorPosition.Y);
+
+                //var minX = (int) SensorPosition.X - (int) DistanceBetweenSensorAndBeacon - delta;
+                var minX = (int) SensorPosition.X - (int) DistanceBetweenSensorAndBeacon + delta;
+                var maxX = (int) SensorPosition.X + (int) DistanceBetweenSensorAndBeacon - delta;
+
+                return (minX, maxX);
+            }
+
+            return null;
+        }
     }
 
     static SensorReport[] ParseSensorReports(string input) =>
