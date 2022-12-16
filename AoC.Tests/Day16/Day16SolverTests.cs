@@ -33,7 +33,7 @@ public class Day16SolverTests
     }
 
     [Test]
-    [LongRunningTest("1 second")]
+    [LongRunningTest("500ms")]
     public void Part1ReTest()
     {
         // ACT
@@ -54,7 +54,7 @@ public class Day16SolverTests
     }
 
     [Test]
-    [LongRunningTest("5 minutes!!")]
+    [LongRunningTest("12 seconds")]
     public void Part2ReTest()
     {
         // ACT
