@@ -5,11 +5,8 @@ public class Day16Solver : ISolver
     public string DayName => "Proboscidea Volcanium";
 
     /// <summary>
-    /// Returns a dictionary where the key is the source and destination valve,
-    /// and the value is the number of steps. rs-todo: fix this comment if nec: Note that the dest might not be reachable from source,
-    /// so in that case the cost will be null indicating unreachable.
+    /// Returns a dictionary where the key is the source and destination valve, and the value is the number of steps.
     /// </summary>
-    /// <returns></returns>
     static Dictionary<(Valve Source, Valve Dest), int> BuildCostFromValveToValve(IReadOnlyDictionary<string, Valve> valves)
     {
         var search = new AStarSearch<ValveNode>(valveNode => valveNode.Valve.LeadsTo.Select(valveId => valves[valveId]).Select(valve => new ValveNode(valve)));
@@ -20,12 +17,9 @@ public class Day16Solver : ISolver
         {
             foreach (var destValve in valves.Values)
             {
-                if (sourceValve != destValve)
-                {
-                    var path = search.FindShortestPath(new ValveNode(sourceValve), new ValveNode(destValve));
+                var path = search.FindShortestPath(new ValveNode(sourceValve), new ValveNode(destValve));
 
-                    result.Add((sourceValve, destValve), path.TotalCost);
-                }
+                result.Add((sourceValve, destValve), path.TotalCost);
             }
         }
 
@@ -177,7 +171,7 @@ public class Day16Solver : ISolver
 
             foreach (var closedValve in closedValves)
             {
-                var costToReach = CurrentValve == closedValve ? 0 : costMap[(CurrentValve, closedValve)]; // rs-todo: rather than have the `CurrentValve == closedValve` check, could just compute that in costMap, so there would be ones where src and dest is same, and cost is zero
+                var costToReach = costMap[(CurrentValve, closedValve)];
 
                 var costToOpen = costToReach + 1;
 
