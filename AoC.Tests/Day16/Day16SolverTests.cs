@@ -6,7 +6,7 @@ public class Day16SolverTests
 {
     private readonly Day16Solver _sut = new()
     {
-        Reporter = TestContext.Progress.WriteLine
+        Logger = TestContext.Progress.WriteLine
     };
 
     private const string ExampleInput = """
