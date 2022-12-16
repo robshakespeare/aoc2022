@@ -85,6 +85,14 @@ public class Day16Solver : ISolver
 
         var solvePart1 = worldStates.MaxBy(x => x.TotalPressureReleased);
 
+        var test = worldStates.FirstOrDefault(x => x.OpenValves == "DD, BB, JJ, HH, EE, CC");
+
+        if (test != null)
+        {
+            Console.WriteLine(test);
+            Console.WriteLine(test.TotalPressureReleased);
+        }
+
         return solvePart1?.TotalPressureReleased ?? -1;
     }
 
@@ -105,7 +113,7 @@ public class Day16Solver : ISolver
         public int OpenValvesFlowRate { get; }
         public int StepNumber { get; }
         public int TotalPressureReleased { get; }
-        public int[] PressuresReleased { get; }
+        public IEnumerable<int> PressuresReleased { get; }
 
         public override string ToString() => OpenValves;
 
@@ -142,13 +150,16 @@ public class Day16Solver : ISolver
             //PressureReleased += OpenValves.Sum(v => v.FlowRate); 
 
             TotalPressureReleased += OpenValvesFlowRate; // In each step, any open valves release more pressure
-            PressuresReleased = PressuresReleased.Append(OpenValvesFlowRate).ToArray();
+            PressuresReleased = PressuresReleased.Append(OpenValvesFlowRate); //.ToArray();
 
             if (openValve)
             {
                 //OpenValves = OpenValves.Append(CurrentValve).ToArray(); // rs-todo: string more optimal?
                 OpenedValve = CurrentValve;
-                OpenValves = OpenValves == "" ? OpenedValve.Id : $"{OpenValves}, {OpenedValve.Id}";
+
+                string msg = $"{StepNumber}:{OpenedValve.Id}";
+
+                OpenValves = OpenValves == "" ? msg : $"{OpenValves}, {msg}";
                 OpenValvesFlowRate += OpenedValve.FlowRate;
             }
         }
