@@ -5,6 +5,7 @@ public class Day16Solver : ISolver
     public string DayName => "Proboscidea Volcanium";
 
     public Action<string>? Reporter { get; set; }
+    DateTime _lastReported = DateTime.Now;
 
     public long? SolvePart1(PuzzleInput input)
     {
@@ -16,24 +17,38 @@ public class Day16Solver : ISolver
 
         ExploreGreatestTotalPressureReleased(
             context,
-            new Actor("Self", valves["AA"], maxSteps));
+            new [] { new Actor("Self", valves["AA"], maxSteps) });
 
         return context.GreatestTotalPressureReleased;
     }
 
     public long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        const int maxSteps = 26;
+
+        var valves = ParseValves(input);
+        var costMap = BuildCostFromValveToValve(valves);
+        var context = new Context(valves, costMap, maxSteps);
+
+        ExploreGreatestTotalPressureReleased(
+            context,
+            new[]
+            {
+                new Actor("Self", valves["AA"], maxSteps),
+                new Actor("Elephant", valves["AA"], maxSteps)
+            });
+
+        return context.GreatestTotalPressureReleased;
     }
 
-    public record Valve(string Id, int FlowRate, IReadOnlyList<string> LeadsTo) : IAStarSearchNode
+    record Valve(string Id, int FlowRate, IReadOnlyList<string> LeadsTo) : IAStarSearchNode
     {
         public int Cost => 1;
     }
 
-    public readonly record struct Actor(string Name, Valve CurrentValve, int RemainingSteps);
+    readonly record struct Actor(string Name, Valve CurrentValve, int RemainingSteps);
 
-    public record Context(
+    record Context(
         IReadOnlyDictionary<string, Valve> Valves,
         Dictionary<(Valve Source, Valve Dest), int> CostMap,
         int MaxSteps)
@@ -61,12 +76,14 @@ public class Day16Solver : ISolver
         return result;
     }
 
-    static void ExploreGreatestTotalPressureReleased(
+    void ExploreGreatestTotalPressureReleased(
         Context context,
-        Actor actor,
+        Actor[] actors,
         string openValves = "",
         int currentTotal = 0)
     {
+        var actor = actors.MaxBy(x => x.RemainingSteps);
+
         var valvesToClose = new Queue<Valve>(context.Valves.Values.Where(valve => valve.FlowRate > 0 && !openValves.Contains(valve.Id)));
 
         while (valvesToClose.Count > 0)
@@ -86,11 +103,7 @@ public class Day16Solver : ISolver
                 {
                     ExploreGreatestTotalPressureReleased(
                         context,
-                        actor with
-                        {
-                            CurrentValve = valveToClose,
-                            RemainingSteps = stepsLeft
-                        },
+                        actors.Select(a => a.Name != actor.Name ? a : actor with {CurrentValve = valveToClose, RemainingSteps = stepsLeft}).ToArray(),
                         newOpenValves,
                         newTotal);
                 }
@@ -98,6 +111,13 @@ public class Day16Solver : ISolver
         }
 
         context.GreatestTotalPressureReleased = Math.Max(context.GreatestTotalPressureReleased, currentTotal);
+
+        if (DateTime.Now - _lastReported > TimeSpan.FromSeconds(30))
+        {
+            var message = $"GreatestTotalPressureReleased: {context.GreatestTotalPressureReleased} // {DateTime.Now:O}";
+            (Reporter ?? Console.WriteLine).Invoke(message);
+            _lastReported = DateTime.Now;
+        }
     }
 
     static IReadOnlyDictionary<string, Valve> ParseValves(string input) =>
@@ -109,150 +129,4 @@ public class Day16Solver : ISolver
     static readonly Regex ParseInputRegex = new(
         @"Valve (?<valve>[^ ]+) has flow rate=(?<flowRate>\d+); tunnel(s)? lead(s)? to valve(s)? (?<leadsTo>[A-Z, ]+)",
         RegexOptions.Compiled);
-
-    //public class WorldState
-    //{
-    //    public IReadOnlyDictionary<string, Valve> Valves { get; }
-    //    public Valve CurrentValve { get; }
-    //    public Valve? OpenedValve { get; }
-    //    //public Valve[] OpenValves { get; }
-    //    public string OpenValves { get; }
-    //    public int OpenValvesFlowRate { get; }
-    //    public int StepNumber { get; }
-    //    public int TotalPressureReleased { get; }
-    //    public IEnumerable<int> PressuresReleased { get; }
-
-    //    public override string ToString() => OpenValves;
-
-    //    public string OpenValvesAscendingOrdered => string.Join(", ", OpenValves.Split(", ").Order());
-
-    //    //public int GetGreatestPossibleTotalPressureReleased(
-    //    //    Dictionary<(Valve Source, Valve Dest), int> costMap,
-    //    //    int remainingSteps,
-    //    //    int maxSteps)
-    //    //{
-    //    //    // For any closed valve, find out cost to move from here to closed valve, add 1 for opening it, then calc delta from remaining steps
-    //    //    // If delta is greater than zero, calc total pres (steps * flowRate)
-
-    //    //    //var result = TotalPressureReleased;
-
-    //    //    //var closedValves = Valves.Values.Where(v => !OpenValves.Contains(v.Id));
-
-    //    //    //foreach (var closedValve in closedValves)
-    //    //    //{
-    //    //    //    var costToReach = costMap[(CurrentValve, closedValve)];
-
-    //    //    //    var costToOpen = costToReach + 1;
-
-    //    //    //    var stepsLeft = remainingSteps - costToOpen;
-
-    //    //    //    if (stepsLeft > 0)
-    //    //    //    {
-    //    //    //        result += stepsLeft * closedValve.FlowRate;
-    //    //    //    }
-    //    //    //}
-
-    //    //    //return result;
-
-    //    //    var context = new Context();
-
-    //    //    GetGreatestPossibleTotalPressureReleasedX(
-    //    //        Valves,
-    //    //        OpenValves,
-    //    //        TotalPressureReleased,
-    //    //        CurrentValve,
-    //    //        costMap,
-    //    //        remainingSteps,
-    //    //        maxSteps,
-    //    //        context);
-
-    //    //    return context.GreatestTotalPressureReleased;
-    //    //}
-
-        
-
-    //    public WorldState(IReadOnlyDictionary<string, Valve> valves, Valve currentValve)
-    //    {
-    //        Valves = valves;
-    //        CurrentValve = currentValve;
-    //        OpenValves = ""; //Array.Empty<Valve>();
-    //        OpenValvesFlowRate = 0;
-    //        StepNumber = 0;
-    //        TotalPressureReleased = 0;
-    //        PressuresReleased = Array.Empty<int>();
-    //    }
-
-    //    public WorldState(
-    //        Valve currentValve,
-    //        WorldState previousWorldState,
-    //        bool openValve = false)
-    //    {
-    //        Valves = previousWorldState.Valves;
-    //        CurrentValve = currentValve;
-    //        OpenValves = previousWorldState.OpenValves;
-    //        OpenValvesFlowRate = previousWorldState.OpenValvesFlowRate;
-    //        StepNumber = previousWorldState.StepNumber + 1;
-    //        TotalPressureReleased = previousWorldState.TotalPressureReleased;
-    //        PressuresReleased = previousWorldState.PressuresReleased;
-
-    //        //Valves = valves;
-    //        //CurrentValve = currentValve;
-    //        //OpenValves = openValves;
-    //        //StepNumber = previousWorldState == null ? 1 : previousWorldState.StepNumber + 1;
-    //        //PressureReleased += OpenValves.Sum(v => v.FlowRate); 
-
-    //        TotalPressureReleased += OpenValvesFlowRate; // In each step, any open valves release more pressure
-    //        PressuresReleased = PressuresReleased.Append(OpenValvesFlowRate); //.ToArray();
-
-    //        if (openValve)
-    //        {
-    //            //OpenValves = OpenValves.Append(CurrentValve).ToArray(); // Q: string more optimal?
-    //            OpenedValve = CurrentValve;
-
-    //            string msg = $"{StepNumber}:{OpenedValve.Id}";
-
-    //            OpenValves = OpenValves == "" ? msg : $"{OpenValves}, {msg}";
-    //            OpenValvesFlowRate += OpenedValve.FlowRate;
-    //        }
-    //    }
-
-    //    public IEnumerable<WorldState> GetSuccessors()
-    //    {
-    //        // For each, we can either open our current valve
-    //        if (CurrentValve.FlowRate > 0 && !OpenValves.Contains(CurrentValve.Id))
-    //        {
-    //            yield return new WorldState(CurrentValve, this, openValve: true);
-
-    //            //yield return new WorldState(Valves, CurrentValve, OpenValves.Append(CurrentValve).ToArray(), this);
-    //        }
-
-    //        // Or, move to another valve
-    //        foreach (var nextValveId in CurrentValve.LeadsTo)
-    //        {
-    //            //if (OpenValves.All(openValve => openValve.Id != nextValveId)) // if don't want to go back
-    //            //{   
-    //            //}
-
-    //            var nextValve = Valves[nextValveId];
-    //            yield return new WorldState(nextValve, this);
-    //        }
-
-    //        // A valid step is to just stay where we are!
-    //        if (OpenValvesFlowRate > 0)
-    //        {
-    //            yield return this;
-    //        }
-    //    }
-
-    //    public override bool Equals(object? obj)
-    //    {
-    //        if (obj is null) return false;
-    //        if (ReferenceEquals(this, obj)) return true;
-    //        return obj.GetType() == GetType() && Equals((WorldState) obj);
-    //    }
-
-    //    protected bool Equals(WorldState other) => CurrentValve.Equals(other.CurrentValve) && OpenValves == other.OpenValves;
-
-    //    public override int GetHashCode() => HashCode.Combine(CurrentValve, OpenValves);
-    //}
 }

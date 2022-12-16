@@ -33,6 +33,7 @@ public class Day16SolverTests
     }
 
     [Test]
+    [LongRunningTest("1 second")]
     public void Part1ReTest()
     {
         // ACT
@@ -53,12 +54,13 @@ public class Day16SolverTests
     }
 
     [Test]
+    [LongRunningTest("5 minutes!!")]
     public void Part2ReTest()
     {
         // ACT
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(2422);
     }
 }
