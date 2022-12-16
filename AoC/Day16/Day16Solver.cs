@@ -1,10 +1,41 @@
-using System.Linq;
-
 namespace AoC.Day16;
 
 public class Day16Solver : ISolver
 {
     public string DayName => "Proboscidea Volcanium";
+
+    /// <summary>
+    /// Returns a dictionary where the key is the source and destination valve,
+    /// and the value is the number of steps. rs-todo: fix this comment if nec: Note that the dest might not be reachable from source,
+    /// so in that case the cost will be null indicating unreachable.
+    /// </summary>
+    /// <returns></returns>
+    static Dictionary<(Valve Source, Valve Dest), int> BuildCostFromValveToValve(IReadOnlyDictionary<string, Valve> valves)
+    {
+        var search = new AStarSearch<ValveNode>(valveNode => valveNode.Valve.LeadsTo.Select(valveId => valves[valveId]).Select(valve => new ValveNode(valve)));
+
+        var result = new Dictionary<(Valve Source, Valve Dest), int>();
+
+        foreach (var sourceValve in valves.Values)
+        {
+            foreach (var destValve in valves.Values)
+            {
+                if (sourceValve != destValve)
+                {
+                    var path = search.FindShortestPath(new ValveNode(sourceValve), new ValveNode(destValve));
+
+                    result.Add((sourceValve, destValve), path.TotalCost);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public record ValveNode(Valve Valve) : IAStarSearchNode
+    {
+        public int Cost => 1;
+    }
 
     public long? SolvePart1(PuzzleInput input)
     {
@@ -12,6 +43,10 @@ public class Day16Solver : ISolver
         // Each step can have any number of successors
 
         var valves = ParseValves(input);
+
+        var costs = BuildCostFromValveToValve(valves);
+
+        //return costs.Count;
 
         var start = new WorldState(valves, valves["AA"]);
 
@@ -64,8 +99,12 @@ public class Day16Solver : ISolver
         ////var worldStates = new[] { new WorldState(valves, valves["AA"], Array.Empty<Valve>(), null) }.ToList();
         var worldStates = new[] { start }.ToHashSet();
 
+        var greatestTotalPressureReleased = 0;
+
         for (var stepNumber = 1; stepNumber <= maxSteps; stepNumber++)
         {
+            var remainingSteps = maxSteps - stepNumber;
+
             var newWorldStates = new HashSet<WorldState>();
 
             foreach (var worldState in worldStates)
@@ -74,7 +113,13 @@ public class Day16Solver : ISolver
 
                 foreach (var successor in worldState.GetSuccessors())
                 {
-                    newWorldStates.Add(successor);
+                    // Exclude any successor which has no chance of being the best
+                    if (successor.GetGreatestPossibleTotalPressureReleased(costs, remainingSteps) >= greatestTotalPressureReleased)
+                    {
+                        newWorldStates.Add(successor);
+
+                        greatestTotalPressureReleased = Math.Max(greatestTotalPressureReleased, successor.TotalPressureReleased);
+                    }
                 }
             }
 
@@ -83,17 +128,17 @@ public class Day16Solver : ISolver
             Reporter?.Invoke($"{new { stepNumber, numWorldStates = worldStates.Count }}");
         }
 
-        var solvePart1 = worldStates.MaxBy(x => x.TotalPressureReleased);
+        //var solvePart1 = worldStates.MaxBy(x => x.TotalPressureReleased);
 
-        var test = worldStates.FirstOrDefault(x => x.OpenValves == "DD, BB, JJ, HH, EE, CC");
+        //var test = worldStates.FirstOrDefault(x => x.OpenValves == "DD, BB, JJ, HH, EE, CC");
 
-        if (test != null)
-        {
-            Console.WriteLine(test);
-            Console.WriteLine(test.TotalPressureReleased);
-        }
+        //if (test != null)
+        //{
+        //    Console.WriteLine(test);
+        //    Console.WriteLine(test.TotalPressureReleased);
+        //}
 
-        return solvePart1?.TotalPressureReleased ?? -1;
+        return greatestTotalPressureReleased; //solvePart1?.TotalPressureReleased ?? -1;
     }
 
     public Action<string>? Reporter { get; set; }
@@ -105,7 +150,7 @@ public class Day16Solver : ISolver
 
     public class WorldState
     {
-        public IDictionary<string, Valve> Valves { get; }
+        public IReadOnlyDictionary<string, Valve> Valves { get; }
         public Valve CurrentValve { get; }
         public Valve? OpenedValve { get; }
         //public Valve[] OpenValves { get; }
@@ -119,7 +164,35 @@ public class Day16Solver : ISolver
 
         public string OpenValvesAscendingOrdered => string.Join(", ", OpenValves.Split(", ").Order());
 
-        public WorldState(IDictionary<string, Valve> valves, Valve currentValve)
+        public int GetGreatestPossibleTotalPressureReleased(
+            Dictionary<(Valve Source, Valve Dest), int> costMap,
+            int remainingSteps)
+        {
+            // For any closed valve, find out cost to move from here to closed valve, add 1 for opening it, then calc delta from remaining steps
+            // If delta is greater than zero, calc total pres (steps * flowRate)
+
+            var result = TotalPressureReleased;
+
+            var closedValves = Valves.Values.Where(v => !OpenValves.Contains(v.Id));
+
+            foreach (var closedValve in closedValves)
+            {
+                var costToReach = CurrentValve == closedValve ? 0 : costMap[(CurrentValve, closedValve)]; // rs-todo: rather than have the `CurrentValve == closedValve` check, could just compute that in costMap, so there would be ones where src and dest is same, and cost is zero
+
+                var costToOpen = costToReach + 1;
+
+                var stepsLeft = remainingSteps - costToOpen;
+
+                if (stepsLeft > 0)
+                {
+                    result += stepsLeft * closedValve.FlowRate;
+                }
+            }
+
+            return result;
+        }
+
+        public WorldState(IReadOnlyDictionary<string, Valve> valves, Valve currentValve)
         {
             Valves = valves;
             CurrentValve = currentValve;
@@ -209,7 +282,7 @@ public class Day16Solver : ISolver
         public string LeadsToIds { get; } = string.Join(", ", LeadsTo);
     }
 
-    static IDictionary<string, Valve> ParseValves(string input) =>
+    static IReadOnlyDictionary<string, Valve> ParseValves(string input) =>
         ParseInputRegex.Matches(input).Select(match => new Valve(
             match.Groups["valve"].Value,
             int.Parse(match.Groups["flowRate"].Value),
