@@ -108,7 +108,7 @@ public class Day16Solver : ISolver
                 foreach (var successor in worldState.GetSuccessors())
                 {
                     // Exclude any successor which has no chance of being the best
-                    if (successor.GetGreatestPossibleTotalPressureReleased(costs, remainingSteps) >= greatestTotalPressureReleased)
+                    if (successor.GetGreatestPossibleTotalPressureReleased(costs, remainingSteps, maxSteps) >= greatestTotalPressureReleased)
                     {
                         newWorldStates.Add(successor);
 
@@ -160,18 +160,58 @@ public class Day16Solver : ISolver
 
         public int GetGreatestPossibleTotalPressureReleased(
             Dictionary<(Valve Source, Valve Dest), int> costMap,
-            int remainingSteps)
+            int remainingSteps,
+            int maxSteps)
         {
             // For any closed valve, find out cost to move from here to closed valve, add 1 for opening it, then calc delta from remaining steps
             // If delta is greater than zero, calc total pres (steps * flowRate)
 
-            var result = TotalPressureReleased;
+            //var result = TotalPressureReleased;
 
-            var closedValves = Valves.Values.Where(v => !OpenValves.Contains(v.Id));
+            //var closedValves = Valves.Values.Where(v => !OpenValves.Contains(v.Id));
+
+            //foreach (var closedValve in closedValves)
+            //{
+            //    var costToReach = costMap[(CurrentValve, closedValve)];
+
+            //    var costToOpen = costToReach + 1;
+
+            //    var stepsLeft = remainingSteps - costToOpen;
+
+            //    if (stepsLeft > 0)
+            //    {
+            //        result += stepsLeft * closedValve.FlowRate;
+            //    }
+            //}
+
+            //return result;
+
+            return GetGreatestPossibleTotalPressureReleasedX(
+                Valves,
+                OpenValves,
+                TotalPressureReleased,
+                CurrentValve,
+                costMap,
+                remainingSteps,
+                maxSteps);
+        }
+
+        static int GetGreatestPossibleTotalPressureReleasedX(
+            IReadOnlyDictionary<string, Valve> valves,
+            string openValves,
+            int currentTotal,
+            Valve currentValve,
+            Dictionary<(Valve Source, Valve Dest), int> costMap,
+            int remainingSteps,
+            int maxSteps)
+        {
+            var result = currentTotal;
+
+            var closedValves = valves.Values.Where(v => !openValves.Contains(v.Id));
 
             foreach (var closedValve in closedValves)
             {
-                var costToReach = costMap[(CurrentValve, closedValve)];
+                var costToReach = costMap[(currentValve, closedValve)];
 
                 var costToOpen = costToReach + 1;
 
@@ -180,6 +220,20 @@ public class Day16Solver : ISolver
                 if (stepsLeft > 0)
                 {
                     result += stepsLeft * closedValve.FlowRate;
+
+                    var stepNumber = maxSteps - stepsLeft;
+                    string msg = $"{stepNumber}:{closedValve.Id}";
+
+                    var newOpenValves = openValves == "" ? msg : $"{openValves}, {msg}";
+
+                    result = GetGreatestPossibleTotalPressureReleasedX(
+                        valves,
+                        newOpenValves,
+                        result,
+                        closedValve,
+                        costMap,
+                        stepsLeft,
+                        maxSteps);
                 }
             }
 
