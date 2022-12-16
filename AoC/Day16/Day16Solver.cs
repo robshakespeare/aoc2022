@@ -1,6 +1,6 @@
 namespace AoC.Day16;
 
-public class Day16Solver : ISolver
+public partial class Day16Solver : ISolver
 {
     public string DayName => "Proboscidea Volcanium";
 
@@ -15,11 +15,9 @@ public class Day16Solver : ISolver
         var costMap = BuildCostFromValveToValve(valves);
         var context = new Context(valves, costMap, maxSteps);
 
-        ExploreGreatestTotalPressureReleased(
-            context,
-            new [] { new Actor("Self", valves["AA"], maxSteps) });
+        ExploreLargestTotalPressureReleased(context, valves["AA"], maxSteps);
 
-        return context.GreatestTotalPressureReleased;
+        return context.LargestTotalPressureReleased;
     }
 
     public long? SolvePart2(PuzzleInput input)
@@ -30,30 +28,32 @@ public class Day16Solver : ISolver
         var costMap = BuildCostFromValveToValve(valves);
         var context = new Context(valves, costMap, maxSteps);
 
-        ExploreGreatestTotalPressureReleased(
-            context,
-            new[]
-            {
-                new Actor("Self", valves["AA"], maxSteps),
-                new Actor("Elephant", valves["AA"], maxSteps)
-            });
+        ExploreLargestTotalPressureReleased(context, valves["AA"], maxSteps);
 
-        return context.GreatestTotalPressureReleased;
+        // The elephant must have turned off a totally different set of valves, if it turned off at least one of ours, that's not valid
+        // So cross join the paths, and exclude any which overlap or their total is less than the greatest individual total, and then get the largest pair.
+        var largestPairedTotalPressureReleased = context.Paths.SelectMany(
+            path1 => context.Paths
+                .Where(path2 => path1.TotalPressureReleased + path2.TotalPressureReleased > context.LargestTotalPressureReleased &&
+                                (path1.Valves & path2.Valves) == 0 /* i.e. they don't overlap */)
+                .Select(path2 => path1.TotalPressureReleased + path2.TotalPressureReleased)).Max();
+
+        return largestPairedTotalPressureReleased;
     }
 
-    record Valve(string Id, int FlowRate, IReadOnlyList<string> LeadsTo) : IAStarSearchNode
+    public record Valve(string Id, long BitId, int FlowRate, IReadOnlyList<string> LeadsTo) : IAStarSearchNode
     {
         public int Cost => 1;
     }
 
-    readonly record struct Actor(string Name, Valve CurrentValve, int RemainingSteps);
-
-    record Context(
+    public record Context(
         IReadOnlyDictionary<string, Valve> Valves,
         Dictionary<(Valve Source, Valve Dest), int> CostMap,
         int MaxSteps)
     {
-        public int GreatestTotalPressureReleased { get; set; }
+        public int LargestTotalPressureReleased { get; set; }
+        public IReadOnlyList<Valve> ValvesWithFlow { get; } = Valves.Values.Where(v => v.FlowRate > 0).ToArray();
+        public List<(long Valves, int TotalPressureReleased)> Paths { get; } = new();
     }
 
     /// <summary>
@@ -76,57 +76,59 @@ public class Day16Solver : ISolver
         return result;
     }
 
-    void ExploreGreatestTotalPressureReleased(
+    void ExploreLargestTotalPressureReleased(
         Context context,
-        Actor[] actors,
-        string openValves = "",
+        Valve currentValve,
+        int remainingSteps,
+        long openValvesMip = 0,
         int currentTotal = 0)
     {
-        var actor = actors.MaxBy(x => x.RemainingSteps);
+        var valvesToClose = context.ValvesWithFlow.Where(valve => (valve.BitId & openValvesMip) == 0 /* i.e. valve not yet open */);
 
-        var valvesToClose = new Queue<Valve>(context.Valves.Values.Where(valve => valve.FlowRate > 0 && !openValves.Contains(valve.Id)));
-
-        while (valvesToClose.Count > 0)
+        foreach (var valveToClose in valvesToClose)
         {
-            var valveToClose = valvesToClose.Dequeue();
-            var costToReach = context.CostMap[(actor.CurrentValve, valveToClose)];
+            var costToReach = context.CostMap[(currentValve, valveToClose)];
             var costToOpen = costToReach + 1;
-            var stepsLeft = actor.RemainingSteps - costToOpen;
+            var stepsLeft = remainingSteps - costToOpen;
 
             if (stepsLeft > 0)
             {
                 var newTotal = currentTotal + stepsLeft * valveToClose.FlowRate;
                 var stepNumber = context.MaxSteps - stepsLeft;
-                var newOpenValves = $"{openValves},{stepNumber}:{valveToClose.Id}";
+                var newOpenValvesMip = openValvesMip | valveToClose.BitId;
 
                 if (stepNumber < context.MaxSteps)
                 {
-                    ExploreGreatestTotalPressureReleased(
+                    ExploreLargestTotalPressureReleased(
                         context,
-                        actors.Select(a => a.Name != actor.Name ? a : actor with {CurrentValve = valveToClose, RemainingSteps = stepsLeft}).ToArray(),
-                        newOpenValves,
+                        valveToClose,
+                        stepsLeft,
+                        newOpenValvesMip,
                         newTotal);
                 }
             }
         }
 
-        context.GreatestTotalPressureReleased = Math.Max(context.GreatestTotalPressureReleased, currentTotal);
+        context.Paths.Add((openValvesMip, currentTotal));
+        context.LargestTotalPressureReleased = Math.Max(context.LargestTotalPressureReleased, currentTotal);
 
         if (DateTime.Now - _lastReported > TimeSpan.FromSeconds(30))
         {
-            var message = $"GreatestTotalPressureReleased: {context.GreatestTotalPressureReleased} // {DateTime.Now:O}";
+            var message = $"GreatestTotalPressureReleased: {context.LargestTotalPressureReleased} // {DateTime.Now:O}";
             (Reporter ?? Console.WriteLine).Invoke(message);
             _lastReported = DateTime.Now;
         }
     }
 
     static IReadOnlyDictionary<string, Valve> ParseValves(string input) =>
-        ParseInputRegex.Matches(input).Select(match => new Valve(
+        ParseInputRegex.Matches(input).Select((match, i) => new Valve(
             match.Groups["valve"].Value,
+            1L << i,
             int.Parse(match.Groups["flowRate"].Value),
             match.Groups["leadsTo"].Value.Split(", "))).ToDictionary(valve => valve.Id);
 
-    static readonly Regex ParseInputRegex = new(
-        @"Valve (?<valve>[^ ]+) has flow rate=(?<flowRate>\d+); tunnel(s)? lead(s)? to valve(s)? (?<leadsTo>[A-Z, ]+)",
-        RegexOptions.Compiled);
+    private static readonly Regex ParseInputRegex = BuildParseInputRegex();
+
+    [GeneratedRegex(@"Valve (?<valve>[^ ]+) has flow rate=(?<flowRate>\d+); tunnel(s)? lead(s)? to valve(s)? (?<leadsTo>[A-Z, ]+)", RegexOptions.Compiled)]
+    private static partial Regex BuildParseInputRegex();
 }
