@@ -90,6 +90,11 @@ public class Day16Solver : ISolver
 
         //=====================
 
+        return start.GetGreatestPossibleTotalPressureReleased(costs, maxSteps, maxSteps);
+
+        //throw new InvalidOperationException(result.ToString());
+
+
         ////var worldStates = new[] { new WorldState(valves, valves["AA"], Array.Empty<Valve>(), null) }.ToList();
         var worldStates = new[] { start }.ToHashSet();
 
@@ -142,6 +147,11 @@ public class Day16Solver : ISolver
         return null;
     }
 
+    public class Context
+    {
+        public int GreatestTotalPressureReleased { get; set; }
+    }
+
     public class WorldState
     {
         public IReadOnlyDictionary<string, Valve> Valves { get; }
@@ -186,28 +196,36 @@ public class Day16Solver : ISolver
 
             //return result;
 
-            return GetGreatestPossibleTotalPressureReleasedX(
+            var context = new Context();
+
+            GetGreatestPossibleTotalPressureReleasedX(
                 Valves,
                 OpenValves,
                 TotalPressureReleased,
                 CurrentValve,
                 costMap,
                 remainingSteps,
-                maxSteps);
+                maxSteps,
+                context);
+
+            return context.GreatestTotalPressureReleased;
         }
 
-        static int GetGreatestPossibleTotalPressureReleasedX(
+        static void GetGreatestPossibleTotalPressureReleasedX(
             IReadOnlyDictionary<string, Valve> valves,
             string openValves,
             int currentTotal,
             Valve currentValve,
             Dictionary<(Valve Source, Valve Dest), int> costMap,
             int remainingSteps,
-            int maxSteps)
+            int maxSteps,
+            Context context)
         {
-            var result = currentTotal;
+            //var result = currentTotal;
 
-            var closedValves = valves.Values.Where(v => !openValves.Contains(v.Id));
+            //var closedValves = valves.Values.Where(v => v.FlowRate > 0 && !openValves.Contains(v.Id)).OrderBy(v => Math.Abs(20 - v.FlowRate));
+
+            var closedValves = valves.Values.Where(v => v.FlowRate > 0 && !openValves.Contains(v.Id));
 
             foreach (var closedValve in closedValves)
             {
@@ -219,25 +237,49 @@ public class Day16Solver : ISolver
 
                 if (stepsLeft > 0)
                 {
-                    result += stepsLeft * closedValve.FlowRate;
+                    var newResult = currentTotal + (stepsLeft * closedValve.FlowRate);
 
                     var stepNumber = maxSteps - stepsLeft;
-                    string msg = $"{stepNumber}:{closedValve.Id}";
+                    //string msg = ;
 
-                    var newOpenValves = openValves == "" ? msg : $"{openValves}, {msg}";
+                    //var newOpenValves = openValves == "" ? msg : $"{openValves}, {msg}";
+                    var newOpenValves = $"{openValves},{stepNumber}:{closedValve.Id}";
 
-                    result = GetGreatestPossibleTotalPressureReleasedX(
-                        valves,
-                        newOpenValves,
-                        result,
-                        closedValve,
-                        costMap,
-                        stepsLeft,
-                        maxSteps);
+                    //if (stepNumber == maxSteps)
+                    //{
+                    //    // we have reached max number of steps, so record our total
+                    //    context.GreatestTotalPressureReleased = Math.Max(context.GreatestTotalPressureReleased, newResult);
+                    //    //return;
+                    //}
+
+                    if (stepNumber < maxSteps)
+                    {
+                        GetGreatestPossibleTotalPressureReleasedX(
+                            valves,
+                            newOpenValves,
+                            newResult,
+                            closedValve,
+                            costMap,
+                            stepsLeft,
+                            maxSteps,
+                            context);
+                    }
                 }
             }
 
-            return result;
+            context.GreatestTotalPressureReleased = Math.Max(context.GreatestTotalPressureReleased, currentTotal);
+
+            //if (!closedValves.Any())
+            //{
+            //    context.GreatestTotalPressureReleased = Math.Max(context.GreatestTotalPressureReleased, currentTotal);
+            //}
+
+            //if (remainingSteps == 0)
+            //{
+            //    context.GreatestTotalPressureReleased = Math.Max(context.GreatestTotalPressureReleased, currentTotal);
+            //}
+
+            //return result;
         }
 
         public WorldState(IReadOnlyDictionary<string, Valve> valves, Valve currentValve)
