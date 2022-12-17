@@ -112,6 +112,11 @@ public class Day17Solver : ISolver
 
                 //Logger($"Rock num done: {rockNumber}");
             }
+
+            Logger($"After rock {numRocks} (Height: {Height}):");
+            Logger(_restingRocks.SelectMany(s => s.Pixels).ToStringGrid(x => x, _ => '#', '.').RenderGridToString());
+            Logger("");
+            Logger("");
         }
 
         bool HasShapeHitWall(Shape shape) => shape.Bounds.Min.X <= LeftWallX || shape.Bounds.Max.X >= RightWallX;
@@ -142,7 +147,34 @@ public class Day17Solver : ISolver
                 Pixels.Select(p => p + movement).ToArray(),
                 new BoundingBox(Bounds.Min + movement, Bounds.Max + movement)), this);
 
-        public bool Overlaps(Shape other) => Pixels.Intersect(other.Pixels).Any();
+        public bool Overlaps(Shape other)
+        {
+            if (other.Bounds.Min.Y > Bounds.Max.Y)
+            {
+                return false;
+            }
+
+            if (other.Bounds.Min.X > Bounds.Max.X)
+            {
+                return false;
+            }
+
+            if (other.Bounds.Max.Y < Bounds.Min.Y)
+            {
+                return false;
+            }
+
+            if (other.Bounds.Max.X < Bounds.Min.X)
+            {
+                return false;
+            }
+
+            return Pixels.Intersect(other.Pixels).Any(); // rs-todo: optimize?
+
+            ////(Bounds.Contains(other.Bounds.Min) || Bounds.Contains(other.Bounds.Max)) &&
+            //return (other.Bounds.Contains(Bounds.Min) || other.Bounds.Contains(Bounds.Max)) &&
+            //       Pixels.Intersect(other.Pixels).Any();
+        }
     }
 
     /// <summary>
