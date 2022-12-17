@@ -20,8 +20,6 @@ public class Day17Solver : ISolver
 
     public long? SolvePart2(PuzzleInput input)
     {
-        var chamber = VerticalChamber.BuildAndSimulate(input, numRocks: 1000000000000);
-
         return null;
     }
 
@@ -29,6 +27,9 @@ public class Day17Solver : ISolver
 
     public class VerticalChamber
     {
+        private readonly PuzzleInput _input;
+        private readonly int _numRocks;
+
         public int Width { get; }
         public int LeftWallX { get; }
         public int RightWallX { get; }
@@ -39,22 +40,12 @@ public class Day17Solver : ISolver
         /// </summary>
         public long Height { get; private set; }
 
-        private readonly PuzzleInput _input;
-        private readonly long _numRocks;
         private readonly List<Shape> _restingRocks = new();
-        private SlidingBuffer<Shape> _recentRestingRocks = new(28);
-        private readonly string _marker;
+        private readonly SlidingBuffer<Shape> _recentRestingRocks = new(28);
 
-        private bool _slidingWindowContainedMarker;
-        private int _markersFound = 0;
-
-        private List<(long MarkerHeight, long RockNumber)> MarkerStats = new();
-
-        public VerticalChamber(PuzzleInput input, long numRocks, int width = 7)
+        public VerticalChamber(PuzzleInput input, int numRocks, int width = 7)
         {
             _input = input;
-            _marker = input.ToString().Length == 40 ? "###.###" : $".#.##.#{Environment.NewLine}.#.##.#";
-            _slidingWindowContainedMarker = false;
             _numRocks = numRocks;
             Width = width;
 
@@ -64,7 +55,7 @@ public class Day17Solver : ISolver
             FloorY = 1;
         }
 
-        public static VerticalChamber BuildAndSimulate(PuzzleInput input, long numRocks) => new VerticalChamber(input, numRocks).Simulate();
+        public static VerticalChamber BuildAndSimulate(PuzzleInput input, int numRocks) => new VerticalChamber(input, numRocks).Simulate();
 
         // How many units tall will the tower of rocks be after 2022 rocks have stopped falling?
         /*
@@ -80,11 +71,8 @@ public class Day17Solver : ISolver
         {
             var shapes = BuildShapesCycle();
             var jets = ParseJetFlowsCycle(_input);
-            var part2 = _numRocks > int.MaxValue;
-            //_recentRestingRocks = part2 ? new SlidingBuffer<Shape>(3000) : _recentRestingRocks;
 
-            // rs-todo: the max is only temp!
-            for (var rockNumber = 1L; rockNumber <= Math.Min(_numRocks, 20_000); rockNumber++)
+            for (var rockNumber = 1; rockNumber <= _numRocks; rockNumber++)
             {
                 // Move rock until it comes to a rest
                 var (rock, _) = shapes.Next().Translate(new Vector2(0, -Height - 3));
@@ -107,72 +95,6 @@ public class Day17Solver : ISolver
                         _restingRocks.Add(rock);
                         _recentRestingRocks.Add(rock);
                         Height = Math.Max(Height, Math.Abs((long) rock.Bounds.Min.Y) + 1);
-
-                        if (Height % 500 == 0)
-                        {
-                            Logger($"{Height} {rockNumber}");
-                        }
-
-                        if (part2 || true /*&& MarkerStats.Count < 2*/)
-                        {
-                            var slidingGrid = _recentRestingRocks.Buffer
-                                .Where(x => x != null)
-                                .SelectMany(x => x!.Pixels).ToStringGrid(x => x, _ => '#', '.').RenderGridToString();
-
-                            if (slidingGrid.Contains(_marker))
-                            {
-                                if (!_slidingWindowContainedMarker)
-                                {
-                                    var linesBelow = slidingGrid.ReplaceLineEndings("").IndexOf(_marker.ReplaceLineEndings(""), StringComparison.Ordinal) / 7;
-                                    var markerHeight = Height - linesBelow;
-
-                                    // First time we just seen it in a while
-                                    //Logger($"Marker detected (Height: {Height}):");
-                                    Logger($"shapesIndex: {shapes.Index} -- jetsIndex: {jets.Index}");
-                                    //Logger($"");
-                                    //Logger($"lines below: {linesBelow}");
-                                    Logger($"rockNumber: {rockNumber} -- Height of top of marker: {Height - linesBelow}");
-                                    //Logger($"Height of top of marker: {Height - linesBelow}");
-                                    //Logger(slidingGrid);
-                                    Logger("");
-
-                                    MarkerStats.Add((markerHeight, rockNumber));
-
-                                    //if (MarkerStats.Count == 2)
-                                    //{
-                                    //    var heightJump = MarkerStats[1].MarkerHeight - MarkerStats[0].MarkerHeight;
-                                    //    var rockJump = MarkerStats[1].RockNumber - MarkerStats[0].RockNumber + 2;
-
-                                    //    var bottomHeight = MarkerStats[0].MarkerHeight;
-                                    //    var bottomNumRocks = MarkerStats[0].RockNumber - 2;
-
-                                    //    var numCompleteJumps = (_numRocks - bottomNumRocks) / rockJump;
-
-                                    //    var newRockNumber = bottomNumRocks + (numCompleteJumps * rockJump);
-                                    //    var newHeight = bottomHeight + (numCompleteJumps * heightJump);
-
-                                    //    rockNumber = newRockNumber;
-                                    //    Height = newHeight;
-
-                                    //    Logger("rockNumber is now: " + rockNumber);
-                                    //    Logger("Height is now: " + Height);
-                                    //}
-
-                                    //_markersFound++;
-
-                                    //if (_markersFound > 2)
-                                    //{
-                                    //    return this;
-                                    //}
-                                }
-
-                                _slidingWindowContainedMarker = true;
-                            }
-                            else
-                            {
-                                _slidingWindowContainedMarker = false;
-                            }
-                        }
                     }
                 }
 
@@ -222,7 +144,7 @@ public class Day17Solver : ISolver
         private readonly int _maxCount;
         private int _current;
 
-        public T?[] Buffer { get; }
+        public T[] Buffer { get; }
 
         public SlidingBuffer(int maxCount)
         {
@@ -259,17 +181,11 @@ public class Day17Solver : ISolver
     class Cycle<T>
     {
         readonly T[] _elements;
-
-        public int Index { get; private set; } = -1;
+        int _index = -1;
 
         public Cycle(IEnumerable<T> elements) => _elements = elements.ToArray();
 
-        public T Next()
-        {
-            return _elements[Index = ++Index % _elements.Length];
-
-            //return _elements[++Index % _elements.Length];
-        }
+        public T Next() => _elements[++_index % _elements.Length];
     }
 
     record Shape(IReadOnlyList<Vector2> Pixels, BoundingBox Bounds, int PixelMipMap)
