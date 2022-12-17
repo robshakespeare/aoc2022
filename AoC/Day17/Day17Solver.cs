@@ -1,5 +1,4 @@
-using MoreLinq.Extensions;
-using Sprache;
+using System.Collections;
 
 namespace AoC.Day17;
 
@@ -42,6 +41,7 @@ public class Day17Solver : ISolver
         public int Height { get; private set; }
 
         private readonly List<Shape> _restingRocks = new();
+        private readonly SlidingBuffer<Shape> _recentRestingRocks = new(28);
 
         public VerticalChamber(int width = 7)
         {
@@ -71,13 +71,9 @@ public class Day17Solver : ISolver
             for (var rockNumber = 1; rockNumber <= numRocks; rockNumber++)
             {
                 // Move rock until it comes to a rest
-                var comeToRest = false;
+                // ReSharper disable once RedundantAssignment
                 var (rock, previous) = shapes.Next().Translate(new Vector2(0, -Height - 3));
-                if (previous.Bounds.Max.Y != 0)
-                {
-                    throw new InvalidOperationException("Invalid rock start");
-                }
-                //var startY = -Height - 3;
+                var comeToRest = false;
 
                 while (!comeToRest)
                 {
@@ -94,6 +90,7 @@ public class Day17Solver : ISolver
                         rock = previous;
                         comeToRest = true;
                         _restingRocks.Add(rock);
+                        _recentRestingRocks.Add(rock);
                         Height = Math.Max(Height, Math.Abs((int) rock.Bounds.Min.Y) + 1);
                     }
                 }
@@ -113,17 +110,39 @@ public class Day17Solver : ISolver
                 //Logger($"Rock num done: {rockNumber}");
             }
 
-            Logger($"After rock {numRocks} (Height: {Height}):");
-            Logger(_restingRocks.SelectMany(s => s.Pixels).ToStringGrid(x => x, _ => '#', '.').RenderGridToString());
-            Logger("");
-            Logger("");
+            //Logger($"After rock {numRocks} (Height: {Height}):");
+            //Logger(_restingRocks.SelectMany(s => s.Pixels).ToStringGrid(x => x, _ => '#', '.').RenderGridToString());
+            //Logger("");
+            //Logger("");
         }
 
         bool HasShapeHitWall(Shape shape) => shape.Bounds.Min.X <= LeftWallX || shape.Bounds.Max.X >= RightWallX;
 
         bool HasShapeHitFloor(Shape shape) => shape.Bounds.Max.Y >= FloorY;
 
-        bool CollidedWithRestingRock(Shape rock) => _restingRocks.Any(rock.Overlaps); // rs-todo: needs optimising!!
+        bool CollidedWithRestingRock(Shape rock) => _recentRestingRocks.Any(rock.Overlaps); // rs-todo: needs optimising!!
+    }
+
+    class SlidingBuffer<T> : IEnumerable<T>
+    {
+        private readonly Queue<T> _queue;
+        private readonly int _maxCount;
+
+        public SlidingBuffer(int maxCount)
+        {
+            _maxCount = maxCount;
+            _queue = new Queue<T>(maxCount);
+        }
+
+        public void Add(T item)
+        {
+            if (_queue.Count == _maxCount) _queue.Dequeue();
+            _queue.Enqueue(item);
+        }
+
+        public IEnumerator<T> GetEnumerator() => _queue.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     class Cycle<T>
@@ -136,7 +155,7 @@ public class Day17Solver : ISolver
         public T Next() => _elements[++_index % _elements.Length];
     }
 
-    record Shape(IReadOnlyList<Vector2> Pixels, BoundingBox Bounds)
+    record Shape(IReadOnlyList<Vector2> Pixels, BoundingBox Bounds/*, int PixelMip*/)
     {
         public Shape(IReadOnlyList<Vector2> pixels) : this(pixels, BoundingBox.Create(pixels))
         {
@@ -149,22 +168,10 @@ public class Day17Solver : ISolver
 
         public bool Overlaps(Shape other)
         {
-            if (other.Bounds.Min.Y > Bounds.Max.Y)
-            {
-                return false;
-            }
-
-            if (other.Bounds.Min.X > Bounds.Max.X)
-            {
-                return false;
-            }
-
-            if (other.Bounds.Max.Y < Bounds.Min.Y)
-            {
-                return false;
-            }
-
-            if (other.Bounds.Max.X < Bounds.Min.X)
+            if (other.Bounds.Min.Y > Bounds.Max.Y ||
+                other.Bounds.Min.X > Bounds.Max.X ||
+                other.Bounds.Max.Y < Bounds.Min.Y ||
+                other.Bounds.Max.X < Bounds.Min.X)
             {
                 return false;
             }
