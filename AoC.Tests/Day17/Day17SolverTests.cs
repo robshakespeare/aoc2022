@@ -1,4 +1,5 @@
 using AoC.Day17;
+using static AoC.Day17.Day17Solver;
 
 namespace AoC.Tests.Day17;
 
@@ -31,61 +32,6 @@ public class Day17SolverTests
     }
 
     [Test]
-    [LongRunningTest("> 400ms")]
-    public void Try20KForExample()
-    {
-        // ACT
-        var result = _sut.SolvePart1(ExampleInput, numRocks: 20000);
-
-        // ASSERT
-        result.Should().Be(30288);
-    }
-
-    [Test]
-    [LongRunningTest("> 400ms")]
-    public void Try10KForReal()
-    {
-        // ACT
-        var result = _sut.SolvePart1(_sut.GetInputLoader().PuzzleInputPart1, numRocks: 20000);
-
-        // ASSERT
-        result.Should().Be(30821);
-    }
-
-    [Test]
-    [LongRunningTest("> 400ms")]
-    public void Try30KForReal()
-    {
-        // ACT
-        var result = _sut.SolvePart1(_sut.GetInputLoader().PuzzleInputPart1, numRocks: 30000);
-
-        // ASSERT
-        result.Should().Be(46218);
-    }
-
-    [Test]
-    [LongRunningTest("> 400ms")]
-    public void Try40KForReal()
-    {
-        // ACT
-        var result = _sut.SolvePart1(_sut.GetInputLoader().PuzzleInputPart1, numRocks: 40000);
-
-        // ASSERT
-        result.Should().Be(61652);
-    }
-
-    [Test]
-    [LongRunningTest("> 400ms")]
-    public void Try100KForReal()
-    {
-        // ACT
-        var result = _sut.SolvePart1(_sut.GetInputLoader().PuzzleInputPart1, numRocks: 100000);
-
-        // ASSERT
-        result.Should().Be(154147);
-    }
-
-    [Test]
     public void Part2Example()
     {
         // ACT
@@ -96,6 +42,7 @@ public class Day17SolverTests
     }
 
     [Test]
+    [LongRunningTest("~ 600ms")]
     public void Part2ReTest()
     {
         // ACT
@@ -107,5 +54,69 @@ public class Day17SolverTests
         part2Result.Should().NotBe(1541449318401);
         part2Result.Should().NotBe(null);
         part2Result.Should().Be(1541449275365);
+    }
+
+    [Test]
+    public void Try20KForExample()
+    {
+        // ACT
+        var result = VerticalChamber.BuildAndSimulate(ExampleInput, targetNumRocks: 20000);
+
+        // ASSERT
+        result.Should().Be(30288);
+    }
+
+    [Test]
+    public void Try200KForExample()
+    {
+        // ACT
+        var result = VerticalChamber.BuildAndSimulate(ExampleInput, targetNumRocks: 200000);
+
+        // ASSERT
+        result.Should().Be(302861);
+    }
+
+    [Test]
+    [LongRunningTest("~ 200ms")]
+    public void Try10KForReal()
+    {
+        // ACT
+        var result = VerticalChamber.BuildAndSimulate(_sut.GetInputLoader().PuzzleInputPart1, targetNumRocks: 20000);
+
+        // ASSERT
+        result.Should().Be(30821);
+    }
+
+    [Test]
+    [LongRunningTest("~ 200ms")]
+    public void Try30KForReal()
+    {
+        // ACT
+        var result = VerticalChamber.BuildAndSimulate(_sut.GetInputLoader().PuzzleInputPart1, targetNumRocks: 30000);
+
+        // ASSERT
+        result.Should().Be(46218);
+    }
+
+    [Test]
+    [LongRunningTest("~ 250ms")]
+    public void Try40KForReal()
+    {
+        // ACT
+        var result = VerticalChamber.BuildAndSimulate(_sut.GetInputLoader().PuzzleInputPart1, targetNumRocks: 40000);
+
+        // ASSERT
+        result.Should().Be(61652);
+    }
+
+    [Test]
+    [LongRunningTest("~ 300ms")]
+    public void Try100KForReal()
+    {
+        // ACT
+        var result = VerticalChamber.BuildAndSimulate(_sut.GetInputLoader().PuzzleInputPart1, targetNumRocks: 100000);
+
+        // ASSERT
+        result.Should().Be(154147);
     }
 }
