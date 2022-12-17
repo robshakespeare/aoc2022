@@ -1,23 +1,14 @@
-using System.Collections;
-
 namespace AoC.Day17;
 
 public class Day17Solver : ISolver
 {
     public string DayName => "Pyroclastic Flow";
 
-    public long? SolvePart1(PuzzleInput input)
+    public long? SolvePart1(PuzzleInput input) => SolvePart1(input, numRocks: 2022);
+
+    public long? SolvePart1(PuzzleInput input, int numRocks)
     {
-        //var shapes = BuildShapesCycle();
-        //var jets = ParseJetFlowsCycle(input);
-
-        const int numRocks = 2022;
-
-        var chamber = new VerticalChamber();
-
-        chamber.Simulate(input, numRocks);
-
-
+        var chamber = VerticalChamber.BuildAndSimulate(input, numRocks);
         return chamber.Height;
     }
 
@@ -38,7 +29,7 @@ public class Day17Solver : ISolver
         /// <summary>
         /// The height of the tower of rocks inside the chamber.
         /// </summary>
-        public int Height { get; private set; }
+        public long Height { get; private set; }
 
         private readonly List<Shape> _restingRocks = new();
         private readonly SlidingBuffer<Shape> _recentRestingRocks = new(28);
@@ -53,6 +44,8 @@ public class Day17Solver : ISolver
             FloorY = 1;
         }
 
+        public static VerticalChamber BuildAndSimulate(PuzzleInput input, int numRocks) => new VerticalChamber().Simulate(input, numRocks);
+
         // How many units tall will the tower of rocks be after 2022 rocks have stopped falling?
         /*
          * After a rock appears, it alternates between being pushed by a jet of hot gas one unit
@@ -63,7 +56,7 @@ public class Day17Solver : ISolver
          * into the floor or an already-fallen rock, the falling rock stops where it is (having landed on something) and a new rock immediately begins falling.
          *
          */
-        public void Simulate(PuzzleInput input, int numRocks)
+        private VerticalChamber Simulate(PuzzleInput input, int numRocks)
         {
             var shapes = BuildShapesCycle();
             var jets = ParseJetFlowsCycle(input);
@@ -71,14 +64,13 @@ public class Day17Solver : ISolver
             for (var rockNumber = 1; rockNumber <= numRocks; rockNumber++)
             {
                 // Move rock until it comes to a rest
-                // ReSharper disable once RedundantAssignment
-                var (rock, previous) = shapes.Next().Translate(new Vector2(0, -Height - 3));
+                var (rock, _) = shapes.Next().Translate(new Vector2(0, -Height - 3));
                 var comeToRest = false;
 
                 while (!comeToRest)
                 {
                     var jet = jets.Next();
-                    (rock, previous) = rock.Translate(jet);
+                    (rock, var previous) = rock.Translate(jet);
                     if (HasShapeHitWall(rock) || CollidedWithRestingRock(rock))
                     {
                         rock = previous;
@@ -91,7 +83,7 @@ public class Day17Solver : ISolver
                         comeToRest = true;
                         _restingRocks.Add(rock);
                         _recentRestingRocks.Add(rock);
-                        Height = Math.Max(Height, Math.Abs((int) rock.Bounds.Min.Y) + 1);
+                        Height = Math.Max(Height, Math.Abs((long) rock.Bounds.Min.Y) + 1);
                     }
                 }
 
@@ -114,13 +106,17 @@ public class Day17Solver : ISolver
             //Logger(_restingRocks.SelectMany(s => s.Pixels).ToStringGrid(x => x, _ => '#', '.').RenderGridToString());
             //Logger("");
             //Logger("");
+
+            return this;
         }
 
         bool HasShapeHitWall(Shape shape) => shape.Bounds.Min.X <= LeftWallX || shape.Bounds.Max.X >= RightWallX;
 
         bool HasShapeHitFloor(Shape shape) => shape.Bounds.Max.Y >= FloorY;
 
-        bool CollidedWithRestingRock(Shape rock) => _recentRestingRocks.Any(rock.Overlaps); // rs-todo: needs optimising!!
+        // rs-todo: use recent!:
+        bool CollidedWithRestingRock(Shape rock) => _recentRestingRocks.Buffer.Any(rock.Overlaps); // rs-todo: would a mip make it even quicker?
+        //bool CollidedWithRestingRock(Shape rock) => _restingRocks.Any(rock.Overlaps); // rs-todo: would a mip make it even quicker?
 
         public string Debug()
         {
@@ -132,27 +128,44 @@ public class Day17Solver : ISolver
         }
     }
 
-    class SlidingBuffer<T> : IEnumerable<T>
+    class SlidingBuffer<T>
     {
-        private readonly Queue<T> _queue;
         private readonly int _maxCount;
+        private int _current;
+
+        public T[] Buffer { get; }
 
         public SlidingBuffer(int maxCount)
         {
             _maxCount = maxCount;
-            _queue = new Queue<T>(maxCount);
+            Buffer = new T[maxCount];
         }
 
         public void Add(T item)
         {
-            if (_queue.Count == _maxCount) _queue.Dequeue();
-            _queue.Enqueue(item);
+            Buffer[_current] = item;
+            _current = (_current + 1) % _maxCount;
         }
-
-        public IEnumerator<T> GetEnumerator() => _queue.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
+
+    //class SlidingBuffer<T>
+    //{
+    //    public readonly Queue<T> Buffer;
+    //    private readonly int _maxCount;
+
+    //    public SlidingBuffer(int maxCount)
+    //    {
+    //        _maxCount = maxCount;
+    //        Buffer = new Queue<T>(maxCount);
+    //    }
+
+    //    public void Add(T item)
+    //    {
+    //        if (Buffer.Count == _maxCount)
+    //            Buffer.Dequeue();
+    //        Buffer.Enqueue(item);
+    //    }
+    //}
 
     class Cycle<T>
     {
@@ -164,20 +177,47 @@ public class Day17Solver : ISolver
         public T Next() => _elements[++_index % _elements.Length];
     }
 
-    record Shape(IReadOnlyList<Vector2> Pixels, BoundingBox Bounds/*, int PixelMip*/)
+    record Shape(IReadOnlyList<Vector2> Pixels, BoundingBox Bounds, int PixelMipMap)
     {
-        public Shape(IReadOnlyList<Vector2> pixels) : this(pixels, BoundingBox.Create(pixels))
+        public Shape(IReadOnlyList<Vector2> pixels, Vector2 offset) : this(
+            pixels,
+            BoundingBox.Create(pixels),
+            BuildMipMap(pixels.Select(v => v - offset)))
         {
         }
 
-        public (Shape Next, Shape Previous) Translate(Vector2 movement) =>
-            (new Shape(
-                Pixels.Select(p => p + movement).ToArray(),
-                new BoundingBox(Bounds.Min + movement, Bounds.Max + movement)), this);
-
-        public bool Overlaps(Shape other)
+        static int BuildMipMap(IEnumerable<Vector2> pixels) // rs-todo: doesn't work, either fix or remove!
         {
-            if (other.Bounds.Min.Y > Bounds.Max.Y ||
+            // Shift 1 by Y + 5
+            // Shift 1 by X
+            var result = 0;
+
+            foreach (var pixel in pixels)
+            {
+                var self = 1 << Math.Abs((int) pixel.X);
+                self <<= Math.Abs((int) pixel.Y) * 5;
+
+                result |= self;
+                //result |= 1 << Math.Abs((int) pixel.X);
+                //result |= 1 << Math.Abs((int) pixel.Y) + 10;
+            }
+
+            return result;
+        }
+
+        public (Shape Next, Shape Previous) Translate(Vector2 movement) =>
+        (
+            new Shape(
+                Pixels.Select(p => p + movement).ToArray(),
+                new BoundingBox(Bounds.Min + movement, Bounds.Max + movement),
+                PixelMipMap),
+            this
+        );
+
+        public bool Overlaps(Shape? other)
+        {
+            if (other == null ||
+                other.Bounds.Min.Y > Bounds.Max.Y ||
                 other.Bounds.Min.X > Bounds.Max.X ||
                 other.Bounds.Max.Y < Bounds.Min.Y ||
                 other.Bounds.Max.X < Bounds.Min.X)
@@ -185,7 +225,9 @@ public class Day17Solver : ISolver
                 return false;
             }
 
-            return Pixels.Intersect(other.Pixels).Any(); // rs-todo: optimize?
+            //return (PixelMipMap & other.PixelMipMap) != 0; /* i.e. they overlap */
+
+            return Pixels.Intersect(other.Pixels).Any();
 
             ////(Bounds.Contains(other.Bounds.Min) || Bounds.Contains(other.Bounds.Max)) &&
             //return (other.Bounds.Contains(Bounds.Min) || other.Bounds.Contains(Bounds.Max)) &&
@@ -198,10 +240,6 @@ public class Day17Solver : ISolver
     /// </summary>
     record BoundingBox(Vector2 Min, Vector2 Max)
     {
-        public bool Contains(Vector2 position) =>
-            position.X >= Min.X && position.X <= Max.X &&
-            position.Y >= Min.Y && position.Y <= Max.Y;
-
         public static BoundingBox Create(IReadOnlyList<Vector2> pixels)
         {
             var minBounds = new Vector2(pixels.Min(i => i.X), pixels.Min(i => i.Y));
@@ -236,7 +274,7 @@ public class Day17Solver : ISolver
             return new Shape(chunk.ToGrid((v, c) => (v, c))
                 .SelectMany(line => line)
                 .Where(p => p.c == '#')
-                .Select(p => p.v + offset).ToArray());
+                .Select(p => p.v + offset).ToArray(), offset);
         }).ToArray();
 
     static Cycle<Shape> BuildShapesCycle() => new(Shapes);
