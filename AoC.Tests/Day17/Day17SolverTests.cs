@@ -6,16 +6,18 @@ public class Day17SolverTests
 {
     private readonly Day17Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = @">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>";
 
     [Test]
     public void Part1Example()
     {
+        Day17Solver.Logger = TestContext.Progress.WriteLine;
+
         // ACT
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(3068);
     }
 
     [Test]
@@ -25,7 +27,7 @@ public class Day17SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(3109);
     }
 
     [Test]
