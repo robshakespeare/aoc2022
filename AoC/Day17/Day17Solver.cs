@@ -121,6 +121,15 @@ public class Day17Solver : ISolver
         bool HasShapeHitFloor(Shape shape) => shape.Bounds.Max.Y >= FloorY;
 
         bool CollidedWithRestingRock(Shape rock) => _recentRestingRocks.Any(rock.Overlaps); // rs-todo: needs optimising!!
+
+        public string Debug()
+        {
+            var buffer = new StringBuilder();
+            buffer.AppendLine($"Chamber height: {Height}):");
+            buffer.AppendLine(_restingRocks.SelectMany(s => s.Pixels).ToStringGrid(x => x, _ => '#', '.').RenderGridToString());
+            buffer.AppendLine();
+            return buffer.ToString();
+        }
     }
 
     class SlidingBuffer<T> : IEnumerable<T>
