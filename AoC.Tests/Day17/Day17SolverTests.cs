@@ -32,7 +32,7 @@ public class Day17SolverTests
 
     [Test]
     [LongRunningTest("> 400ms")]
-    public void Part1VerifyOptimizationsForExample()
+    public void Try20KForExample()
     {
         // ACT
         var result = _sut.SolvePart1(ExampleInput, numRocks: 20000);
@@ -43,7 +43,7 @@ public class Day17SolverTests
 
     [Test]
     [LongRunningTest("> 400ms")]
-    public void Part1VerifyOptimizationsForReal()
+    public void Try10KForReal()
     {
         // ACT
         var result = _sut.SolvePart1(_sut.GetInputLoader().PuzzleInputPart1, numRocks: 20000);
@@ -54,24 +54,35 @@ public class Day17SolverTests
 
     [Test]
     [LongRunningTest("> 400ms")]
-    public void Part1Try30K()
+    public void Try30KForReal()
     {
         // ACT
         var result = _sut.SolvePart1(_sut.GetInputLoader().PuzzleInputPart1, numRocks: 30000);
 
         // ASSERT
-        result.Should().BeGreaterThan(30288);
+        result.Should().Be(46218);
     }
 
     [Test]
     [LongRunningTest("> 400ms")]
-    public void Part1Try40K()
+    public void Try40KForReal()
     {
         // ACT
         var result = _sut.SolvePart1(_sut.GetInputLoader().PuzzleInputPart1, numRocks: 40000);
 
         // ASSERT
-        result.Should().BeGreaterThan(30288);
+        result.Should().Be(61652);
+    }
+
+    [Test]
+    [LongRunningTest("> 400ms")]
+    public void Try100KForReal()
+    {
+        // ACT
+        var result = _sut.SolvePart1(_sut.GetInputLoader().PuzzleInputPart1, numRocks: 100000);
+
+        // ASSERT
+        result.Should().Be(154147);
     }
 
     [Test]
@@ -88,9 +99,13 @@ public class Day17SolverTests
     public void Part2ReTest()
     {
         // ACT
-        var part2Result = _sut.SolvePart2();
+        var part2ResultObject = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        var part2Result = part2ResultObject.Should().BeOfType<long>().Subject;
+        part2Result.Should().BeLessThan(1541449318430);
+        part2Result.Should().NotBe(1541449318401);
+        part2Result.Should().NotBe(null);
+        part2Result.Should().Be(1541449275365);
     }
 }

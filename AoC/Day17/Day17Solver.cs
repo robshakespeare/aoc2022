@@ -17,11 +17,13 @@ public class Day17Solver : ISolver
         //    $"{DateTime.Now:O}.txt".Replace(":", "-")),
         //    chamber.Debug());
 
-        return chamber.Height;
+        return chamber.NewHeight;
     }
 
     public long? SolvePart2(PuzzleInput input)
     {
+        //throw new InvalidOperationException("temp off");
+
         var chamber = VerticalChamber.BuildAndSimulate(input, numRocks: 1000000000000);
 
         //File.WriteAllText(Path.Combine(
@@ -29,7 +31,7 @@ public class Day17Solver : ISolver
         //    $"{DateTime.Now:O}.txt".Replace(":", "-")),
         //    chamber.Debug());
 
-        return chamber.Height;
+        return chamber.NewHeight; // + 29;
     }
 
     public static Action<string> Logger { get; set; } = Console.WriteLine;
@@ -49,10 +51,12 @@ public class Day17Solver : ISolver
         ///// </summary>
         public long Height => _heightMap.Max;
 
+        public long NewHeight { get; private set; }
+
         private ColumnHeightMap _heightMap = ColumnHeightMap.Create();
 
-        //private readonly List<Shape> _restingRocks = new();
-        private readonly SlidingBuffer<Shape> _recentRestingRocks = new(100); //new(28);
+        private List<Shape> _restingRocks = new();
+        //private readonly SlidingBuffer<Shape> _recentRestingRocks = new(5000); //new(28);
 
         public VerticalChamber(PuzzleInput input, long numRocks, int width = 7)
         {
@@ -133,6 +137,7 @@ public class Day17Solver : ISolver
             //var candidatePatterns = new Dictionary<HeightPattern, List<long>>();
 
             var jumped = false;
+            var doJumps = true;
 
             for (var rockNumber = 1L; rockNumber <= _numRocks; rockNumber++)
             {
@@ -154,8 +159,10 @@ public class Day17Solver : ISolver
                     {
                         rock = previous;
                         comeToRest = true;
-                        //_restingRocks.Add(rock);
-                        _recentRestingRocks.Add(rock);
+
+                        _restingRocks.Add(rock);
+                        //_recentRestingRocks.Add(rock);
+
                         //Height = Math.Max(Height, Math.Abs((long) rock.Bounds.Min.Y) + 1);
 
                         //if (Height % 500 == 0)
@@ -177,36 +184,49 @@ public class Day17Solver : ISolver
 
                         var repeats1 = candidatePatterns.Where(x => x.Value.Count > 1).ToArray();
 
-                        if (repeats1.Length > 0 && !jumped)
+                        if (repeats1.Length > 0 && !jumped && doJumps && Height > 10000)
                         {
                             jumped = true;
 
                             // rs-todo:
-                            var chosenPattern = repeats1[0];
+                            //var chosenPattern = repeats1.Last(); //[0];
 
-                            var initialHeight = chosenPattern.Value[0].Height;
-                            var initialRockCount = chosenPattern.Value[0].RockNum;
+                            foreach (var chosenPattern in repeats1)
+                            {
+                                var initialHeight = chosenPattern.Value[0].Height;
+                                var initialRockCount = chosenPattern.Value[0].RockNum;
 
-                            var remainingRocks = _numRocks - initialRockCount;
+                                var remainingRocks = _numRocks - initialRockCount;
 
-                            var patternHeight = chosenPattern.Value[1].Height - chosenPattern.Value[0].Height;
+                                var patternHeight = chosenPattern.Value[1].Height - chosenPattern.Value[0].Height;
 
-                            var patternRockCount = chosenPattern.Value[1].RockNum - chosenPattern.Value[0].RockNum;
+                                var patternRockCount = chosenPattern.Value[1].RockNum - chosenPattern.Value[0].RockNum;
 
-                            var numOfJumps = remainingRocks / patternRockCount;
+                                var numOfJumps = remainingRocks / patternRockCount;
 
-                            var newRockCount = initialRockCount + (patternRockCount * numOfJumps);
-                            var newHeight = initialHeight + (patternHeight * numOfJumps);
-                            var heightDelta = newHeight - Height;
+                                var newRockCount = initialRockCount + (patternRockCount * numOfJumps);
+                                var newHeight = initialHeight + (patternHeight * numOfJumps);
+                                var heightDelta = newHeight - chosenPattern.Value[1].Height; //Height;
 
-                            jets.Index = chosenPattern.Key.jetsIndex;
-                            shapes.Index = chosenPattern.Key.shapesIndex;
-                            _heightMap = ColumnHeightMap.FromPattern(chosenPattern.Key.HeightPattern, newHeight);
-                            rockNumber = newRockCount;
+                                if (newRockCount == _numRocks)
+                                {
+                                    Logger($"{new { newHeight, newRockCount, chosenPattern }}");
+                                    NewHeight = newHeight;
+                                    return this;
+                                }
+                            }
 
-                            // Shift the whole window too!!
-                            var delta = new Vector2(0, -heightDelta);
-                            _recentRestingRocks.Buffer = _recentRestingRocks.Buffer.Select(s => s?.Translate(delta).Next).ToArray();
+                            // jets.Index = chosenPattern.Key.jetsIndex;
+                            // shapes.Index = chosenPattern.Key.shapesIndex;
+                            // _heightMap = ColumnHeightMap.FromPattern(chosenPattern.Key.HeightPattern, newHeight);
+                            // rockNumber = newRockCount;
+                            // 
+                            // // Shift the whole window too!!
+                            // var delta = new Vector2(0, -heightDelta);
+                            // 
+                            // //_recentRestingRocks.Buffer = _recentRestingRocks.Buffer.Select(s => s?.Translate(delta).Next).ToArray();
+                            // 
+                            // _restingRocks = _restingRocks.Select(s => s.Translate(delta).Next).ToList();
                         }
 
                         //var numRepeats = candidatePatterns.Count(x => x.Value.Count > 1);
@@ -239,7 +259,15 @@ public class Day17Solver : ISolver
 
             foreach (var candidatePattern in repeats)
             {
-                Logger($"candidatePattern: {candidatePattern.Key} -- {string.Join(", ", candidatePattern.Value)}");
+                var prevHeight = 0L;
+                var gaps = candidatePattern.Value.Select(x =>
+                {
+                    var gap = x.Height - prevHeight;
+                    prevHeight = x.Height;
+                    return gap;
+                }).ToArray();
+
+                Logger($"candidatePattern: {candidatePattern.Key} -- {string.Join(", ", candidatePattern.Value)} -- gaps: {string.Join(", ", gaps)}");
             }
 
             //var chosenPattern = repeats.MaxBy(x => x.Value[0]);
@@ -253,6 +281,7 @@ public class Day17Solver : ISolver
             //Logger("");
             //Logger("");
 
+            NewHeight = Height;
             return this;
         }
 
@@ -261,7 +290,8 @@ public class Day17Solver : ISolver
         bool HasShapeHitFloor(Shape shape) => shape.Bounds.Max.Y >= FloorY;
 
         // rs-todo: use recent!:
-        bool CollidedWithRestingRock(Shape rock) => _recentRestingRocks.Buffer.Any(rock.Overlaps); // rs-todo: would a mip make it even quicker?
+        bool CollidedWithRestingRock(Shape rock) => _restingRocks.Any(rock.Overlaps); // rs-todo: would a mip make it even quicker?
+        //bool CollidedWithRestingRock(Shape rock) => _recentRestingRocks.Buffer.Any(rock.Overlaps); // rs-todo: would a mip make it even quicker?
         //bool CollidedWithRestingRock(Shape rock) => _restingRocks.Any(rock.Overlaps); // rs-todo: would a mip make it even quicker?
 
         //public string Debug()
@@ -336,40 +366,40 @@ public class Day17Solver : ISolver
         //public T Next() => _elements[++Index % _elements.Length];
     }
 
-    record Shape(IReadOnlyList<Vector2> Pixels, BoundingBox Bounds, int PixelMipMap)
+    record Shape(IReadOnlyList<Vector2> Pixels, BoundingBox Bounds) //, int PixelMipMap)
     {
         public Shape(IReadOnlyList<Vector2> pixels, Vector2 offset) : this(
             pixels,
-            BoundingBox.Create(pixels),
-            BuildMipMap(pixels.Select(v => v - offset)))
+            BoundingBox.Create(pixels)
+            /*,BuildMipMap(pixels.Select(v => v - offset))*/)
         {
         }
 
-        static int BuildMipMap(IEnumerable<Vector2> pixels) // rs-todo: doesn't work, either fix or remove!
-        {
-            // Shift 1 by Y + 5
-            // Shift 1 by X
-            var result = 0;
+        //static int BuildMipMap(IEnumerable<Vector2> pixels) // rs-todo: doesn't work, either fix or remove!
+        //{
+        //    // Shift 1 by Y + 5
+        //    // Shift 1 by X
+        //    var result = 0;
 
-            foreach (var pixel in pixels)
-            {
-                var self = 1 << Math.Abs((int) pixel.X);
-                self <<= Math.Abs((int) pixel.Y) * 5;
+        //    foreach (var pixel in pixels)
+        //    {
+        //        var self = 1 << Math.Abs((int) pixel.X);
+        //        self <<= Math.Abs((int) pixel.Y) * 5;
 
-                result |= self;
-                //result |= 1 << Math.Abs((int) pixel.X);
-                //result |= 1 << Math.Abs((int) pixel.Y) + 10;
-            }
+        //        result |= self;
+        //        //result |= 1 << Math.Abs((int) pixel.X);
+        //        //result |= 1 << Math.Abs((int) pixel.Y) + 10;
+        //    }
 
-            return result;
-        }
+        //    return result;
+        //}
 
         public (Shape Next, Shape Previous) Translate(Vector2 movement) =>
         (
             new Shape(
                 Pixels.Select(p => p + movement).ToArray(),
-                new BoundingBox(Bounds.Min + movement, Bounds.Max + movement),
-                PixelMipMap),
+                new BoundingBox(Bounds.Min + movement, Bounds.Max + movement)
+                /*,PixelMipMap*/),
             this
         );
 
