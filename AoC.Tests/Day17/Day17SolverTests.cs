@@ -31,6 +31,7 @@ public class Day17SolverTests
     }
 
     [Test]
+    [LongRunningTest("> 400ms")]
     public void Part1VerifyOptimizationsForExample()
     {
         // ACT
@@ -41,6 +42,7 @@ public class Day17SolverTests
     }
 
     [Test]
+    [LongRunningTest("> 400ms")]
     public void Part1VerifyOptimizationsForReal()
     {
         // ACT
@@ -51,6 +53,7 @@ public class Day17SolverTests
     }
 
     [Test]
+    [LongRunningTest("> 400ms")]
     public void Part1Try30K()
     {
         // ACT
@@ -61,6 +64,7 @@ public class Day17SolverTests
     }
 
     [Test]
+    [LongRunningTest("> 400ms")]
     public void Part1Try40K()
     {
         // ACT

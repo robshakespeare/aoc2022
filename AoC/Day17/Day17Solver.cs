@@ -9,6 +9,12 @@ public class Day17Solver : ISolver
     public long? SolvePart1(PuzzleInput input, int numRocks)
     {
         var chamber = VerticalChamber.BuildAndSimulate(input, numRocks);
+
+        File.WriteAllText(Path.Combine(
+            @"C:\Users\Rob.Shakespeare\OneDrive\AoC 2022\Day17",
+            $"{DateTime.Now:O}.txt".Replace(":", "-")),
+            chamber.Debug());
+
         return chamber.Height;
     }
 
@@ -21,6 +27,9 @@ public class Day17Solver : ISolver
 
     public class VerticalChamber
     {
+        private readonly PuzzleInput _input;
+        private readonly int _numRocks;
+
         public int Width { get; }
         public int LeftWallX { get; }
         public int RightWallX { get; }
@@ -34,8 +43,10 @@ public class Day17Solver : ISolver
         private readonly List<Shape> _restingRocks = new();
         private readonly SlidingBuffer<Shape> _recentRestingRocks = new(28);
 
-        public VerticalChamber(int width = 7)
+        public VerticalChamber(PuzzleInput input, int numRocks, int width = 7)
         {
+            _input = input;
+            _numRocks = numRocks;
             Width = width;
 
             // NOTE: Bottom left of the open space in the chamber is 0,0
@@ -44,7 +55,7 @@ public class Day17Solver : ISolver
             FloorY = 1;
         }
 
-        public static VerticalChamber BuildAndSimulate(PuzzleInput input, int numRocks) => new VerticalChamber().Simulate(input, numRocks);
+        public static VerticalChamber BuildAndSimulate(PuzzleInput input, int numRocks) => new VerticalChamber(input, numRocks).Simulate();
 
         // How many units tall will the tower of rocks be after 2022 rocks have stopped falling?
         /*
@@ -56,12 +67,12 @@ public class Day17Solver : ISolver
          * into the floor or an already-fallen rock, the falling rock stops where it is (having landed on something) and a new rock immediately begins falling.
          *
          */
-        private VerticalChamber Simulate(PuzzleInput input, int numRocks)
+        private VerticalChamber Simulate()
         {
             var shapes = BuildShapesCycle();
-            var jets = ParseJetFlowsCycle(input);
+            var jets = ParseJetFlowsCycle(_input);
 
-            for (var rockNumber = 1; rockNumber <= numRocks; rockNumber++)
+            for (var rockNumber = 1; rockNumber <= _numRocks; rockNumber++)
             {
                 // Move rock until it comes to a rest
                 var (rock, _) = shapes.Next().Translate(new Vector2(0, -Height - 3));
@@ -121,7 +132,7 @@ public class Day17Solver : ISolver
         public string Debug()
         {
             var buffer = new StringBuilder();
-            buffer.AppendLine($"Chamber height: {Height}):");
+            buffer.AppendLine($"Num of shapes dropped: {_numRocks} -- Result Chamber height: {Height}):");
             buffer.AppendLine(_restingRocks.SelectMany(s => s.Pixels).ToStringGrid(x => x, _ => '#', '.').RenderGridToString());
             buffer.AppendLine();
             return buffer.ToString();
