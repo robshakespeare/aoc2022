@@ -104,8 +104,8 @@ public class Day18Solver : ISolver
 
     static IReadOnlySet<Cube> ParseInputToCubeMap(PuzzleInput input) => input.ReadLines().Select(line =>
     {
-        var coords = line.Split(',').Select(int.Parse).ToArray();
-        return new Cube(new Vector3(coords[0], coords[1], coords[2]));
+        var coords = line.Split(',').Select(float.Parse).ToArray();
+        return new Cube(new Vector3(coords));
     }).ToHashSet();
 
     static readonly IReadOnlyList<Vector3> Axis3d = new Vector3[]
@@ -151,14 +151,7 @@ public class Day18Solver : ISolver
             }
         }
 
-        public override bool Equals(object? obj)
-        {
-            if (obj is null) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == GetType() && Equals((Cube) obj);
-        }
-
-        private bool Equals(Cube other) => Position.Equals(other.Position);
+        public override bool Equals(object? obj) => obj is Cube other && Position == other.Position;
 
         public override int GetHashCode() => Position.GetHashCode();
 
