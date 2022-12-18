@@ -28,26 +28,24 @@ public class Day18Solver : ISolver
         return part1SurfaceArea - enclosedSurfaces.Count;
     }
 
-    public record Cube(/*int Id, *//*SimpleV3 Min, SimpleV3 Max*/ Vector3 Position)
+    public record Cube(/*int Id, */Vector3 Position)
     {
         public Vector3 Min { get; } = Position;
 
         public Vector3 Max { get; } = Position + Vector3.One;
 
-        //public SimpleV3 Max { get; } = SimpleV3.Create(Position + Vector3.One;
-
         //public IReadOnlyList<Surface> Sides { get; } = GetSides().ToArray();
 
         public IReadOnlyList<Surface> GetSurfaces()
         {
-            var a = SimpleV3.Create(Min.X, Min.Y, Min.Z);
-            var b = SimpleV3.Create(Max.X, Min.Y, Min.Z);
-            var c = SimpleV3.Create(Min.X, Max.Y, Min.Z);
-            var d = SimpleV3.Create(Max.X, Max.Y, Min.Z);
-            var e = SimpleV3.Create(Min.X, Min.Y, Max.Z);
-            var f = SimpleV3.Create(Max.X, Min.Y, Max.Z);
-            var g = SimpleV3.Create(Min.X, Max.Y, Max.Z);
-            var h = SimpleV3.Create(Max.X, Max.Y, Max.Z);
+            var a = Min;
+            var b = new Vector3(Max.X, Min.Y, Min.Z);
+            var c = new Vector3(Min.X, Max.Y, Min.Z);
+            var d = new Vector3(Max.X, Max.Y, Min.Z);
+            var e = new Vector3(Min.X, Min.Y, Max.Z);
+            var f = new Vector3(Max.X, Min.Y, Max.Z);
+            var g = new Vector3(Min.X, Max.Y, Max.Z);
+            var h = Max;
 
             //if (new[] { a, b, c, d, e, f, g, h }.Distinct().Count() != 8)
             //{
@@ -56,12 +54,12 @@ public class Day18Solver : ISolver
 
             return new Surface[]
             {
-                Surface.Create(a, d),
-                Surface.Create(b, h),
-                Surface.Create(e, h),
-                Surface.Create(a, g),
-                Surface.Create(a, f),
-                Surface.Create(c, h)
+                new(a, d),
+                new(b, h),
+                new(e, h),
+                new(a, g),
+                new(a, f),
+                new(c, h)
             };
         }
 
@@ -70,42 +68,12 @@ public class Day18Solver : ISolver
         public bool IsEnclosed => AdjacentCubes.Count == 6;
     }
 
-    public struct SimpleV3
-    {
-        public int Value { get; }
-
-        public SimpleV3(int value) => Value = value;
-
-        public static SimpleV3 Create(float x, float y, float z) => Create((int) x, (int) y, (int) z);
-
-        public static SimpleV3 Create(int x, int y, int z)
-        {
-            if (x > 31 || y > 31 || z > 31)
-            {
-                throw new NotSupportedException("Only designed for max of 5 bit element each");
-            }
-
-            return new SimpleV3(x | (y << 5) | (z << 10));
-        }
-    }
-
-    //public record Surface(Vector3 Min, Vector3 Max);
-
-    public readonly struct Surface
-    {
-        public int Value { get; }
-
-        public Surface(int value) => Value = value;
-
-        public static Surface Create(SimpleV3 min, SimpleV3 max) => new(min.Value | (max.Value << 15));
-    }
-
-    //Surface(Vector3 Min, Vector3 Max);
+    public record Surface(Vector3 Min, Vector3 Max);
 
     public static IReadOnlyList<Cube> ParseInputToCubes(PuzzleInput input) => input.ReadLines().Select((line, i) =>
     {
         var coords = line.Split(',').Select(int.Parse).ToArray();
-        return new Cube(new Vector3(coords[0], coords[1], coords[2]));
+        return new Cube(/*i, */new Vector3(coords[0], coords[1], coords[2]));
     }).ToArray();
 
     /// <summary>
@@ -180,7 +148,7 @@ public class Day18Solver : ISolver
         {
             foreach (var cube2Surface in cube2Surfaces)
             {
-                if (cube1Surface.Value == cube2Surface.Value)
+                if (cube1Surface == cube2Surface)
                 {
                     return cube1Surface;
                 }
