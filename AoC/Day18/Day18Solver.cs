@@ -235,8 +235,55 @@ public class Day18Solver : ISolver
         //public bool IsEnclosed => AdjacentCubes.Count == 6;
     }
 
-    public record Surface(Vector3 Min, Vector3 Max, Vector3 Normal)
+    //public record Surface(Vector3 Min, Vector3 Max);
+
+    public class Surface
     {
+        public Vector3 Min { get; }
+        public Vector3 Max { get; }
+        public Vector3 Normal { get; }
+
+        public Surface(Vector3 min, Vector3 max, Vector3 normal)
+        {
+            Min = min;
+            Max = max;
+            Normal = normal;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is null) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            return obj.GetType() == GetType() && Equals((Surface)obj);
+        }
+
+        protected bool Equals(Surface other)
+        {
+            return Min.Equals(other.Min) && Max.Equals(other.Max);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Min, Max);
+        }
+
+        //public override bool Equals(object? obj)
+        //{
+        //    if (obj is null) return false;
+        //    if (ReferenceEquals(this, obj)) return true;
+        //    return obj.GetType() == GetType() && Equals((Surface)obj);
+        //}
+
+        //protected bool Equals(Surface other)
+        //{
+        //    return Min.Equals(other.Min);
+        //}
+
+        //public override int GetHashCode()
+        //{
+        //    return Min.GetHashCode();
+        //}
+
         //public Vector3 Normal { get; } = CalculateNormal(Min, Max);
 
         //private static Vector3 CalculateNormal(Vector3 min, Vector3 max)
