@@ -10,7 +10,14 @@ public class Day18Solver : ISolver
     public long? SolvePart1(PuzzleInput input)
     {
         var (_, distinctSurfaces, connectedSurfaces) = ScanCubes(input);
-        return distinctSurfaces.Count - connectedSurfaces.Count;
+
+        var disconnectedSurfaces = distinctSurfaces.Except(connectedSurfaces);
+
+        return disconnectedSurfaces.Count();
+
+        //var disconnectedSurfaces = distinctSurfaces.Except(connectedSurfaces);
+
+        //return disconnectedSurfaces.Count(); //distinctSurfaces.Count - connectedSurfaces.Count;
     }
 
     /// <summary>
@@ -79,12 +86,12 @@ public class Day18Solver : ISolver
 
             return new Surface[]
             {
-                new(a, d),
-                new(b, h),
-                new(e, h),
-                new(a, g),
-                new(a, f),
-                new(c, h)
+                new(a, d, new(0, 0, -1)),
+                new(b, h, new(1, 0, 0)),
+                new(e, h, new(0, 0, 1)),
+                new(a, g, new(-1, 0, 0)),
+                new(a, f, new(0, -1, 0)),
+                new(c, h, new(0, 1, 0))
             };
         }
 
@@ -104,7 +111,70 @@ public class Day18Solver : ISolver
         //public bool IsEnclosed => AdjacentCubes.Count == 6;
     }
 
-    public record Surface(Vector3 Min, Vector3 Max);
+    //public record Surface(Vector3 Min, Vector3 Max);
+
+    public class Surface
+    {
+        public Vector3 Min { get; }
+        public Vector3 Max { get; }
+        public Vector3 Normal { get; }
+
+        public Surface(Vector3 min, Vector3 max, Vector3 normal)
+        {
+            Min = min;
+            Max = max;
+            Normal = normal;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is null) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            return obj.GetType() == GetType() && Equals((Surface)obj);
+        }
+
+        protected bool Equals(Surface other)
+        {
+            return Min.Equals(other.Min) && Max.Equals(other.Max);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Min, Max);
+        }
+
+        //public override bool Equals(object? obj)
+        //{
+        //    if (obj is null) return false;
+        //    if (ReferenceEquals(this, obj)) return true;
+        //    return obj.GetType() == GetType() && Equals((Surface)obj);
+        //}
+
+        //protected bool Equals(Surface other)
+        //{
+        //    return Min.Equals(other.Min);
+        //}
+
+        //public override int GetHashCode()
+        //{
+        //    return Min.GetHashCode();
+        //}
+
+        //public Vector3 Normal { get; } = CalculateNormal(Min, Max);
+
+        //private static Vector3 CalculateNormal(Vector3 min, Vector3 max)
+        //{
+        //    var a = min;
+        //    var b = new Vector3(max.X, min.Y, min.Z);
+        //    var e = new Vector3(min.X, min.Y, max.Z);
+
+        //    var ba = b - a;
+        //    var ea = e - a;
+
+        //    return Vector3.Cross(ba, ea);
+        //    //return Vector3.Normalize(Vector3.Cross(ba, ea));
+        //}
+    }
 
     public record ScanResult(
         IReadOnlyList<Cube> Cubes,
