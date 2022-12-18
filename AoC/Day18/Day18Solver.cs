@@ -30,10 +30,10 @@ public class Day18Solver : ISolver
             var g = new Vector3(Min.X, Max.Y, Max.Z);
             var h = Max;
 
-            if (new[] { a, b, c, d, e, f, g, h }.Distinct().Count() != 8)
-            {
-                throw new InvalidOperationException("KEH? cube VERTEXES");
-            }
+            //if (new[] { a, b, c, d, e, f, g, h }.Distinct().Count() != 8)
+            //{
+            //    throw new InvalidOperationException("KEH? cube VERTEXES");
+            //}
 
             return new Surface[]
             {
@@ -94,24 +94,43 @@ public class Day18Solver : ISolver
                 distinctSurfaces.Add(surface);
             }
 
-            if (cube1Surfaces.Distinct().Count() != 6)
-            {
-                throw new InvalidOperationException("KEH? cube1 surfaces");
-            }
+            //if (cube1Surfaces.Distinct().Count() != 6)
+            //{
+            //    throw new InvalidOperationException("KEH? cube1 surfaces");
+            //}
 
-            if (cube2Surfaces.Distinct().Count() != 6)
-            {
-                throw new InvalidOperationException("KEH? cube2 surfaces");
-            }
+            //if (cube2Surfaces.Distinct().Count() != 6)
+            //{
+            //    throw new InvalidOperationException("KEH? cube2 surfaces");
+            //}
 
             // Find shared surface, but only for touching cubes
             if (MathUtils.ManhattanDistance(cube1.Position, cube2.Position) == 1)
             {
-                var sharedSurface = cube1Surfaces.Intersect(cube2Surfaces).Single();
+                var sharedSurface = cube1Surfaces.Intersect(cube2Surfaces).First();
                 connectedSurfaces.Add(sharedSurface);
+
+                //var sharedSurface = FindSharedSurface(cube1Surfaces, cube2Surfaces);
+                //connectedSurfaces.Add(sharedSurface);
             }
         }
 
         return distinctSurfaces.Count - connectedSurfaces.Count;
+    }
+
+    static Surface FindSharedSurface(IReadOnlyList<Surface> cube1Surfaces, IReadOnlyList<Surface> cube2Surfaces)
+    {
+        foreach (var cube1Surface in cube1Surfaces)
+        {
+            foreach (var cube2Surface in cube2Surfaces)
+            {
+                if (cube1Surface == cube2Surface)
+                {
+                    return cube1Surface;
+                }
+            }
+        }
+
+        throw new InvalidOperationException("Unexpected: shared surface not found");
     }
 }
