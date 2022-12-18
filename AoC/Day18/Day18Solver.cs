@@ -13,13 +13,13 @@ public class Day18Solver : ISolver
     {
         var (cubes, distinctSurfaces, connectedSurfaces) = ScanCubes(input);
 
-        //var disconnectedSurfaces = cubes.SelectMany(cube => cube.DisconnectedSurfaces).Distinct().ToArray();
+        var disconnectedSurfaces = cubes.SelectMany(cube => cube.DisconnectedSurfaces).Distinct().ToArray();
 
-        var disconnectedSurfaces = distinctSurfaces.Except(connectedSurfaces);
+        //var disconnectedSurfaces = distinctSurfaces.Except(connectedSurfaces);
 
         return disconnectedSurfaces.Count();
 
-        //return distinctSurfaces.Count - connectedSurfaces.Count;
+        //return distinctSurfaces.Count - connectedSurfaces.Count; // rs-todo: put this back in once all confirmed as working
     }
 
     /// <summary>
@@ -36,17 +36,22 @@ public class Day18Solver : ISolver
 
         var externalSurfaces = new HashSet<Surface>();
 
+        var hmInternals = new Dictionary<Surface, HashSet<Surface>>();
+
         foreach (var (disconnectedSurface, n) in disconnectedSurfaces.Select((s, i) => (s, n: i + 1)))
         {
-            Logger($"Checking disconnectedSurface {n} / {disconnectedSurfaces.Length}");
+            //Logger($"Checking disconnectedSurface {n} / {disconnectedSurfaces.Length}");
 
-            //var isExternal = disconnectedSurfaces
-            //    .Where(otherDisconnectedSurface => disconnectedSurface != otherDisconnectedSurface)
-            //    .All(otherDisconnectedSurface => !AreDirectlyFacing(disconnectedSurface, otherDisconnectedSurface));
+            var isExternal = disconnectedSurfaces
+                .Where(otherDisconnectedSurface => !disconnectedSurface.Equals(otherDisconnectedSurface))
+                .All(otherDisconnectedSurface => !AreDirectlyFacing(disconnectedSurface, otherDisconnectedSurface));
 
-            var isInternal = disconnectedSurfaces
-                .Where(otherDisconnectedSurface => disconnectedSurface != otherDisconnectedSurface)
-                .Any(otherDisconnectedSurface => AreDirectlyFacing(disconnectedSurface, otherDisconnectedSurface));
+            var internals = disconnectedSurfaces
+                .Where(otherDisconnectedSurface => !disconnectedSurface.Equals(otherDisconnectedSurface))
+                .Where(otherDisconnectedSurface => AreDirectlyFacing(disconnectedSurface, otherDisconnectedSurface));
+
+            var hmInternal = hmInternals.GetOrAdd(disconnectedSurface, () => new HashSet<Surface>());
+            hmInternal.UnionWith(internals);
 
             //var isExternal = true;
 
@@ -61,12 +66,12 @@ public class Day18Solver : ISolver
             //    }
             //}
 
-            if (!isInternal)
+            if (isExternal) //if (!isInternal)
             {
                 externalSurfaces.Add(disconnectedSurface);
             }
 
-            Logger($"Done disconnectedSurface {n} / {disconnectedSurfaces.Length}");
+            //Logger($"Done disconnectedSurface {n} / {disconnectedSurfaces.Length}");
         }
 
         //foreach (var (disconnectedSurface, n) in disconnectedSurfaces.Select((s, i) => (s, n: i + 1)))
@@ -95,6 +100,28 @@ public class Day18Solver : ISolver
         //}
 
         var internalSurfaces = disconnectedSurfaces.Except(externalSurfaces).ToArray();
+
+        var expectedCube = new Cube(new(2, 2, 5));
+
+        Logger($"Expected internal surfaces: {string.Join(" -- ", expectedCube.Surfaces)}");
+
+        Logger($"actual internal surfaces: {string.Join(" -- ", internalSurfaces.Select(x => x.ToString()))}");
+
+        var incorrectInternalSurfaces = internalSurfaces.Except(expectedCube.Surfaces).ToArray();
+        Logger($"incorrect internal surfaces: {string.Join(" -- ", incorrectInternalSurfaces.Select(x => x.ToString()))}");
+
+        foreach (var incorrectInternalSurface in incorrectInternalSurfaces)
+        {
+            var incorrectlyFacing = hmInternals[incorrectInternalSurface];
+
+            Logger("----");
+            Logger("");
+            Logger($"incorrectInternalSurface: {incorrectInternalSurface}");
+            Logger("incorrectlyFacing:");
+            Logger(string.Join(Environment.NewLine, incorrectlyFacing));
+        }
+
+        //expectedCube.Surfaces
 
         return externalSurfaces.Count;
 
@@ -266,6 +293,8 @@ public class Day18Solver : ISolver
         {
             return HashCode.Combine(Min, Max);
         }
+
+        public override string ToString() => new { Min, Max, Normal }.ToString()!;
 
         //public override bool Equals(object? obj)
         //{

@@ -82,7 +82,10 @@ public class Day18SolverTests
         part2Result.Should().NotBe(1651);
         part2Result.Should().NotBe(3070);
         part2Result.Should().NotBe(3694);
+        part2Result.Should().NotBe(2044); // but is it 2044 + 8? i.e. 2,052
         part2Result.Should().NotBe(null);
+
+        part2Result.Should().Be(-1);
     }
 
     public class TheAreDirectlyFacingMethod
