@@ -1,6 +1,8 @@
 using AoC;
 using static Crayon.Output;
 
+Console.OutputEncoding = System.Text.Encoding.Unicode;
+
 switch (args.ElementAtOrDefault(0))
 {
     case "--most-recent-day-title":
@@ -12,8 +14,6 @@ switch (args.ElementAtOrDefault(0))
         await AoC.CLI.PullPuzzleInputCommand.DoAsync(args);
         return;
 }
-
-Console.OutputEncoding = System.Text.Encoding.Unicode;
 
 static void PrintTitle()
 {
