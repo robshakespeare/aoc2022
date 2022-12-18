@@ -1,3 +1,5 @@
+using static AoC.Day18.Day18Solver;
+
 namespace AoC.Day18;
 
 public class Day18Solver : ISolver
@@ -9,8 +11,15 @@ public class Day18Solver : ISolver
     /// </summary>
     public long? SolvePart1(PuzzleInput input)
     {
-        var (_, distinctSurfaces, connectedSurfaces) = ScanCubes(input);
-        return distinctSurfaces.Count - connectedSurfaces.Count;
+        var (cubes, distinctSurfaces, connectedSurfaces) = ScanCubes(input);
+
+        //var disconnectedSurfaces = cubes.SelectMany(cube => cube.DisconnectedSurfaces).Distinct().ToArray();
+
+        var disconnectedSurfaces = distinctSurfaces.Except(connectedSurfaces);
+
+        return disconnectedSurfaces.Count();
+
+        //return distinctSurfaces.Count - connectedSurfaces.Count;
     }
 
     /// <summary>
@@ -20,9 +29,74 @@ public class Day18Solver : ISolver
     {
         var (cubes, distinctSurfaces, connectedSurfaces) = ScanCubes(input);
 
-        // Do we just need to get the outer most surfaces?
+        var disconnectedSurfaces = cubes.SelectMany(cube => cube.DisconnectedSurfaces).Distinct().ToArray();
 
-        return null;
+        // Do we just need to get the outer most surfaces?
+        // Casting ray out from each disconnected surface, if it intersects no other disconnected surface, that means its an outside edge
+
+        var externalSurfaces = new HashSet<Surface>();
+
+        foreach (var (disconnectedSurface, n) in disconnectedSurfaces.Select((s, i) => (s, n: i + 1)))
+        {
+            Logger($"Checking disconnectedSurface {n} / {disconnectedSurfaces.Length}");
+
+            //var isExternal = disconnectedSurfaces
+            //    .Where(otherDisconnectedSurface => disconnectedSurface != otherDisconnectedSurface)
+            //    .All(otherDisconnectedSurface => !AreDirectlyFacing(disconnectedSurface, otherDisconnectedSurface));
+
+            var isInternal = disconnectedSurfaces
+                .Where(otherDisconnectedSurface => disconnectedSurface != otherDisconnectedSurface)
+                .Any(otherDisconnectedSurface => AreDirectlyFacing(disconnectedSurface, otherDisconnectedSurface));
+
+            //var isExternal = true;
+
+            //foreach (var otherDisconnectedSurface in disconnectedSurfaces)
+            //{
+            //    if (disconnectedSurface != otherDisconnectedSurface)
+            //    {
+            //        if (!AreDirectlyFacing(disconnectedSurface, otherDisconnectedSurface))
+            //        {
+            //            isExternal = false;
+            //        }
+            //    }
+            //}
+
+            if (!isInternal)
+            {
+                externalSurfaces.Add(disconnectedSurface);
+            }
+
+            Logger($"Done disconnectedSurface {n} / {disconnectedSurfaces.Length}");
+        }
+
+        //foreach (var (disconnectedSurface, n) in disconnectedSurfaces.Select((s, i) => (s, n: i + 1)))
+        //{
+        //    Logger($"Checking disconnectedSurface {n} / {disconnectedSurfaces.Length}");
+
+        //    var isExternal = true;
+
+        //    foreach (var otherDisconnectedSurface in disconnectedSurfaces)
+        //    {
+        //        if (disconnectedSurface != otherDisconnectedSurface)
+        //        {
+        //            if (!AreDirectlyFacing(disconnectedSurface, otherDisconnectedSurface))
+        //            {
+        //                isExternal = false;
+        //            }
+        //        }
+        //    }
+
+        //    if (isExternal)
+        //    {
+        //        externalSurfaces.Add(disconnectedSurface);
+        //    }
+
+        //    Logger($"Done disconnectedSurface {n} / {disconnectedSurfaces.Length}");
+        //}
+
+        var internalSurfaces = disconnectedSurfaces.Except(externalSurfaces).ToArray();
+
+        return externalSurfaces.Count;
 
         //var cubes = ParseInputToCubes(input);
 
@@ -44,6 +118,54 @@ public class Day18Solver : ISolver
         //return part1SurfaceArea - enclosedSurfaces.Count;
     }
 
+    public Action<string> Logger { get; set; } = Console.WriteLine;
+
+    // l0 is the origin of the ray and l is the ray direction
+
+    // Ray origin and direction is current surface, plane normal and point on plane is the other surface
+    public static bool AreDirectlyFacing(Surface currentSurface, Surface otherSurface)
+    {
+        if (FacingPlaneIntersect(otherSurface.Normal, otherSurface.Min, currentSurface.Min, currentSurface.Normal, out var intersect, out _))
+        {
+            //var intersect = currentSurface.Min + (currentSurface.Normal * t);
+
+            // Intersect must be within bounds of other surface
+            return intersect == otherSurface.Min;
+            //{
+            //}
+
+            //return
+            //    intersect.X >= otherSurface.Min.X && intersect.X <= otherSurface.Max.X &
+            //    intersect.Y >= otherSurface.Min.Y && intersect.Y <= otherSurface.Max.Y &
+            //    intersect.Z >= otherSurface.Min.Z && intersect.Z <= otherSurface.Max.Z;
+        }
+
+        return false;
+    }
+
+    static bool FacingPlaneIntersect(Vector3 planeNormal, Vector3 pointOnPlane, Vector3 rayOrigin, Vector3 rayDirection, out Vector3 intersect, out float t)
+    {
+        // assuming vectors are all normalized
+        var denom = Vector3.Dot(planeNormal, rayDirection);
+        //Math.Abs(denom) != 0 /*> 1e-6*/)
+        if (denom < 0) // i.e. if facing towards each other
+        {
+            var dir = pointOnPlane - rayOrigin;
+            t = Vector3.Dot(dir, planeNormal) / denom;
+            if (t > 0)
+            {
+                intersect = rayOrigin + (rayDirection * t);
+                return true;
+            }
+
+            //return t >= 0;
+        }
+
+        t = default;
+        intersect = default;
+        return false;
+    }
+
     public class Cube
     {
         public Vector3 Position { get; }
@@ -55,6 +177,7 @@ public class Day18Solver : ISolver
 
         private readonly HashSet<Surface> _disconnectedSurfaces;
         private readonly HashSet<Surface> _connectedSurfaces;
+        //private readonly Lazy<Vector3> _normal;
 
         public Cube(Vector3 position)
         {
@@ -64,6 +187,7 @@ public class Day18Solver : ISolver
             Surfaces = new HashSet<Surface>(GetSurfaces());
             _disconnectedSurfaces = new HashSet<Surface>(Surfaces);
             _connectedSurfaces = new HashSet<Surface>();
+            //_normal = new Lazy<Vector3>(() => Vector3.Normalize(Vector3.Cross(Min, Max)));
         }
 
         private IReadOnlyList<Surface> GetSurfaces()
@@ -79,12 +203,19 @@ public class Day18Solver : ISolver
 
             return new Surface[]
             {
-                new(a, d),
-                new(b, h),
-                new(e, h),
-                new(a, g),
-                new(a, f),
-                new(c, h)
+                //new(a, d, new(0, 0, -1)),
+                //new(b, h, new(1, 0, 0)),
+                //new(e, h, new(0, 0, 1)),
+                //new(a, g, new(-1, 0, 0)),
+                //new(a, f, new(0, -1, 0)),
+                //new(c, h, new(0, 1, 0))
+
+                new(a, d, new(0, 0, -1)),
+                new(b, h, new(1, 0, 0)),
+                new(e, h, new(0, 0, 1)),
+                new(a, g, new(-1, 0, 0)),
+                new(a, f, new(0, -1, 0)),
+                new(c, h, new(0, 1, 0))
             };
         }
 
@@ -104,7 +235,23 @@ public class Day18Solver : ISolver
         //public bool IsEnclosed => AdjacentCubes.Count == 6;
     }
 
-    public record Surface(Vector3 Min, Vector3 Max);
+    public record Surface(Vector3 Min, Vector3 Max, Vector3 Normal)
+    {
+        //public Vector3 Normal { get; } = CalculateNormal(Min, Max);
+
+        //private static Vector3 CalculateNormal(Vector3 min, Vector3 max)
+        //{
+        //    var a = min;
+        //    var b = new Vector3(max.X, min.Y, min.Z);
+        //    var e = new Vector3(min.X, min.Y, max.Z);
+
+        //    var ba = b - a;
+        //    var ea = e - a;
+
+        //    return Vector3.Cross(ba, ea);
+        //    //return Vector3.Normalize(Vector3.Cross(ba, ea));
+        //}
+    }
 
     public record ScanResult(
         IReadOnlyList<Cube> Cubes,
