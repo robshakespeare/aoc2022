@@ -44,9 +44,9 @@ public class Day18Solver : ISolver
     {
         var lavaDropletCubes = ParseInputToCubeMap(input);
 
-        var (distinctEdges, connectedEdges) = GetDistinctAndConnectedEdges(lavaDropletCubes);
+        var (distinctEdges, connectedEdges, disconnectedEdges) = ScanEdges(lavaDropletCubes);
 
-        var disconnectedEdges = distinctEdges.Except(connectedEdges); // rs-todo: maybe this should be returned by the method above
+        //var disconnectedEdges = distinctEdges.Except(connectedEdges); // rs-todo: maybe this should be returned by the method above
         return disconnectedEdges.Count();
 
         return distinctEdges.Count - connectedEdges.Count;
@@ -57,7 +57,7 @@ public class Day18Solver : ISolver
         //return disconnectedSurfaces.Count();
     }
 
-    private static (IReadOnlySet<Vector3> DistinctEdges, IReadOnlySet<Vector3> ConnectedEdges) GetDistinctAndConnectedEdges(
+    private static (IReadOnlySet<Vector3> DistinctEdges, IReadOnlySet<Vector3> ConnectedEdges, IReadOnlySet<Vector3> DisconnectedEdges) ScanEdges(
         IReadOnlySet<Cube> cubeMap)
     {
         var distinctEdges = new HashSet<Vector3>();
@@ -73,7 +73,7 @@ public class Day18Solver : ISolver
             }
         }
 
-        return (distinctEdges, connectedEdges);
+        return (distinctEdges, connectedEdges, distinctEdges.Except(connectedEdges).ToHashSet());
     }
 
     public static IReadOnlyList<Vector3> Axis3d = new Vector3[]
@@ -108,8 +108,8 @@ public class Day18Solver : ISolver
     {
         var lavaDropletCubes = ParseInputToCubeMap(input);
 
-        var (distinctEdges, connectedEdges) = GetDistinctAndConnectedEdges(lavaDropletCubes);
-        var disconnectedEdges = distinctEdges.Except(connectedEdges);
+        var (distinctEdges, connectedEdges, disconnectedEdges) = ScanEdges(lavaDropletCubes);
+        //var disconnectedEdges = distinctEdges.Except(connectedEdges);
 
         var min = new Vector3(float.MaxValue);
         var max = new Vector3(float.MinValue);
@@ -248,9 +248,11 @@ public class Day18Solver : ISolver
             }
         }
 
-        var (internalDistinctEdges, internalConnectedEdges) = GetDistinctAndConnectedEdges(airCavities);
+        var (internalDistinctEdges, internalConnectedEdges, internalDisconnectedEdges) = ScanEdges(airCavities);
 
-        return distinctEdges.Count - connectedEdges.Count - internalDistinctEdges.Count - internalConnectedEdges.Count;
+        return disconnectedEdges.Except(internalDisconnectedEdges).Count();
+
+        //return distinctEdges.Count - connectedEdges.Count - internalDistinctEdges.Count - internalConnectedEdges.Count;
 
         //return null;
 

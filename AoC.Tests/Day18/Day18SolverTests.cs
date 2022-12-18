@@ -86,7 +86,7 @@ public class Day18SolverTests
         part2Result.Should().NotBe(-4366);
         part2Result.Should().NotBe(null);
 
-        part2Result.Should().Be(-1);
+        part2Result.Should().Be(2604);
     }
 
     public class TheAreDirectlyFacingMethod
