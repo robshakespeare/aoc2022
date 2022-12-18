@@ -11,6 +11,7 @@ public class Day17Solver : ISolver
     public long? SolvePart2(PuzzleInput input) => VerticalChamber.BuildAndSimulate(input, targetNumRocks: 1000000000000);
 
     public static Action<string> Logger { get; set; } = Console.WriteLine;
+    public static bool EnableDetailedLog { get; set; } = false;
 
     public class VerticalChamber
     {
@@ -62,7 +63,6 @@ public class Day17Solver : ISolver
             var candidatePatterns = new Dictionary<(int jetsIndex, int shapesIndex, HeightPattern HeightPattern), List<(long RockCount, long Height)>>();
 
             const bool doJump = true;
-            const bool doLog = false;
 
             for (var rockCount = 1L; rockCount <= _targetNumRocks; rockCount++)
             {
@@ -123,7 +123,7 @@ public class Day17Solver : ISolver
                 }
             }
 
-            if (doLog)
+            if (EnableDetailedLog)
             {
                 var repeatingPatterns = candidatePatterns.Where(x => x.Value.Count > 1).ToArray();
 
