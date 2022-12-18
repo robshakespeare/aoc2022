@@ -8,7 +8,24 @@ public class Day18Solver : ISolver
 
     public long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        var cubes = ParseInputToCubes(input);
+
+        var part1SurfaceArea = CalculateSurfaceArea(cubes);
+
+        // Minus 6 off for every cube that is totally enclosed
+
+        // Actually, minus off the distinct count of all of the surfaces of the cubes that are totally enclosed
+        var enclosedSurfaces = new HashSet<Surface>();
+
+        foreach (var enclosedCube in cubes.Where(cube => cube.IsEnclosed))
+        {
+            foreach (var surface in enclosedCube.GetSurfaces())
+            {
+                enclosedSurfaces.Add(surface);
+            }
+        }
+
+        return part1SurfaceArea - enclosedSurfaces.Count;
     }
 
     public record Cube(/*int Id, */Vector3 Position)
@@ -45,6 +62,10 @@ public class Day18Solver : ISolver
                 new(c, h)
             };
         }
+
+        public HashSet<Vector3> AdjacentCubes = new();
+
+        public bool IsEnclosed => AdjacentCubes.Count == 6;
     }
 
     public record Surface(Vector3 Min, Vector3 Max);
@@ -107,6 +128,9 @@ public class Day18Solver : ISolver
             // Find shared surface, but only for touching cubes
             if (MathUtils.ManhattanDistance(cube1.Position, cube2.Position) == 1)
             {
+                cube1.AdjacentCubes.Add(cube2.Position);
+                cube2.AdjacentCubes.Add(cube1.Position);
+
                 var sharedSurface = cube1Surfaces.Intersect(cube2Surfaces).First();
                 connectedSurfaces.Add(sharedSurface);
 
