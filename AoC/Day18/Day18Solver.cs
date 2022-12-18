@@ -4,39 +4,69 @@ public class Day18Solver : ISolver
 {
     public string DayName => "Day 18: Boiling Boulders";
 
-    public long? SolvePart1(PuzzleInput input) => CalculateSurfaceArea(ParseInputToCubes(input));
-
-    public long? SolvePart2(PuzzleInput input)
+    /// <summary>
+    /// Count up all the sides that aren't connected to another cube.
+    /// </summary>
+    public long? SolvePart1(PuzzleInput input)
     {
-        var cubes = ParseInputToCubes(input);
-
-        var part1SurfaceArea = CalculateSurfaceArea(cubes);
-
-        // Minus 6 off for every cube that is totally enclosed
-
-        // Actually, minus off the distinct count of all of the surfaces of the cubes that are totally enclosed
-        var enclosedSurfaces = new HashSet<Surface>();
-
-        foreach (var enclosedCube in cubes.Where(cube => cube.IsEnclosed))
-        {
-            foreach (var surface in enclosedCube.GetSurfaces())
-            {
-                enclosedSurfaces.Add(surface);
-            }
-        }
-
-        return part1SurfaceArea - enclosedSurfaces.Count;
+        var (_, distinctSurfaces, connectedSurfaces) = ScanCubes(input);
+        return distinctSurfaces.Count - connectedSurfaces.Count;
     }
 
-    public record Cube(/*int Id, */Vector3 Position)
+    /// <summary>
+    /// What is the exterior surface area of your scanned lava droplet?
+    /// </summary>
+    public long? SolvePart2(PuzzleInput input)
     {
-        public Vector3 Min { get; } = Position;
+        var (cubes, distinctSurfaces, connectedSurfaces) = ScanCubes(input);
 
-        public Vector3 Max { get; } = Position + Vector3.One;
+        // Do we just need to get the outer most surfaces?
 
-        //public IReadOnlyList<Surface> Sides { get; } = GetSides().ToArray();
+        return null;
 
-        public IReadOnlyList<Surface> GetSurfaces()
+        //var cubes = ParseInputToCubes(input);
+
+        //var part1SurfaceArea = CalculateSurfaceArea(cubes);
+
+        //// Minus 6 off for every cube that is totally enclosed
+
+        //// Actually, minus off the distinct count of all of the surfaces of the cubes that are totally enclosed
+        //var enclosedSurfaces = new HashSet<Surface>();
+
+        //foreach (var enclosedCube in cubes.Where(cube => cube.IsEnclosed))
+        //{
+        //    foreach (var surface in enclosedCube.GetSurfaces())
+        //    {
+        //        enclosedSurfaces.Add(surface);
+        //    }
+        //}
+
+        //return part1SurfaceArea - enclosedSurfaces.Count;
+    }
+
+    public class Cube
+    {
+        public Vector3 Position { get; }
+        public Vector3 Min { get; }
+        public Vector3 Max { get; }
+        public IReadOnlySet<Surface> Surfaces { get; }
+        public IReadOnlySet<Surface> DisconnectedSurfaces => _disconnectedSurfaces;
+        public IReadOnlySet<Surface> ConnectedSurfaces => _connectedSurfaces;
+
+        private readonly HashSet<Surface> _disconnectedSurfaces;
+        private readonly HashSet<Surface> _connectedSurfaces;
+
+        public Cube(Vector3 position)
+        {
+            Position = position;
+            Min = Position;
+            Max = Position + Vector3.One;
+            Surfaces = new HashSet<Surface>(GetSurfaces());
+            _disconnectedSurfaces = new HashSet<Surface>(Surfaces);
+            _connectedSurfaces = new HashSet<Surface>();
+        }
+
+        private IReadOnlyList<Surface> GetSurfaces()
         {
             var a = Min;
             var b = new Vector3(Max.X, Min.Y, Min.Z);
@@ -46,11 +76,6 @@ public class Day18Solver : ISolver
             var f = new Vector3(Max.X, Min.Y, Max.Z);
             var g = new Vector3(Min.X, Max.Y, Max.Z);
             var h = Max;
-
-            //if (new[] { a, b, c, d, e, f, g, h }.Distinct().Count() != 8)
-            //{
-            //    throw new InvalidOperationException("KEH? cube VERTEXES");
-            //}
 
             return new Surface[]
             {
@@ -63,24 +88,39 @@ public class Day18Solver : ISolver
             };
         }
 
-        public HashSet<Vector3> AdjacentCubes = new();
+        public void MarkConnectedSurface(Surface connectedSurface)
+        {
+            if (!Surfaces.Contains(connectedSurface))
+            {
+                throw new InvalidOperationException("Unexpected: tried to remove a surface from disconnected that we don't have");
+            }
 
-        public bool IsEnclosed => AdjacentCubes.Count == 6;
+            _disconnectedSurfaces.Remove(connectedSurface);
+            _connectedSurfaces.Add(connectedSurface);
+        }
+
+        //public HashSet<Vector3> AdjacentCubes = new();
+
+        //public bool IsEnclosed => AdjacentCubes.Count == 6;
     }
 
     public record Surface(Vector3 Min, Vector3 Max);
 
-    public static IReadOnlyList<Cube> ParseInputToCubes(PuzzleInput input) => input.ReadLines().Select((line, i) =>
+    public record ScanResult(
+        IReadOnlyList<Cube> Cubes,
+        IReadOnlySet<Surface> DistinctSurfaces,
+        IReadOnlySet<Surface> ConnectedSurfaces);
+
+    static IReadOnlyList<Cube> ParseInputToCubes(PuzzleInput input) => input.ReadLines().Select(line =>
     {
         var coords = line.Split(',').Select(int.Parse).ToArray();
-        return new Cube(/*i, */new Vector3(coords[0], coords[1], coords[2]));
+        return new Cube(new Vector3(coords[0], coords[1], coords[2]));
     }).ToArray();
 
-    /// <summary>
-    /// Count up all the sides that aren't connected to another cube.
-    /// </summary>
-    public long CalculateSurfaceArea(IReadOnlyList<Cube> cubes)
+    static ScanResult ScanCubes(PuzzleInput input)
     {
+        var cubes = ParseInputToCubes(input);
+
         // Do not test a cube against itself!
         // Any cube whose 3D Manhattan Distance is greater than one, they share no edges, so we can quickly eliminate them
         // So, for any pair whose 3D Manhattan Distance == 1, find the shared side (note they are cubes, so can only share one side)
@@ -103,17 +143,20 @@ public class Day18Solver : ISolver
 
         foreach (var (cube1, cube2) in pairs)
         {
-            var cube1Surfaces = cube1.GetSurfaces();
-            foreach (var surface in cube1Surfaces)
-            {
-                distinctSurfaces.Add(surface);
-            }
+            distinctSurfaces.UnionWith(cube1.Surfaces);
+            distinctSurfaces.UnionWith(cube2.Surfaces);
 
-            var cube2Surfaces = cube2.GetSurfaces();
-            foreach (var surface in cube2Surfaces)
-            {
-                distinctSurfaces.Add(surface);
-            }
+            ////var cube1Surfaces = cube1.Surfaces;
+            //foreach (var surface in cube1.Surfaces)
+            //{
+            //    distinctSurfaces.Add(surface);
+            //}
+
+            ////var cube2Surfaces = cube2.Surfaces;
+            //foreach (var surface in cube2.Surfaces)
+            //{
+            //    distinctSurfaces.Add(surface);
+            //}
 
             //if (cube1Surfaces.Distinct().Count() != 6)
             //{
@@ -128,33 +171,42 @@ public class Day18Solver : ISolver
             // Find shared surface, but only for touching cubes
             if (MathUtils.ManhattanDistance(cube1.Position, cube2.Position) == 1)
             {
-                cube1.AdjacentCubes.Add(cube2.Position);
-                cube2.AdjacentCubes.Add(cube1.Position);
+                //cube1.AdjacentCubes.Add(cube2.Position);
+                //cube2.AdjacentCubes.Add(cube1.Position);
 
-                var sharedSurface = cube1Surfaces.Intersect(cube2Surfaces).First();
-                connectedSurfaces.Add(sharedSurface);
+                var sharedSurface = cube1.DisconnectedSurfaces.Intersect(cube2.DisconnectedSurfaces).FirstOrDefault();
+
+                if (sharedSurface != null)
+                {
+                    connectedSurfaces.Add(sharedSurface);
+
+                    cube1.MarkConnectedSurface(sharedSurface);
+                    cube2.MarkConnectedSurface(sharedSurface);
+                }
 
                 //var sharedSurface = FindSharedSurface(cube1Surfaces, cube2Surfaces);
                 //connectedSurfaces.Add(sharedSurface);
             }
         }
 
-        return distinctSurfaces.Count - connectedSurfaces.Count;
+        return new ScanResult(cubes, distinctSurfaces, connectedSurfaces);
+
+        //return distinctSurfaces.Count - connectedSurfaces.Count;
     }
 
-    static Surface FindSharedSurface(IReadOnlyList<Surface> cube1Surfaces, IReadOnlyList<Surface> cube2Surfaces)
-    {
-        foreach (var cube1Surface in cube1Surfaces)
-        {
-            foreach (var cube2Surface in cube2Surfaces)
-            {
-                if (cube1Surface == cube2Surface)
-                {
-                    return cube1Surface;
-                }
-            }
-        }
+    //static Surface FindSharedSurface(IReadOnlyList<Surface> cube1Surfaces, IReadOnlyList<Surface> cube2Surfaces)
+    //{
+    //    foreach (var cube1Surface in cube1Surfaces)
+    //    {
+    //        foreach (var cube2Surface in cube2Surfaces)
+    //        {
+    //            if (cube1Surface == cube2Surface)
+    //            {
+    //                return cube1Surface;
+    //            }
+    //        }
+    //    }
 
-        throw new InvalidOperationException("Unexpected: shared surface not found");
-    }
+    //    throw new InvalidOperationException("Unexpected: shared surface not found");
+    //}
 }
