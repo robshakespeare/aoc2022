@@ -1,4 +1,4 @@
-﻿using AoC.Day18;
+using AoC.Day18;
 
 namespace AoC.Tests.Day18;
 
@@ -91,7 +91,7 @@ public class Day18SolverTests
     /// <summary>
     /// Didn't need to end up using this in the end! But its too good to delete, it might come in handy one day!
     /// </summary>
-    public class TheAreDirectlyFacingMethod
+    public class TheSurfacesAreDirectlyFacingMethod
     {
         public record Surface(Vector3 Position, Vector3 Normal);
 
