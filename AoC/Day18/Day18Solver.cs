@@ -128,11 +128,6 @@ public class Day18Solver : ISolver
         // Keep a list of all sides, then get distinct count of the list, that gives us all of our sides
         // Take shared off of all, I think!!
 
-        //if (cubes.Distinct().Count() != cubes.Count)
-        //{
-        //    throw new InvalidOperationException("KEH?");
-        //}
-
         var pairs = cubes.SelectMany(
             cube1 => cubes
                 .Where(cube2 => cube1.Position != cube2.Position)
@@ -145,28 +140,6 @@ public class Day18Solver : ISolver
         {
             distinctSurfaces.UnionWith(cube1.Surfaces);
             distinctSurfaces.UnionWith(cube2.Surfaces);
-
-            ////var cube1Surfaces = cube1.Surfaces;
-            //foreach (var surface in cube1.Surfaces)
-            //{
-            //    distinctSurfaces.Add(surface);
-            //}
-
-            ////var cube2Surfaces = cube2.Surfaces;
-            //foreach (var surface in cube2.Surfaces)
-            //{
-            //    distinctSurfaces.Add(surface);
-            //}
-
-            //if (cube1Surfaces.Distinct().Count() != 6)
-            //{
-            //    throw new InvalidOperationException("KEH? cube1 surfaces");
-            //}
-
-            //if (cube2Surfaces.Distinct().Count() != 6)
-            //{
-            //    throw new InvalidOperationException("KEH? cube2 surfaces");
-            //}
 
             // Find shared surface, but only for touching cubes
             if (MathUtils.ManhattanDistance(cube1.Position, cube2.Position) == 1)
@@ -183,30 +156,9 @@ public class Day18Solver : ISolver
                     cube1.MarkConnectedSurface(sharedSurface);
                     cube2.MarkConnectedSurface(sharedSurface);
                 }
-
-                //var sharedSurface = FindSharedSurface(cube1Surfaces, cube2Surfaces);
-                //connectedSurfaces.Add(sharedSurface);
             }
         }
 
         return new ScanResult(cubes, distinctSurfaces, connectedSurfaces);
-
-        //return distinctSurfaces.Count - connectedSurfaces.Count;
     }
-
-    //static Surface FindSharedSurface(IReadOnlyList<Surface> cube1Surfaces, IReadOnlyList<Surface> cube2Surfaces)
-    //{
-    //    foreach (var cube1Surface in cube1Surfaces)
-    //    {
-    //        foreach (var cube2Surface in cube2Surfaces)
-    //        {
-    //            if (cube1Surface == cube2Surface)
-    //            {
-    //                return cube1Surface;
-    //            }
-    //        }
-    //    }
-
-    //    throw new InvalidOperationException("Unexpected: shared surface not found");
-    //}
 }
