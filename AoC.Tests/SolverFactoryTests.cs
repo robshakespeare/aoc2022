@@ -37,6 +37,8 @@ public class SolverFactoryTests
     {
         foreach (var (dayNumber, dayName) in SolverFactory.Instance.Solvers)
         {
+            TestContext.Progress.WriteLine($"{dayNumber}: {dayName}");
+
             var solver = SolverFactory.Instance.CreateSolver(dayNumber);
 
             solver.GetDayNumber().Should().Be(int.Parse(dayNumber));
