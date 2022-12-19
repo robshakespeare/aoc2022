@@ -1,3 +1,5 @@
+using System.Xml.Linq;
+
 namespace AoC.Day19;
 
 public partial class Day19Solver : ISolver
@@ -8,6 +10,12 @@ public partial class Day19Solver : ISolver
 
     public long? SolvePart1(PuzzleInput input)
     {
+        // Recurse backwards, saying how quickly can we get X
+
+        // e.g. how quickly can we get 7 obsidian and 2 ore?
+        // So, to get that, we need obsidian, so how quickly 3 ore and 14 clay
+        // So, to get that, we need clay, so how quickly 2 ore
+
         // We just need the greatest number of geodes collected
         // So, we need to get to the largest number of geodes collecting robots the quickest
         // Once we have that setup, it can just go on
@@ -17,7 +25,22 @@ public partial class Day19Solver : ISolver
 
         var blueprints = ParseBlueprints(input);
 
-        var explore = new Queue<WorldState>(new[] {new WorldState(blueprints[0]/*, MinuteNumber: 0, NumOreBots: 1*/)});
+        ///////
+
+        var initialWorldState = new WorldState(blueprints[0]);
+
+        //var world1 = FindShortestPath(initialWorldState, world => world.OreCount == 2 && world.NumClayBots == 1);
+        var worlds = FindShortestPath(new [] { initialWorldState }, world => world.ClayCount >= 14);
+
+        var worlds2 = FindShortestPath(worlds, world => world.ObsidianCount >= 7);
+
+        //var worlds3 = FindShortestPath(worlds, world => world.ObsidianCount >= 7);
+
+        //return null;
+
+        //var world2 = FindShortestPath(world1, world => world.ObsidianCount == 1);
+
+        var explore = new Queue<WorldState>(worlds2);
         var seen = new HashSet<WorldState>();
         var completedWorlds = new HashSet<WorldState>();
 
@@ -45,12 +68,100 @@ public partial class Day19Solver : ISolver
             }
         }
 
-        return completedWorlds.Max(x => x.GeodeCount);
+        var bp1Geodes = completedWorlds.MaxBy(x => x.GeodeCount);
+
+        //////
+
+        initialWorldState = new WorldState(blueprints[0]);
+
+        //var world1 = FindShortestPath(initialWorldState, world => world.OreCount == 2 && world.NumClayBots == 1);
+        worlds = FindShortestPath(new[] { initialWorldState }, world => world.ClayCount >= 8);
+
+        worlds2 = FindShortestPath(worlds, world => world.ObsidianCount >= 12);
+
+        //var worlds3 = FindShortestPath(worlds, world => world.ObsidianCount >= 7);
+
+        //return null;
+
+        //var world2 = FindShortestPath(world1, world => world.ObsidianCount == 1);
+
+        explore = new Queue<WorldState>(worlds2);
+        seen = new HashSet<WorldState>();
+        completedWorlds = new HashSet<WorldState>();
+
+        while (explore.Count > 0)
+        {
+            var world = explore.Dequeue();
+
+            // Only explore ones we've not already explored
+            if (!seen.Contains(world))
+            {
+                seen.Add(world);
+
+                // If this world has reached the end, log it; else, explore its successors
+                if (world.MinuteNumber == FinalMinuteNumber)
+                {
+                    completedWorlds.Add(world);
+                }
+                else
+                {
+                    foreach (var nextWorld in world.GetSuccessors())
+                    {
+                        explore.Enqueue(nextWorld);
+                    }
+                }
+            }
+        }
+
+        var bp2Geodes = completedWorlds.MaxBy(x => x.GeodeCount);
+
+        return (bp1Geodes.Blueprint.Id * bp1Geodes.GeodeCount) + (bp2Geodes.Blueprint.Id * bp2Geodes.GeodeCount);
     }
 
     public long? SolvePart2(PuzzleInput input)
     {
         return null;
+    }
+
+    /// <summary>
+    /// Written from the pseudocode at: https://cse442-17f.github.io/A-Star-Search-and-Dijkstras-Algorithm/
+    /// </summary>
+    static IReadOnlyCollection<WorldState> FindShortestPath(IEnumerable<WorldState> startingWorldStates, Func<WorldState, bool> isGoal)
+    {
+        var explore = new PriorityQueue<WorldState, long>(startingWorldStates.Select(x => (x, (long)x.MinuteNumber)));//new[] {(startingWorldState, 0L)});
+        var seen = new HashSet<WorldState>();
+        var goalWorlds = new HashSet<WorldState>();
+        int? goalWorldMinuteNumber = null;
+        int currentMinuteNumber = 0;
+
+        while (explore.Count > 0 && (goalWorldMinuteNumber == null || goalWorldMinuteNumber == currentMinuteNumber))
+        {
+            var world = explore.Dequeue(); // this takes out the top priority node
+            currentMinuteNumber = world.MinuteNumber;
+
+            // if node is the goal return the path
+            if (isGoal(world) && (goalWorldMinuteNumber == null || goalWorldMinuteNumber == currentMinuteNumber))
+            {
+                //return world;
+                goalWorldMinuteNumber = world.MinuteNumber;
+                goalWorlds.Add(world);
+            }
+
+            // if we've not already seen the node
+            if (!seen.Contains(world))
+            {
+                foreach (var nextWorld in world.GetSuccessors())
+                {
+                    explore.Enqueue(nextWorld, nextWorld.MinuteNumber);
+                }
+
+                seen.Add(world);
+            }
+        }
+
+        return goalWorlds;
+
+        //throw new InvalidOperationException("No paths found");
     }
 
     public record WorldState(Blueprint Blueprint)
@@ -73,6 +184,7 @@ public partial class Day19Solver : ISolver
         public int ClayCount { get; private set; }
         public int ObsidianCount { get; private set; }
         public int GeodeCount { get; private set; }
+        public Blueprint Blueprint { get; } = Blueprint;
 
         public IReadOnlyList<WorldState> GetSuccessors()
         {
