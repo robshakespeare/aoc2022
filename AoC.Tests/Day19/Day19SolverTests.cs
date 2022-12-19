@@ -14,6 +14,7 @@ public class Day19SolverTests
         """;
 
     [Test]
+    [LongRunningTest("2.5 seconds")]
     public void Part1Example()
     {
         // ACT
@@ -24,6 +25,17 @@ public class Day19SolverTests
     }
 
     [Test]
+    public void Part1ExampleBlueprint2()
+    {
+        // ACT
+        var part1ExampleResult = _sut.SolvePart1(ExampleInput.ReadLines().Last());
+
+        // ASSERT
+        part1ExampleResult.Should().Be(24);
+    }
+
+    [Test]
+    [Ignore("Long running. Takes ~20 seconds.")]
     public void Part1ReTest()
     {
         // ACT
@@ -34,16 +46,7 @@ public class Day19SolverTests
     }
 
     [Test]
-    public void Part2Example()
-    {
-        // ACT
-        var part2ExampleResult = _sut.SolvePart2(ExampleInput);
-
-        // ASSERT
-        part2ExampleResult.Should().Be(56 * 62);
-    }
-
-    [Test]
+    [Ignore("Very long running. Takes ~4 minutes.")]
     public void Part2ReTest()
     {
         // ACT
