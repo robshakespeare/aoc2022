@@ -37,6 +37,7 @@ public class Day20SolverTests
     }
 
     [Test]
+    //[Ignore("rs-todo")]
     public void Part2Example()
     {
         // ACT
@@ -47,12 +48,16 @@ public class Day20SolverTests
     }
 
     [Test]
+    //[Ignore("rs-todo")]
     public void Part2ReTest()
     {
         // ACT
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
+        part2Result.Should().NotBe(-9808);
+        part2Result.Should().BeOfType<long>().Which.Should().BeLessThan(2086595712363);
+
         part2Result.Should().Be(null);
     }
 
@@ -75,7 +80,7 @@ public class Day20SolverTests
         [TestCase("0, 0, 11", "11, 0, 0")]
         [TestCase("0, 0, -10", "0, 0, -10")]
         [TestCase("0, 0, -11", "0, -11, 0")]
-        [TestCase("10, 0, 0 ", "10, 0, 0")]
+        [TestCase("10, 0, 0", "10, 0, 0")]
         [TestCase("11, 0, 0", "0, 11, 0")]
         [TestCase("-10, 0, 0", "0, -10, 0")]
         [TestCase("-11, 0, 0", "0, 0, -11")]
@@ -87,7 +92,40 @@ public class Day20SolverTests
         [TestCase("1, 2, 3, 4, -303", "3, -303, 1, 2, 4")]
         [TestCase("1, 2, 3, 303, 5", "5, 3, 1, 303, 2")]
         [TestCase("1, 2, 3, -303, 5", "5, 3, 1, 2, -303")]
+        [TestCase("10, 0, 0, 0", "0, 10, 0, 0")]
+        [TestCase("11, 0, 0, 0", "0, 0, 11, 0")]
+        [TestCase("-7, 1, 2, 3", "1, 3, 2, -7")]
+        [TestCase("-7, 0, 0, 0", "0, 0, 0, -7")]
+        [TestCase("-8, 0, 0, 0", "0, 0, -8, 0")]
+        [TestCase("-9, 0, 0, 0", "0, -9, 0, 0")]
+        [TestCase("0, -9, 0, 0", "0, -9, 0, 0")]
+        [TestCase("-10, 0, 0, 0", "0, 0, 0, -10")]
+        [TestCase("-11, 0, 0, 0", "0, 0, -11, 0")]
+        [TestCase("-12, 0, 0, 0", "0, -12, 0, 0")]
+        [TestCase("9153, 8306, -2434, 7459, -8306, 0, 6612", "8306, 7459, -8306, 9153, -2434, 6612, 0")]
         public void Decrypt_SingleCycle_Tests(string input, string expected)
+        {
+            Decrypt_SingleCycle_Test(input, expected);
+
+            //var inputLines = input.Replace(", ", Environment.NewLine);
+
+            //// ACT
+            //var result = Day20Solver.Decrypt(inputLines);
+
+            //// ASSERT
+            //string.Join(", ", result).Should().Be(expected);
+        }
+
+        [Test]
+        public void Decrypt_LargeNumbersExample()
+        {
+            const string input = "811589153, 1623178306, -2434767459, 2434767459, -1623178306, 0, 3246356612";
+            const string expected = "0, -2434767459, 3246356612, -1623178306, 2434767459, 1623178306, 811589153";
+
+            Decrypt_SingleCycle_Test(input, expected);
+        }
+
+        private static void Decrypt_SingleCycle_Test(string input, string expected)
         {
             var inputLines = input.Replace(", ", Environment.NewLine);
 
