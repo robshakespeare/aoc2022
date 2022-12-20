@@ -27,7 +27,6 @@ public class Day20SolverTests
     }
 
     [Test]
-    [Ignore("rs-todo")]
     public void Part1ReTest()
     {
         // ACT
@@ -64,6 +63,32 @@ public class Day20SolverTests
 
     public class TheMoveNumberMethod
     {
+        //[TestCase("4, 5, 6, 1, 7, 8, 9", 1, "4, 5, 6, 7, 1, 8, 9")] // Example A in paragraph
+        //[TestCase("4, -2, 5, 6, 7, 8, 9", -2, "4, 5, 6, 7, 8, -2, 9")] // Example B in paragraph
+        //[TestCase("4, 5, 6, 7, 8, 2, 9", 2, "4, 2, 5, 6, 7, 8, 9")] // Self-changed paragraph example
+
+        //[TestCase("1, 2, -3, 3, -2, 0, 4", 1, "2, 1, -3, 3, -2, 0, 4")] // Example 1, step 1
+        //[TestCase("2, 1, -3, 3, -2, 0, 4", 2, "1, -3, 2, 3, -2, 0, 4")] // Example 1, step 2
+        //[TestCase("1, -3, 2, 3, -2, 0, 4", -3, "1, 2, 3, -2, -3, 0, 4")] // Example 1, step 3
+        //[TestCase("1, 2, 3, -2, -3, 0, 4", 3, "1, 2, -2, -3, 0, 3, 4")] // Example 1, step 4
+        //[TestCase("1, 2, -2, -3, 0, 3, 4", -2, "1, 2, -3, 0, 3, 4, -2")] // Example 1, step 5
+        //[TestCase("1, 2, -3, 0, 3, 4, -2", 0, "1, 2, -3, 0, 3, 4, -2")] // Example 1, step 6
+        //[TestCase("1, 2, -3, 0, 3, 4, -2", 4, "1, 2, -3, 4, 0, 3, -2")] // Example 1, step 7
+
+        //[TestCase("4, 5, 6, 1", 1, "4, 1, 5, 6")] // My example 1
+        //[TestCase("7, 8, 9, 2", 2, "7, 8, 2, 9")] // My example 2
+        //public void MoveNumber_ExampleTests(string input, int numberToMove, string expected)
+        //{
+        //    var numbers = input.Split(", ").Select(x => new Day20Solver.Number(int.Parse(x))).ToList();
+        //    var number = numbers.Single(x => x.Value == numberToMove);
+
+        //    // ACT
+        //    Day20Solver.MoveNumber(number, numbers);
+
+        //    // ASSERT
+        //    string.Join(", ", numbers).Should().Be(expected);
+        //}
+
         [TestCase("4, 5, 6, 1, 7, 8, 9", 1, "4, 5, 6, 7, 1, 8, 9")] // Example A in paragraph
         [TestCase("4, -2, 5, 6, 7, 8, 9", -2, "4, 5, 6, 7, 8, -2, 9")] // Example B in paragraph
         [TestCase("4, 5, 6, 7, 8, 2, 9", 2, "4, 2, 5, 6, 7, 8, 9")] // Self-changed paragraph example
@@ -78,16 +103,17 @@ public class Day20SolverTests
 
         [TestCase("4, 5, 6, 1", 1, "4, 1, 5, 6")] // My example 1
         [TestCase("7, 8, 9, 2", 2, "7, 8, 2, 9")] // My example 2
-        public void MoveNumber_ExampleTests(string input, int numberToMove, string expected)
+        public void MoveNumberNode_ExampleTests(string input, int numberToMove, string expected)
         {
-            var numbers = input.Split(", ").Select(x => new Day20Solver.Number(int.Parse(x))).ToList();
-            var number = numbers.Single(x => x.Value == numberToMove);
+            //var numbers = input.Split(", ").Select(x => new Day20Solver.Number(int.Parse(x))).ToList();
+            var encrypted = new LinkedList<long>(input.Split(", ").Select(long.Parse));
+            var number = Day20Solver.EnumerateNodes(encrypted).Single(x => x.Value == numberToMove);
 
             // ACT
-            Day20Solver.MoveNumber(number, numbers);
+            Day20Solver.MoveNumberNode(number);
 
             // ASSERT
-            string.Join(", ", numbers).Should().Be(expected);
+            string.Join(", ", encrypted).Should().Be(expected);
         }
     }
 

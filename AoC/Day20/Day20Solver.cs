@@ -20,13 +20,15 @@ public class Day20Solver : ISolver
         public override string ToString() => Value.ToString();
     }
 
-    public static List<Number> Decrypt(string input, int numOfCycles = 1, int decryptionKey = 1)
+    public static IList<long> Decrypt(string input, int numOfCycles = 1, int decryptionKey = 1)
     {
-        var originalOrder = input.ReadLinesAsLongs().Select(n => new Number(n * decryptionKey)).ToReadOnlyArray();
-        var numbers = originalOrder.ToList();
+        //var originalOrder = input.ReadLinesAsLongs().Select(n => new Number(n * decryptionKey)).ToReadOnlyArray();
+        //var numbers = originalOrder.ToList();
 
         //var encrypted = new LinkedList<long>(input.ReadLinesAsLongs().Select(n => new Number(n * decryptionKey)));
-        //var originalOrder = EnumerateNodes(encrypted).ToReadOnlyArray();
+
+        var encrypted = new LinkedList<long>(input.ReadLinesAsLongs().Select(n => n * decryptionKey));
+        var originalOrder = EnumerateNodes(encrypted).ToReadOnlyArray();
 
         const bool enableSkip = false;
 
@@ -37,10 +39,11 @@ public class Day20Solver : ISolver
 
         for (var i = 0; i < numOfCycles; i++)
         {
-            ApplyMixingCycle(numbers, originalOrder, enableSkip);
+            ApplyMixingCycle(encrypted, originalOrder, enableSkip);
         }
 
-        return numbers; //.Select(n => n.Value).ToList();
+        return encrypted.ToList();
+        //return numbers; //.Select(n => n.Value).ToList();
     }
 
     //static long GetIt1(LinkedList<long> list, long currentMove)
@@ -63,118 +66,142 @@ public class Day20Solver : ISolver
     //    return currentMove % (list.Count - 1);
     //}
 
-    static void ApplyMixingCycle(List<Number> numbers, IEnumerable<Number> originalOrder, bool enableSkip)
+    static void ApplyMixingCycle(LinkedList<long> list, IEnumerable<LinkedListNode<long>> originalOrder, bool enableSkip)
     {
-        var cycleSize = numbers.Count - 1L;
-
         //Console.WriteLine("Initial");
         //Console.WriteLine(string.Join(", ", numbers));
         //Console.WriteLine();
 
-        foreach (var number in originalOrder)
+        foreach (var node in originalOrder)
+        //foreach (var number in originalOrder)
         {
-            MoveNumber(number, numbers);
+            //MoveNumber(number, numbers);
 
             //Console.WriteLine("After move");
             //Console.WriteLine(string.Join(", ", numbers));
             //Console.WriteLine();
 
-            //if (moveForwards)
-            //{
-            //    //for (long counter = 0; counter < movement; counter++)
-            //    for (var counter = movement; counter > 0; counter--)
-            //    {
-            //        if (node.Next == list.Last || node.Next == null)
-            //        {
-            //            list.Remove(node);
-            //            list.AddFirst(node);
+            MoveNumberNode(node);
+        }
+    }
 
-            //            ////#######
-            //            if (enableSkip)
-            //            {
-            //                counter %= cycleSize;
-            //                if (counter == 0)
-            //                {
-            //                    counter = cycleSize;
-            //                }
-            //            }
-            //            ////#######
+    public static void MoveNumberNode(LinkedListNode<long> node)
+    {
+        var enableSkip = false;
 
-            //            //if (node.Next != null)
-            //            //{
-            //            //    counter = GetIt2(list, counter);
-            //            //}
-            //        }
-            //        else
-            //        {
-            //            var destination = node.Next ?? throw new InvalidOperationException("Unexpected: should cycle, not reach end");
-            //            list.Remove(node);
-            //            list.AddAfter(destination, node);
-            //        }
-            //    }
-            //}
-            //else
-            //{
-            //    //var reachedEdge = false;
-            //    //var edge = false;
-            //    //var skip = -1L;
+        var list = node.List ?? throw new InvalidOperationException("No list");
+        var cycleSize = list.Count - 1L;
 
-            //    //for (long counter = 0; counter < movement; counter++)
-            //    for (var counter = movement; counter > 0; counter--)
-            //    {
-            //        if (node.Previous == list.First || node.Previous == null)
-            //        {
-            //            list.Remove(node);
-            //            list.AddLast(node);
+        var movement = Math.Abs(node.Value);
+        var moveForwards = node.Value > 0;
 
-            //            //reachedEdge = true;
+        if (moveForwards)
+        {
+            //for (long counter = 0; counter < movement; counter++)
+            for (var counter = movement; counter > 0; counter--)
+            {
+                if (node.Next == null) // i.e. we're the last in the list
+                {
+                    // Move to start plus 1. i.e. one after start
+                    list.Remove(node);
+                    list.AddAfter(list.First ?? throw new InvalidOperationException("No first"), node);
+                }
+                else if (node.Next == list.Last /*|| node.Next == null*/) // i.e. we're the second to last in the list
+                {
+                    // Move to start
+                    list.Remove(node);
+                    list.AddFirst(node);
 
-            //            //if (counter > list.Count + 1)
-            //            //{
+                    ////#######
+                    if (enableSkip)
+                    {
+                        counter %= cycleSize;
+                        if (counter == 0)
+                        {
+                            counter = cycleSize;
+                        }
+                    }
+                    ////#######
+                }
+                else
+                {
+                    var source = node.Next ??
+                                 throw new InvalidOperationException("Unexpected: should cycle, not reach end");
+                    list.Remove(node);
+                    list.AddAfter(source, node);
+                }
+            }
+        }
+        else
+        {
+            //var reachedEdge = false;
+            //var edge = false;
+            //var skip = -1L;
 
-            //            //}
+            //for (long counter = 0; counter < movement; counter++)
+            for (var counter = movement; counter > 0; counter--)
+            {
+                if (node.Previous == null) // i.e. we're the first in the list
+                {
+                    // Move to end less one. i.e. one before end
+                    list.Remove(node);
+                    list.AddBefore(list.Last ?? throw new InvalidOperationException("No last"), node);
 
-            //            //counter = GetIt2(list, counter);
+                }
+                else if (node.Previous == list.First /*|| node.Previous == null*/) // i.e. we're the second in the list
+                {
+                    // Move to end.
+                    list.Remove(node);
+                    list.AddLast(node);
 
-            //            //if (node.Previous != null)
-            //            //{
-            //            //    counter = GetIt2(list, counter);
-            //            //}
+                    //reachedEdge = true;
 
-            //            //edge = true;
-            //            //skip = counter % cycleSize; //Math.Clamp(counter % cycleSize, 1, cycleSize); //Math.Max(counter % cycleSize, 1);
-            //            //if (skip == 0)
-            //            //{
-            //            //    skip = cycleSize;
-            //            //}
+                    //if (counter > list.Count + 1)
+                    //{
 
-            //            ////#######
-            //            if (enableSkip)
-            //            {
-            //                counter %= cycleSize;
-            //                if (counter == 0)
-            //                {
-            //                    counter = cycleSize;
-            //                }
-            //            }
-            //            ////#######
-            //        }
-            //        else
-            //        {
-            //            var destination = node.Previous ?? throw new InvalidOperationException("Unexpected: should cycle, not reach beginning");
-            //            list.Remove(node);
-            //            list.AddBefore(destination, node);
+                    //}
 
-            //            //edge = false;
-            //            //skip = -1;
-            //        }
+                    //counter = GetIt2(list, counter);
 
-            //        //if (reachedEdge || true)
-            //        //{
-            //        //    Console.WriteLine($"{counter,4}: {string.Join(", ", list)} -- {edge} {(edge ? skip : null)}");
-            //        //}
-            //    }
-            //}
+                    //if (node.Previous != null)
+                    //{
+                    //    counter = GetIt2(list, counter);
+                    //}
+
+                    //edge = true;
+                    //skip = counter % cycleSize; //Math.Clamp(counter % cycleSize, 1, cycleSize); //Math.Max(counter % cycleSize, 1);
+                    //if (skip == 0)
+                    //{
+                    //    skip = cycleSize;
+                    //}
+
+                    ////#######
+                    if (enableSkip)
+                    {
+                        counter %= cycleSize;
+                        if (counter == 0)
+                        {
+                            counter = cycleSize;
+                        }
+                    }
+                    ////#######
+                }
+                else
+                {
+                    var source = node.Previous ??
+                                 throw new InvalidOperationException("Unexpected: should cycle, not reach beginning");
+                    list.Remove(node);
+                    list.AddBefore(source, node);
+
+                    //edge = false;
+                    //skip = -1;
+                }
+
+                //if (reachedEdge || true)
+                //{
+                //    Console.WriteLine($"{counter,4}: {string.Join(", ", list)} -- {edge} {(edge ? skip : null)}");
+                //}
+            }
         }
     }
 
@@ -235,25 +262,25 @@ public class Day20Solver : ISolver
         }
     }
 
-    static long SumGroveCoordinates(List<Number> decrypted)
+    static long SumGroveCoordinates(IList<long> decrypted)
     {
-        var indexOfZero = decrypted.FindIndex(n => n.Value == 0);
-        var value1 = decrypted[(indexOfZero + 1000) % decrypted.Count].Value;
-        var value2 = decrypted[(indexOfZero + 2000) % decrypted.Count].Value;
-        var value3 = decrypted[(indexOfZero + 3000) % decrypted.Count].Value;
+        var indexOfZero = decrypted.IndexOf(0);
+        var value1 = decrypted[(indexOfZero + 1000) % decrypted.Count];
+        var value2 = decrypted[(indexOfZero + 2000) % decrypted.Count];
+        var value3 = decrypted[(indexOfZero + 3000) % decrypted.Count];
 
         return value1 + value2 + value3;
     }
 
-    //static IEnumerable<LinkedListNode<long>> EnumerateNodes(LinkedList<long> list)
-    //{
-    //    var current = list.First;
-    //    while (current != null)
-    //    {
-    //        yield return current;
-    //        current = current.Next;
-    //    }
-    //}
+    public static IEnumerable<LinkedListNode<long>> EnumerateNodes(LinkedList<long> list)
+    {
+        var current = list.First;
+        while (current != null)
+        {
+            yield return current;
+            current = current.Next;
+        }
+    }
 
     //static IReadOnlyList<LinkedListNode<long>> ToNodeArray(LinkedList<long> list)
     //{
