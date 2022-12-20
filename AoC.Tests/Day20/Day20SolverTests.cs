@@ -27,6 +27,7 @@ public class Day20SolverTests
     }
 
     [Test]
+    [Ignore("rs-todo")]
     public void Part1ReTest()
     {
         // ACT
@@ -37,7 +38,7 @@ public class Day20SolverTests
     }
 
     [Test]
-    //[Ignore("rs-todo")]
+    [Ignore("rs-todo")]
     public void Part2Example()
     {
         // ACT
@@ -48,7 +49,7 @@ public class Day20SolverTests
     }
 
     [Test]
-    //[Ignore("rs-todo")]
+    [Ignore("rs-todo")]
     public void Part2ReTest()
     {
         // ACT
@@ -63,10 +64,20 @@ public class Day20SolverTests
 
     public class TheMoveNumberMethod
     {
-        [TestCase("4, 5, 6, 1, 7, 8, 9", 1, "4, 5, 6, 7, 1, 8, 9")]
-        [TestCase("4, -2, 5, 6, 7, 8, 9", -2, "4, 5, 6, 7, 8, -2, 9")]
-        [TestCase("1, 2, -3, 0, 3, 4, -2", 0, "1, 2, -3, 0, 3, 4, -2")]
-        [TestCase("1, 2, -3, 0, 3, 4, -2", 4, "1, 2, -3, 4, 0, 3, -2")]
+        [TestCase("4, 5, 6, 1, 7, 8, 9", 1, "4, 5, 6, 7, 1, 8, 9")] // Example A in paragraph
+        [TestCase("4, -2, 5, 6, 7, 8, 9", -2, "4, 5, 6, 7, 8, -2, 9")] // Example B in paragraph
+        [TestCase("4, 5, 6, 7, 8, 2, 9", 2, "4, 2, 5, 6, 7, 8, 9")] // Self-changed paragraph example
+
+        [TestCase("1, 2, -3, 3, -2, 0, 4", 1, "2, 1, -3, 3, -2, 0, 4")] // Example 1, step 1
+        [TestCase("2, 1, -3, 3, -2, 0, 4", 2, "1, -3, 2, 3, -2, 0, 4")] // Example 1, step 2
+        [TestCase("1, -3, 2, 3, -2, 0, 4", -3, "1, 2, 3, -2, -3, 0, 4")] // Example 1, step 3
+        [TestCase("1, 2, 3, -2, -3, 0, 4", 3, "1, 2, -2, -3, 0, 3, 4")] // Example 1, step 4
+        [TestCase("1, 2, -2, -3, 0, 3, 4", -2, "1, 2, -3, 0, 3, 4, -2")] // Example 1, step 5
+        [TestCase("1, 2, -3, 0, 3, 4, -2", 0, "1, 2, -3, 0, 3, 4, -2")] // Example 1, step 6
+        [TestCase("1, 2, -3, 0, 3, 4, -2", 4, "1, 2, -3, 4, 0, 3, -2")] // Example 1, step 7
+
+        [TestCase("4, 5, 6, 1", 1, "4, 1, 5, 6")] // My example 1
+        [TestCase("7, 8, 9, 2", 2, "7, 8, 2, 9")] // My example 2
         public void MoveNumber_ExampleTests(string input, int numberToMove, string expected)
         {
             var numbers = input.Split(", ").Select(x => new Day20Solver.Number(int.Parse(x))).ToList();
@@ -83,45 +94,49 @@ public class Day20SolverTests
     public class TheDecryptMethod
     {
         [TestCase("1, 2, -3, 3, -2, 0, 4", "1, 2, -3, 4, 0, 3, -2")]
-        [TestCase("-1, 0, 0", "0, 0, -1")]
-        [TestCase("-2, 0, 0", "0, -2, 0")]
-        [TestCase("0, 0, 1", "1, 0, 0")]
-        [TestCase("0, 0, 2", "0, 2, 0")]
-        [TestCase("-1, 0, 0, 0", "0, 0, 0, -1")]
-        [TestCase("-2, 0, 0, 0", "0, 0, -2, 0")]
-        [TestCase("0, 0, 0, 1", "1, 0, 0, 0")]
-        [TestCase("0, 0, 0, 2", "0, 2, 0, 0")]
-        [TestCase("0, 0, 3", "3, 0, 0")]
-        [TestCase("0, 0, 4", "0, 4, 0")]
-        [TestCase("-3, 0, 0", "0, 0, -3")]
-        [TestCase("-4, 0, 0", "0, -4, 0")]
-        [TestCase("0, 0, 10", "0, 10, 0")]
-        [TestCase("0, 0, 11", "11, 0, 0")]
-        [TestCase("0, 0, -10", "0, 0, -10")]
-        [TestCase("0, 0, -11", "0, -11, 0")]
-        [TestCase("10, 0, 0", "10, 0, 0")]
-        [TestCase("11, 0, 0", "0, 11, 0")]
-        [TestCase("-10, 0, 0", "0, -10, 0")]
-        [TestCase("-11, 0, 0", "0, 0, -11")]
-        [TestCase("303, 2, 3, 4, 5", "5, 4, 2, 303, 3")]
-        [TestCase("-303, 2, 3, 4, 5", "5, -303, 2, 4, 3")]
-        [TestCase("1, 303, 3, 4, 5", "5, 3, 1, 4, 303")]
-        [TestCase("1, -303, 3, 4, 5", "5, 3, 1, -303, 4")]
-        [TestCase("1, 2, 3, 4, 303", "3, 1, 303, 2, 4")]
+
+        //[TestCase("-1, 0, 0", "0, -1, 0")]
+        //[TestCase("-2, 0, 0", "0, 0, -2")]
+        //[TestCase("0, 0, 1", "1, 0, 0")]
+        //[TestCase("0, 0, 2", "0, 2, 0")]
+        //[TestCase("0, 0, 3", "3, 0, 0")]
+        //[TestCase("0, 0, 4", "0, 4, 0")]
+        //[TestCase("-3, 0, 0", "0, 0, -3")]
+        //[TestCase("-4, 0, 0", "0, -4, 0")]
+        //[TestCase("0, 0, 10", "0, 10, 0")]
+        //[TestCase("0, 0, 11", "11, 0, 0")]
+        //[TestCase("0, 0, -10", "0, 0, -10")]
+        //[TestCase("0, 0, -11", "0, -11, 0")]
+        //[TestCase("10, 0, 0", "10, 0, 0")]
+        //[TestCase("11, 0, 0", "0, 11, 0")]
+        //[TestCase("-10, 0, 0", "0, -10, 0")]
+        //[TestCase("-11, 0, 0", "0, 0, -11")]
+
+        [TestCase("-1, 0, 0, 0", "0, 0, -1, 0")]
+        [TestCase("-2, 0, 0, 0", "0, -2, 0, 0")]
+        [TestCase("0, 0, 0, 1", "0, 1, 0, 0")]
+        [TestCase("0, 0, 0, 2", "0, 0, 2, 0")]
+        
+        
+        [TestCase("303, 2, 3, 4, 5", "4, 5, 2, 303, 3")]
+        [TestCase("-303, 2, 3, 4, 5", "3, 5, -303, 2, 4")]
+        [TestCase("1, 303, 3, 4, 5", "3, 5, 1, 4, 303")]
+        [TestCase("1, -303, 3, 4, 5", "1, 5, 3, -303, 4")]
+        [TestCase("1, 2, 3, 4, 303", "3, 1, 2, 303, 4")]
         [TestCase("1, 2, 3, 4, -303", "3, -303, 1, 2, 4")]
-        [TestCase("1, 2, 3, 303, 5", "5, 3, 1, 303, 2")]
+        [TestCase("1, 2, 3, 303, 5", "3, 5, 1, 303, 2")]
         [TestCase("1, 2, 3, -303, 5", "5, 3, 1, 2, -303")]
         [TestCase("10, 0, 0, 0", "0, 10, 0, 0")]
         [TestCase("11, 0, 0, 0", "0, 0, 11, 0")]
-        [TestCase("-7, 1, 2, 3", "1, 3, 2, -7")]
-        [TestCase("-7, 0, 0, 0", "0, 0, 0, -7")]
-        [TestCase("-8, 0, 0, 0", "0, 0, -8, 0")]
-        [TestCase("-9, 0, 0, 0", "0, -9, 0, 0")]
+        [TestCase("-7, 1, 2, 3", "3, 1, -7, 2")]
+        [TestCase("-7, 0, 0, 0", "0, 0, -7, 0")]
+        [TestCase("-8, 0, 0, 0", "0, -8, 0, 0")]
+        [TestCase("-9, 0, 0, 0", "0, 0, 0, -9")]
         [TestCase("0, -9, 0, 0", "0, -9, 0, 0")]
-        [TestCase("-10, 0, 0, 0", "0, 0, 0, -10")]
-        [TestCase("-11, 0, 0, 0", "0, 0, -11, 0")]
-        [TestCase("-12, 0, 0, 0", "0, -12, 0, 0")]
-        [TestCase("9153, 8306, -2434, 7459, -8306, 0, 6612", "8306, 7459, -8306, 9153, -2434, 6612, 0")]
+        [TestCase("-10, 0, 0, 0", "0, 0, -10, 0")]
+        [TestCase("-11, 0, 0, 0", "0, -11, 0, 0")]
+        [TestCase("-12, 0, 0, 0", "0, 0, 0, -12")]
+        [TestCase("9153, 8306, -2434, 7459, -8306, 0, 6612", "6612, 8306, 7459, -8306, -2434, 9153, 0")]
         public void Decrypt_SingleCycle_Tests(string input, string expected)
         {
             Decrypt_SingleCycle_Test(input, expected);

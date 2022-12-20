@@ -67,9 +67,17 @@ public class Day20Solver : ISolver
     {
         var cycleSize = numbers.Count - 1L;
 
+        //Console.WriteLine("Initial");
+        //Console.WriteLine(string.Join(", ", numbers));
+        //Console.WriteLine();
+
         foreach (var number in originalOrder)
         {
             MoveNumber(number, numbers);
+
+            //Console.WriteLine("After move");
+            //Console.WriteLine(string.Join(", ", numbers));
+            //Console.WriteLine();
 
             //if (moveForwards)
             //{
@@ -178,45 +186,50 @@ public class Day20Solver : ISolver
         //var moveForwards = number.Value > 0;
         var dir = number.Value > 0 ? 1 : -1;
 
-        // Get the current index of the number
-        var currentIndex = numbers.IndexOf(number);
-        if (currentIndex == -1)
-        {
-            throw new InvalidOperationException("Unexpected: did not find number in list: " + number);
-        }
-
-        //Console.WriteLine(string.Join(", ", numbers));
-
-        // Swap the numbers, until we have completed all of our moves
-        //var prevIndex = currentIndex;
+        // Move the number, until we have completed all of our moves
         for (var i = 0L; i < numOfMoves; i++)
         {
-            var prevIndex = currentIndex;
-            currentIndex += dir;
+            // Get the current index of the number
+            // rs-todo: ugg, there must be a moe optimal way of doing this!!
+            var currentIndex = numbers.IndexOf(number);
+            if (currentIndex == -1)
+            {
+                throw new InvalidOperationException("Unexpected: did not find number in list: " + number);
+            }
 
             // Loop around if needed
-            // rs-todo: can this be done better, is that the trick!?!?
-            if (currentIndex == numbers.Count)
+            if (dir == -1 && currentIndex == 0)
             {
-                currentIndex = 1;
-                numbers.RemoveAt(prevIndex);
-                numbers.Insert(currentIndex, number);
+                // Move to end less one. i.e. one before end
+                numbers.RemoveAt(currentIndex);
+                numbers.Insert(numbers.Count - 1, number);
             }
-            else if (currentIndex == -1)
+            else if (dir == -1 && currentIndex == 1)
             {
-                currentIndex = numbers.Count - 2;
-                numbers.RemoveAt(prevIndex);
-                numbers.Insert(currentIndex, number);
+                // Move to end.
+                numbers.RemoveAt(currentIndex);
+                numbers.Insert(numbers.Count, number);
+            }
+            else if (dir == 1 && currentIndex == numbers.Count - 1)
+            {
+                // Move to start plus 1. i.e. one after start
+                numbers.RemoveAt(currentIndex);
+                numbers.Insert(1, number);
+            }
+            else if (dir == 1 && currentIndex == numbers.Count - 2)
+            {
+                // Move to start
+                numbers.RemoveAt(currentIndex);
+                numbers.Insert(0, number);
             }
             else
             {
-                // Swap
+                var prevIndex = currentIndex;
+                currentIndex += dir;
+
+                // Otherwise, swap
                 (numbers[currentIndex], numbers[prevIndex]) = (numbers[prevIndex], numbers[currentIndex]);
             }
-
-            
-
-            //Console.WriteLine(string.Join(", ", numbers));
 
             // rs-todo: I think we can apply the "skip" logic here
         }
