@@ -1,3 +1,4 @@
+using AoC.Day19;
 using AoC.Day20;
 
 namespace AoC.Tests.Day20;
@@ -6,7 +7,17 @@ public class Day20SolverTests
 {
     private readonly Day20Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    static Day20SolverTests() => Day20Solver.Logger = TestContext.Progress.WriteLine;
+
+    private const string ExampleInput = """
+        1
+        2
+        -3
+        3
+        -2
+        0
+        4
+        """;
 
     [Test]
     public void Part1Example()
@@ -15,7 +26,7 @@ public class Day20SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(3);
     }
 
     [Test]
