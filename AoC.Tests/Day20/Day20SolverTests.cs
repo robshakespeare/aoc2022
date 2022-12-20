@@ -61,6 +61,25 @@ public class Day20SolverTests
         part2Result.Should().Be(null);
     }
 
+    public class TheMoveNumberMethod
+    {
+        [TestCase("4, 5, 6, 1, 7, 8, 9", 1, "4, 5, 6, 7, 1, 8, 9")]
+        [TestCase("4, -2, 5, 6, 7, 8, 9", -2, "4, 5, 6, 7, 8, -2, 9")]
+        [TestCase("1, 2, -3, 0, 3, 4, -2", 0, "1, 2, -3, 0, 3, 4, -2")]
+        [TestCase("1, 2, -3, 0, 3, 4, -2", 4, "1, 2, -3, 4, 0, 3, -2")]
+        public void MoveNumber_ExampleTests(string input, int numberToMove, string expected)
+        {
+            var numbers = input.Split(", ").Select(x => new Day20Solver.Number(int.Parse(x))).ToList();
+            var number = numbers.Single(x => x.Value == numberToMove);
+
+            // ACT
+            Day20Solver.MoveNumber(number, numbers);
+
+            // ASSERT
+            string.Join(", ", numbers).Should().Be(expected);
+        }
+    }
+
     public class TheDecryptMethod
     {
         [TestCase("1, 2, -3, 3, -2, 0, 4", "1, 2, -3, 4, 0, 3, -2")]
@@ -117,6 +136,7 @@ public class Day20SolverTests
         }
 
         [Test]
+        [Ignore("rs-todo!")]
         public void Decrypt_LargeNumbersExample()
         {
             const string input = "811589153, 1623178306, -2434767459, 2434767459, -1623178306, 0, 3246356612";
