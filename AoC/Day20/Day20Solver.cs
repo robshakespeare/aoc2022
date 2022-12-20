@@ -8,12 +8,12 @@ public class Day20Solver : ISolver
 
     public long? SolvePart1(PuzzleInput input)
     {
-        var originalList = input.ReadLinesAsLongs().Select((value, index) => new Number(value, index + 1));
-        var list = new LinkedList<Number>(originalList);
+        //var originalList = input.ReadLinesAsLongs().Select((value, index) => new Number(value, index + 1));
+        var list = new LinkedList<long>(input.ReadLinesAsLongs());
 
         //var listNodes = EnumerateLinkedList(list).ToArray();
 
-        string DebugList() => string.Join(", ", list.Select(x => x.Value));
+        string DebugList() => string.Join(", ", list); //.Select(x => x.Value));
         var debug = DebugList;
         Logger("Initial arrangement:");
         Logger(debug());
@@ -29,7 +29,7 @@ public class Day20Solver : ISolver
 
             //var destination = node;
 
-            var movement = node.Value.Value;
+            var movement = node.Value;
             var moveForwards = movement > 0;
 
             Logger($"Move {move}:");
@@ -144,9 +144,11 @@ public class Day20Solver : ISolver
             move++;
         }
 
+        var cycledList = list.ToList();
 
+        var index = cycledList.IndexOf(0);
 
-        return null;
+        return index;
     }
 
     //public long? SolvePart1(PuzzleInput input)
@@ -222,14 +224,13 @@ public class Day20Solver : ISolver
         return null;
     }
 
-    public record Number(long Value, int OriginalOrder);
+    //public record Number(long Value, int OriginalOrder);
 
-    static IReadOnlyList<LinkedListNode<Number>> ToNodeArray(LinkedList<Number> list)
+    static IReadOnlyList<LinkedListNode<long>> ToNodeArray(LinkedList<long> list)
     {
-        IEnumerable<LinkedListNode<Number>> EnumerateLinkedList()
+        IEnumerable<LinkedListNode<long>> EnumerateLinkedList()
         {
             var current = list.First;
-
             while (current != null)
             {
                 yield return current;
