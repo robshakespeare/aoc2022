@@ -4,22 +4,53 @@ public class Day20Solver : ISolver
 {
     public string DayName => "Grove Positioning System";
 
-    public static Action<string> Logger { get; set; } = Console.WriteLine;
+    public long? SolvePart1(PuzzleInput input) => SumGroveCoordinates(Decrypt(input));
 
-    public long? SolvePart1(PuzzleInput input)
+    public long? SolvePart2(PuzzleInput input)
     {
-        var list = new LinkedList<long>(input.ReadLinesAsLongs());
+        return null;
+    }
 
-        foreach (var node in ToNodeArray(list))
+    public static IList<long> Decrypt(string input, int numOfCycles = 1)
+    {
+        var encrypted = new LinkedList<long>(input.ReadLinesAsLongs());
+        var originalOrder = EnumerateNodes(encrypted).ToReadOnlyArray();
+
+        for (var i = 0; i < numOfCycles; i++)
+        {
+            ApplyMixingCycle(encrypted, originalOrder);
+        }
+
+        return encrypted.ToList();
+    }
+
+    static void ApplyMixingCycle(LinkedList<long> list, IEnumerable<LinkedListNode<long>> originalOrder)
+    {
+        long GetIt1(long currentMove)
+        {
+            return (currentMove - 1) % list.Count;
+        }
+
+        long GetIt2(long currentMove)
+        {
+            return currentMove % list.Count;
+        }
+
+        long GetIt3(long currentMove)
+        {
+            return ((currentMove - 1) % list.Count) -1;
+        }
+
+        foreach (var node in originalOrder)
         {
             // Move the node the number of times indicated by its value!
             // Note that we can forwards or backwards!
-            var movement = node.Value;
-            var moveForwards = movement > 0;
+            var movement = Math.Abs(node.Value);
+            var moveForwards = node.Value > 0;
 
             if (moveForwards)
             {
-                for (var counter = 0; counter < movement; counter++)
+                for (long counter = 0; counter < movement; counter++)
                 {
                     if (node.Next == list.Last || node.Next == null)
                     {
@@ -36,7 +67,7 @@ public class Day20Solver : ISolver
             }
             else
             {
-                for (var counter = movement; counter < 0; counter++)
+                for (long counter = 0; counter < movement; counter++)
                 {
                     if (node.Previous == list.First || node.Previous == null)
                     {
@@ -52,35 +83,40 @@ public class Day20Solver : ISolver
                 }
             }
         }
+    }
 
-        var cycledList = list.ToList();
-
-        var indexOfZero = cycledList.IndexOf(0);
-
-        var value1 = cycledList[(indexOfZero + 1000) % cycledList.Count];
-        var value2 = cycledList[(indexOfZero + 2000) % cycledList.Count];
-        var value3 = cycledList[(indexOfZero + 3000) % cycledList.Count];
+    static long SumGroveCoordinates(IList<long> decrypted)
+    {
+        var indexOfZero = decrypted.IndexOf(0);
+        var value1 = decrypted[(indexOfZero + 1000) % decrypted.Count];
+        var value2 = decrypted[(indexOfZero + 2000) % decrypted.Count];
+        var value3 = decrypted[(indexOfZero + 3000) % decrypted.Count];
 
         return value1 + value2 + value3;
     }
 
-    public long? SolvePart2(PuzzleInput input)
+    static IEnumerable<LinkedListNode<long>> EnumerateNodes(LinkedList<long> list)
     {
-        return null;
-    }
-
-    static IReadOnlyList<LinkedListNode<long>> ToNodeArray(LinkedList<long> list)
-    {
-        IEnumerable<LinkedListNode<long>> EnumerateLinkedList()
+        var current = list.First;
+        while (current != null)
         {
-            var current = list.First;
-            while (current != null)
-            {
-                yield return current;
-                current = current.Next;
-            }
+            yield return current;
+            current = current.Next;
         }
-
-        return EnumerateLinkedList().ToArray();
     }
+
+    //static IReadOnlyList<LinkedListNode<long>> ToNodeArray(LinkedList<long> list)
+    //{
+    //    IEnumerable<LinkedListNode<long>> EnumerateLinkedList()
+    //    {
+    //        var current = list.First;
+    //        while (current != null)
+    //        {
+    //            yield return current;
+    //            current = current.Next;
+    //        }
+    //    }
+
+    //    return EnumerateLinkedList().ToArray();
+    //}
 }
