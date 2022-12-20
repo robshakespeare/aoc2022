@@ -13,13 +13,13 @@ public class Day20Solver : ISolver
 
         //var listNodes = EnumerateLinkedList(list).ToArray();
 
-        string DebugList() => string.Join(", ", list); //.Select(x => x.Value));
-        var debug = DebugList;
-        Logger("Initial arrangement:");
-        Logger(debug());
-        Logger("");
+        //string DebugList() => string.Join(", ", list); //.Select(x => x.Value));
+        //var debug = DebugList;
+        //Logger("Initial arrangement:");
+        //Logger(debug());
+        //Logger("");
 
-        var move = 1;
+        //var move = 1;
         //var first = () => list.First ?? throw new InvalidOperationException("Unexpected: no start of list");
 
         foreach (var node in ToNodeArray(list))
@@ -32,14 +32,14 @@ public class Day20Solver : ISolver
             var movement = node.Value;
             var moveForwards = movement > 0;
 
-            Logger($"Move {move}:");
+            //Logger($"Move {move}:");
             //Logger(debug());
 
             if (moveForwards)
             {
                 for (var counter = 0; counter < movement; counter++)
                 {
-                    if (node.Next == list.Last)
+                    if (node.Next == list.Last || node.Next == null)
                     {
                         list.Remove(node);
                         list.AddFirst(node);
@@ -76,13 +76,17 @@ public class Day20Solver : ISolver
             {
                 for (var counter = movement; counter < 0; counter++)
                 {
-                    if (node.Previous == list.First)
+                    if (node.Previous == list.First || node.Previous == null)
                     {
                         list.Remove(node);
                         list.AddLast(node);
                     }
                     else
                     {
+                        //if (node.Previous == null)
+                        //{
+                        //}
+
                         //var destination = node.Previous ?? list.Last ?? throw new InvalidOperationException("Unexpected: no end of list");
                         var destination = node.Previous ?? throw new InvalidOperationException("Unexpected: should cycle, not reach beginning");
                         list.Remove(node);
@@ -139,16 +143,20 @@ public class Day20Solver : ISolver
             //list.AddAfter(destination ?? first(), node);
 
             //Console.WriteLine($"After move {move}:");
-            Logger(debug());
-            Logger("");
-            move++;
+            //Logger(debug());
+            //Logger("");
+            //move++;
         }
 
         var cycledList = list.ToList();
 
-        var index = cycledList.IndexOf(0);
+        var indexOfZero = cycledList.IndexOf(0);
 
-        return index;
+        var value1 = cycledList[(indexOfZero + 1000) % cycledList.Count];
+        var value2 = cycledList[(indexOfZero + 2000) % cycledList.Count];
+        var value3 = cycledList[(indexOfZero + 3000) % cycledList.Count];
+
+        return value1 + value2 + value3;
     }
 
     //public long? SolvePart1(PuzzleInput input)
