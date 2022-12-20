@@ -36,7 +36,7 @@ public class Day20SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(7713);
     }
 
     [Test]
@@ -46,7 +46,7 @@ public class Day20SolverTests
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(1623178306);
     }
 
     [Test]
