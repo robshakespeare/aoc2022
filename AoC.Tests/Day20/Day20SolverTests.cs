@@ -6,6 +6,8 @@ public class Day20SolverTests
 {
     private readonly Day20Solver _sut = new();
 
+    static Day20SolverTests() => Day20Solver.Logger = TestContext.Progress.WriteLine;
+
     private const string ExampleInput = """
         1
         2
