@@ -19,26 +19,26 @@ public class Day21Solver : ISolver
 
         var rootMonkey = (MathMonkey) monkeys["root"];
 
-        var source = monkeys[rootMonkey.Left];
-        var target = monkeys[rootMonkey.Right].Evaluate(monkeys);
+        var sourceMonkey = monkeys[rootMonkey.Left];
+        var targetValue = monkeys[rootMonkey.Right].Evaluate(monkeys);
 
-        var reverse = TryYell(source, 100, monkeys) > target;
+        var reverse = TryYell(sourceMonkey, 100, monkeys) > targetValue;
 
-        var lower = reverse ? 2_000_000_000_000 : 0L;
-        var upper = reverse ? 5_000_000_000_000 : long.MaxValue;
+        var lower = 0L;
+        var upper = 5_000_000_000_000;
 
         while (lower <= upper)
         {
             var candidateYell = (lower + upper) / 2;
 
-            var result = TryYell(source, candidateYell, monkeys);
+            var result = TryYell(sourceMonkey, candidateYell, monkeys);
 
-            if (result == target)
+            if (result == targetValue)
             {
                 return candidateYell;
             }
 
-            var isLower = reverse ? !(result < target) : result < target;
+            var isLower = reverse ? !(result < targetValue) : result < targetValue;
 
             if (isLower)
             {
@@ -49,7 +49,7 @@ public class Day21Solver : ISolver
                 upper = candidateYell - 1;
             }
 
-            Logger($"yell: {candidateYell:#,0}, result: {result:#,0}, lower: {lower:#,0}, upper: {upper:#,0}, target: {target:#,0}, isLower: {result < target}");
+            Logger($"Yell: {candidateYell:#,0}, result: {result:#,0}, lower: {lower:#,0}, upper: {upper:#,0}, target: {targetValue:#,0}");
         }
 
         throw new InvalidOperationException("No number found to pass root's equality test");
