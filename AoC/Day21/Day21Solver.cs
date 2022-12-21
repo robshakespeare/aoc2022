@@ -21,7 +21,8 @@ public class Day21Solver : ISolver
 
         var rootMonkey = (MathMonkey) monkeys["root"];
 
-        foreach (var yell in new[] { -10000, 0, 1, 301, 1000, 10000, 1_000_000, 1_000_000_000, 1_000_000_000_000, 2_000_000_000_000, 5_000_000_000_000, long.MaxValue })
+        //foreach (var yell in new[] { -10000, 0, 1, 301, 1000, 10000, 1_000_000, 1_000_000_000, 1_000_000_000_000, 2_000_000_000_000, 5_000_000_000_000, long.MaxValue })
+        foreach (var yell in new[] { 0, 1, 100, 301, 1000, 10000, 1_000_000_000_000, 2_000_000_000_000, 3_000_000_000_000, 4_000_000_000_000, 5_000_000_000_000, long.MaxValue })
         {
             monkeys["humn"] = new YellingMonkey(yell);
 
@@ -41,31 +42,49 @@ public class Day21Solver : ISolver
         var source = monkeys[rootMonkey.Left];
         var target = monkeys[rootMonkey.Right].Evaluate(monkeys);
 
+        var reverse = TryYell(target, source, 100, monkeys) > target;
+
+        Logger("reverse: " + reverse);
+        Logger("==================");
+
         //var lower = 0L;
         ////var upper = monkeys.Count == 15 ? 5000 : long.MaxValue;
         //var upper = 10000L; //long.MaxValue;
 
-        var lower = 2_000_000_000_000L;
-        var upper = 5_000_000_000_000L; //long.MaxValue;
+        var lower = reverse ? 2_000_000_000_000 : 0L;
+        var upper = reverse ? 5_000_000_000_000 : long.MaxValue; //long.MaxValue;
 
         //const string fmt = "#,0";
 
         while (lower <= upper)
         {
             var candidateYell = (lower + upper) / 2;
-            if (TryAttempt(target, source, candidateYell, monkeys, out var result))
+
+            var result = TryYell(target, source, candidateYell, monkeys);
+
+            if (result == target)
             {
                 return candidateYell;
             }
 
-            if (result < target)
+            var isLower = reverse ? !(result < target) : result < target;
+            //if (reverse)
+            //{
+            //    isLower
+            //}
+
+            if (isLower)
             {
+                lower = candidateYell + 1; //result + 1;
+
+                //upper = candidateYell - 1; //result - 1;
                 // example: lower = Math.Max(candidateYell + 1, 0); //result + 1;
-                upper = candidateYell - 1; //result - 1;
             }
             else
             {
-                lower = Math.Max(candidateYell + 1, 0); //result + 1;
+                upper = candidateYell - 1; //result - 1;
+
+                //lower = candidateYell + 1; //result + 1;
                 // example: upper = candidateYell - 1; //result - 1;
             }
 
@@ -89,13 +108,10 @@ public class Day21Solver : ISolver
         //return null;
     }
 
-    private static bool TryAttempt(long target, Monkey source, long yell, Dictionary<string, Monkey> monkeys, out long result)
+    private static long TryYell(long target, Monkey source, long yell, Dictionary<string, Monkey> monkeys)
     {
         monkeys["humn"] = new YellingMonkey(yell);
-
-        result = source.Evaluate(monkeys);
-
-        return result == target;
+        return source.Evaluate(monkeys);
     }
 
     static Dictionary<string, Monkey> ParseMonkeys(string input) => input.ReadLines().Select(line =>
