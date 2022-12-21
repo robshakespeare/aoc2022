@@ -21,14 +21,14 @@ public class Day21Solver : ISolver
 
         var rootMonkey = (MathMonkey) monkeys["root"];
 
-        foreach (var yell in new[] { 0, 1, 301, 1000, 10000 })
+        foreach (var yell in new[] { -10000, 0, 1, 301, 1000, 10000, 1_000_000, 1_000_000_000, 1_000_000_000_000, 2_000_000_000_000, 5_000_000_000_000, long.MaxValue })
         {
             monkeys["humn"] = new YellingMonkey(yell);
 
             var left = monkeys[rootMonkey.Left];
             var right = monkeys[rootMonkey.Right];
 
-            Logger($"Yelling {yell}: {left.Evaluate(monkeys):#,0} == {right.Evaluate(monkeys):#,0}");
+            Logger($"Yelling {yell:#,0}: {left.Evaluate(monkeys):#,0} == {right.Evaluate(monkeys):#,0}");
         }
 
         Logger("==================");
@@ -41,9 +41,12 @@ public class Day21Solver : ISolver
         var source = monkeys[rootMonkey.Left];
         var target = monkeys[rootMonkey.Right].Evaluate(monkeys);
 
-        var lower = 0L;
-        //var upper = monkeys.Count == 15 ? 5000 : long.MaxValue;
-        var upper = 10000L; //long.MaxValue;
+        //var lower = 0L;
+        ////var upper = monkeys.Count == 15 ? 5000 : long.MaxValue;
+        //var upper = 10000L; //long.MaxValue;
+
+        var lower = 2_000_000_000_000L;
+        var upper = 5_000_000_000_000L; //long.MaxValue;
 
         //const string fmt = "#,0";
 
@@ -57,11 +60,13 @@ public class Day21Solver : ISolver
 
             if (result < target)
             {
-                lower = Math.Max(candidateYell + 1, 0); //result + 1;
+                // example: lower = Math.Max(candidateYell + 1, 0); //result + 1;
+                upper = candidateYell - 1; //result - 1;
             }
             else
             {
-                upper = candidateYell - 1; //result - 1;
+                lower = Math.Max(candidateYell + 1, 0); //result + 1;
+                // example: upper = candidateYell - 1; //result - 1;
             }
 
             //Logger($"{new { candidateYell = candidateYell.ToString("N"), result, lower, upper, target, isLower = result < target }}");
