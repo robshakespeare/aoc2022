@@ -115,7 +115,7 @@ public class Day20Solver : ISolver
         return value1 + value2 + value3;
     }
 
-    public static IEnumerable<LinkedListNode<long>> EnumerateNodes(LinkedList<long> list)
+    internal static IEnumerable<LinkedListNode<long>> EnumerateNodes(LinkedList<long> list)
     {
         var current = list.First;
         while (current != null)
