@@ -53,9 +53,6 @@ public partial class Day19Solver : ISolver
                     bestGeodeCount = Math.Max(bestGeodeCount, nextWorld.GeodeCount);
                     if (nextWorld.GeodeCount >= bestGeodeCount - 10 || blueprint.IsPart2)
                     {
-                        //var etc = Math.Max(
-                        //    nextWorld.GetEstimatedCostToNextProduce(blueprint.GeodeBotOreCost, nextWorld.OreCount, nextWorld.OreProductionRate),
-                        //    nextWorld.GetEstimatedCostToNextProduce(blueprint.GeodeBotObsidianCost, nextWorld.ObsidianCount, nextWorld.ObsidianProductionRate));
                         explore.Enqueue(nextWorld, nextWorld.GetEstimatedCostToProduceNextGeodeBot());
                     }
                 }
@@ -74,6 +71,8 @@ public partial class Day19Solver : ISolver
         public int MinuteNumber { get; private set; }
         public Blueprint Blueprint { get; } = Blueprint;
 
+        public int GeodeCount { get; private set; }
+
         int OreProductionRate { get; init; } = 1;
         int ClayProductionRate { get; init; }
         int ObsidianProductionRate { get; init; }
@@ -81,7 +80,6 @@ public partial class Day19Solver : ISolver
         int OreCount { get; set; }
         int ClayCount { get; set; }
         int ObsidianCount { get; set; }
-        public int GeodeCount { get; private set; }
 
         public int GetEstimatedCostToProduceNextGeodeBot() => Math.Max(
             GetEstimatedCostToNextProduce(Blueprint.GeodeBotOreCost, OreCount, OreProductionRate),
