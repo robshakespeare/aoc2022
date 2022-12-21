@@ -37,7 +37,7 @@ public class Day20SolverTests
     }
 
     [Test]
-    [Ignore("rs-todo")]
+    //[Ignore("rs-todo")]
     public void Part2Example()
     {
         // ACT
@@ -48,7 +48,7 @@ public class Day20SolverTests
     }
 
     [Test]
-    [Ignore("rs-todo")]
+    //[Ignore("rs-todo")]
     public void Part2ReTest()
     {
         // ACT
@@ -58,7 +58,7 @@ public class Day20SolverTests
         part2Result.Should().NotBe(-9808);
         part2Result.Should().BeOfType<long>().Which.Should().BeLessThan(2086595712363);
 
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(1664569352803);
     }
 
     public class TheMoveNumberMethod
@@ -159,7 +159,7 @@ public class Day20SolverTests
         }
 
         [Test]
-        [Ignore("rs-todo!")]
+        //[Ignore("rs-todo!")]
         public void Decrypt_LargeNumbersExample()
         {
             const string input = "811589153, 1623178306, -2434767459, 2434767459, -1623178306, 0, 3246356612";

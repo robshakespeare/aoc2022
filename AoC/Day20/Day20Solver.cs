@@ -27,7 +27,7 @@ public class Day20Solver : ISolver
         var encrypted = new LinkedList<long>(input.ReadLinesAsLongs().Select(n => n * decryptionKey));
         var originalOrder = EnumerateNodes(encrypted).ToReadOnlyArray();
 
-        const bool enableSkip = false;
+        const bool enableSkip = true;
 
         if (!enableSkip && numOfCycles > 1)
         {
@@ -84,7 +84,7 @@ public class Day20Solver : ISolver
 
     public static void MoveNumberNode(LinkedListNode<long> node)
     {
-        var enableSkip = false;
+        var enableSkip = true;
 
         var list = node.List ?? throw new InvalidOperationException("No list");
         //var cycleSize = list.Count; // - 1L;
@@ -92,7 +92,7 @@ public class Day20Solver : ISolver
         var movement = Math.Abs(node.Value);
         var moveForwards = node.Value > 0;
 
-        Console.WriteLine("Move number start");
+        //Console.WriteLine("Move number start");
 
         if (moveForwards)
         {
@@ -139,6 +139,8 @@ public class Day20Solver : ISolver
                     {
                         skip = list.Count - 1;
                     }
+
+                    counter = skip;
                 }
                 else
                 {
@@ -151,9 +153,10 @@ public class Day20Solver : ISolver
                     skip = -1;
                 }
 
-                if ((movement - counter) < 20 || i <= 20)
+                //if ((movement - counter) < 20 || i <= 20)
+                if (i <= 20 || i > movement - 20)
                 {
-                    Console.WriteLine($"{counter,4}: {i,4} - {string.Join(", ", list)} -- {edge} {(edge ? skip : null)}");
+                    //Console.WriteLine($"{counter,4}: {i,4} - {string.Join(", ", list)} -- {edge} {(edge ? skip : null)}");
 
                 }
                 i++;
@@ -214,6 +217,8 @@ public class Day20Solver : ISolver
                         skip = list.Count - 1;
                     }
 
+                    counter = skip;
+
                     //counter %= cycleSize;
 
                     //////#######
@@ -238,9 +243,10 @@ public class Day20Solver : ISolver
                     skip = -1;
                 }
 
-                if ((movement - counter) < 20 || i <= 20)
+                //if ((movement - counter) < 20 || i <= 20)
+                if (i <= 20 || i > movement - 20)
                 {
-                    Console.WriteLine($"{counter,4}: {i,4} - {string.Join(", ", list)} -- {edge} {(edge ? skip : null)}");
+                    //Console.WriteLine($"{counter,4}: {i,4} - {string.Join(", ", list)} -- {edge} {(edge ? skip : null)}");
 
                 }
                 //Console.WriteLine($"{counter,4}: {i,4} {string.Join(", ", list)} -- {edge} {(edge ? skip : null)}");
