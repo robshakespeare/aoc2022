@@ -1,8 +1,12 @@
+using Crayon;
+
 namespace AoC.Day21;
 
 public class Day21Solver : ISolver
 {
     public string DayName => "Monkey Math";
+
+    public static Action<string> Logger { get; set; } = Console.WriteLine;
 
     public long? SolvePart1(PuzzleInput input)
     {
@@ -13,10 +17,83 @@ public class Day21Solver : ISolver
 
     public long? SolvePart2(PuzzleInput input)
     {
-        return null;
+        var monkeys = ParseMonkeys(input);
+
+        var rootMonkey = (MathMonkey) monkeys["root"];
+
+        foreach (var yell in new[] { 0, 1, 301, 1000, 10000 })
+        {
+            monkeys["humn"] = new YellingMonkey(yell);
+
+            var left = monkeys[rootMonkey.Left];
+            var right = monkeys[rootMonkey.Right];
+
+            Logger($"Yelling {yell}: {left.Evaluate(monkeys):#,0} == {right.Evaluate(monkeys):#,0}");
+        }
+
+        Logger("==================");
+
+        // Right number is always the same
+        // So, we can use "insertion sort" to find the correct left number.
+        // Basically, start with long Max Value
+        // Eval 
+
+        var source = monkeys[rootMonkey.Left];
+        var target = monkeys[rootMonkey.Right].Evaluate(monkeys);
+
+        var lower = 0L;
+        //var upper = monkeys.Count == 15 ? 5000 : long.MaxValue;
+        var upper = 10000L; //long.MaxValue;
+
+        //const string fmt = "#,0";
+
+        while (lower <= upper)
+        {
+            var candidateYell = (lower + upper) / 2;
+            if (TryAttempt(target, source, candidateYell, monkeys, out var result))
+            {
+                return candidateYell;
+            }
+
+            if (result < target)
+            {
+                lower = Math.Max(candidateYell + 1, 0); //result + 1;
+            }
+            else
+            {
+                upper = candidateYell - 1; //result - 1;
+            }
+
+            //Logger($"{new { candidateYell = candidateYell.ToString("N"), result, lower, upper, target, isLower = result < target }}");
+
+            Logger($"yell: {candidateYell:#,0}, result: {result:#,0}, lower: {lower:#,0}, upper: {upper:#,0}, target: {target:#,0}, isLower: {result < target}");
+        }
+
+        throw new InvalidOperationException("No number found to pass root's equality test");
+
+        //foreach (var yell in new[] { 0, 1, 301, 1000, 10000 })
+        //{
+        //    monkeys["humn"] = new YellingMonkey(yell);
+
+        //    var left = monkeys[rootMonkey.Left];
+        //    var right = monkeys[rootMonkey.Right];
+
+        //    Logger($"Yelling {yell}: {left.Evaluate(monkeys)} == {right.Evaluate(monkeys)}");
+        //}
+
+        //return null;
     }
 
-    static IReadOnlyDictionary<string, Monkey> ParseMonkeys(string input) => input.ReadLines().Select(line =>
+    private static bool TryAttempt(long target, Monkey source, long yell, Dictionary<string, Monkey> monkeys, out long result)
+    {
+        monkeys["humn"] = new YellingMonkey(yell);
+
+        result = source.Evaluate(monkeys);
+
+        return result == target;
+    }
+
+    static Dictionary<string, Monkey> ParseMonkeys(string input) => input.ReadLines().Select(line =>
     {
         var sections = line.Split(": ");
         var id = sections[0];
@@ -31,47 +108,49 @@ public class Day21Solver : ISolver
         return monkey;
     }).ToDictionary(monkey => monkey.Id);
 
-    abstract class Monkey
+    public abstract class Monkey
     {
         public string Id { get; set; } = "";
 
         public abstract long Evaluate(IReadOnlyDictionary<string, Monkey> monkeys);
     }
 
-    sealed class YellingMonkey : Monkey
+    public sealed class YellingMonkey : Monkey
     {
-        private readonly long _value;
+        public YellingMonkey(long value) => Value = value;
 
-        public YellingMonkey(long value) => _value = value;
+        public long Value { get; }
 
-        public override long Evaluate(IReadOnlyDictionary<string, Monkey> monkeys) => _value;
+        public override long Evaluate(IReadOnlyDictionary<string, Monkey> monkeys) => Value;
     }
 
-    sealed class MathMonkey : Monkey
+    public sealed class MathMonkey : Monkey
     {
-        readonly char _operator;
-        readonly string _left;
-        readonly string _right;
-
         public MathMonkey(char @operator, string left, string right)
         {
-            _operator = @operator;
-            _left = left;
-            _right = right;
+            Operator = @operator;
+            Left = left;
+            Right = right;
         }
+
+        public char Operator { get; }
+
+        public string Left { get; }
+
+        public string Right { get; }
 
         public override long Evaluate(IReadOnlyDictionary<string, Monkey> monkeys)
         {
-            var left = monkeys[_left];
-            var right = monkeys[_right];
+            var left = monkeys[Left];
+            var right = monkeys[Right];
 
-            return _operator switch
+            return Operator switch
             {
                 '+' => left.Evaluate(monkeys) + right.Evaluate(monkeys),
                 '-' => left.Evaluate(monkeys) - right.Evaluate(monkeys),
                 '*' => left.Evaluate(monkeys) * right.Evaluate(monkeys),
                 '/' => left.Evaluate(monkeys) / right.Evaluate(monkeys),
-                _ => throw new InvalidOperationException("Invalid operation: " + _operator)
+                _ => throw new InvalidOperationException("Invalid operation: " + Operator)
             };
         }
     }

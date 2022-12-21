@@ -6,6 +6,8 @@ public class Day21SolverTests
 {
     private readonly Day21Solver _sut = new();
 
+    static Day21SolverTests() => Day21Solver.Logger = TestContext.Progress.WriteLine;
+
     private const string ExampleInput = """
         root: pppw + sjmn
         dbpl: 5
