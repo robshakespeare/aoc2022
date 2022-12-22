@@ -7,87 +7,7 @@ public partial class Day22Solver : ISolver
     private static readonly Matrix3x2 RotateRightClockwise = Matrix3x2.CreateRotation(90.DegreesToRadians());
     private static readonly Matrix3x2 RotateLeftCounterclockwise = Matrix3x2.CreateRotation(-90.DegreesToRadians());
 
-    public long? SolvePart1(PuzzleInput input)
-    {
-        var parts = input.ToString().Split($"{Environment.NewLine}{Environment.NewLine}");
-
-        var map = Map.Create(parts[0]);
-        var instructions = ParseInstructions(parts[1]);
-
-        // You begin the path in the leftmost open tile of the top row of tiles. Initially, you are facing to the right
-        // right -- East
-        // down -- South
-        // left -- West
-        // up -- North
-
-        var dir = GridUtils.East;
-        var position = map.LocateStart();
-        map.Cells[position].Tile = DirectionToArrow(dir);
-
-        // Do the plotting!
-        foreach (var instruction in instructions)
-        {
-            switch (instruction)
-            {
-                case "R":
-                    dir = Vector2.Transform(dir, RotateRightClockwise);
-                    break;
-                case "L":
-                    dir = Vector2.Transform(dir, RotateLeftCounterclockwise);
-                    break;
-                default:
-                    var movement = int.Parse(instruction);
-
-                    // Incrementally move position by that amount
-                    for (var move = 0; move < movement; move++)
-                    {
-                        var prevPosition = position;
-                        var preDir = dir;
-                        position += dir;
-
-                        // If we go off the grid, wrap around
-                        (position, dir) = map.HandleWrapAround(position, dir);
-
-                        // If the next position is wall, stop instruction, and ensure position is last position (which must have been a open tile), and dir is last dir
-                        var cell = map.Cells[position];
-                        if (cell.IsWall)
-                        {
-                            position = prevPosition;
-                            dir = preDir;
-                            break;
-                        }
-
-                        cell.Tile = DirectionToArrow(dir);
-                    }
-
-                    break;
-            }
-
-            map.Cells[position].Tile = DirectionToArrow(dir);
-        }
-
-        // The final password is the sum of 1000 times the row (Y), 4 times the column (X), and the facing.
-        // Facing is 0 for right (>), 1 for down (v), 2 for left (<), and 3 for up (^).
-
-        var row = (long)position.Y;
-        var column = (long)position.X;
-        var facing = DirectionToArrow(dir) switch
-        {
-            '>' => 0,
-            'v' => 1,
-            '<' => 2,
-            '^' => 3,
-            _ => throw new InvalidOperationException("Invalid dir")
-        };
-
-        var isExample = (int)map.Max.Y == 12;
-        if (isExample)
-        {
-            map.Cells.ToStringGrid(x => x.Key, x => x.Value.Tile, ' ').RenderGridToConsole();
-        }
-
-        return 1000 * row + 4 * column + facing;
-    }
+    public long? SolvePart1(PuzzleInput input) => Map.Create(input).FollowInstructions();
 
     public long? SolvePart2(PuzzleInput input)
     {
@@ -97,11 +17,20 @@ public partial class Day22Solver : ISolver
         return null;
     }
 
-    public record Map(Dictionary<Vector2, Cell> Cells, Vector2 Min, Vector2 Max, Dictionary<int, Line> MinMaxX, Dictionary<int, Line> MinMaxY)
+    public record Map(
+        Dictionary<Vector2, Cell> Cells,
+        string[] Instructions,
+        Vector2 Min,
+        Vector2 Max,
+        Dictionary<int, Line> MinMaxX,
+        Dictionary<int, Line> MinMaxY)
     {
         public static Map Create(string input)
         {
-            var cells = input.ReadLines()
+            var parts = input.Split($"{Environment.NewLine}{Environment.NewLine}");
+            var instructions = ParseInstructions(parts[1]);
+
+            var cells = parts[0].ReadLines()
                 .SelectMany(
                     (line, y) => line.Select(
                         (chr, x) => new Cell(new Vector2(x + 1, y + 1), chr)))
@@ -119,7 +48,7 @@ public partial class Day22Solver : ISolver
             var minMaxX = BuildMinMax(true, cells, min, max); // MinMaxX: Where Key is Y
             var minMaxY = BuildMinMax(false, cells, min, max); // MinMaxY: Where Key is X
 
-            return new Map(cells, min, max, minMaxX, minMaxY);
+            return new Map(cells, instructions, min, max, minMaxX, minMaxY);
         }
 
         private static Dictionary<int, Line> BuildMinMax(bool isX, Dictionary<Vector2, Cell> cells, Vector2 mapMin, Vector2 mapMax)
@@ -200,6 +129,83 @@ public partial class Day22Solver : ISolver
 
             return (position, dir);
         }
+
+        public long FollowInstructions()
+        {
+            // You begin the path in the leftmost open tile of the top row of tiles. Initially, you are facing to the right
+            // right -- East
+            // down -- South
+            // left -- West
+            // up -- North
+
+            var dir = GridUtils.East;
+            var position = LocateStart();
+            Cells[position].Tile = DirectionToArrow(dir);
+
+            // Do the plotting!
+            foreach (var instruction in Instructions)
+            {
+                switch (instruction)
+                {
+                    case "R":
+                        dir = Vector2.Transform(dir, RotateRightClockwise);
+                        break;
+                    case "L":
+                        dir = Vector2.Transform(dir, RotateLeftCounterclockwise);
+                        break;
+                    default:
+                        var movement = int.Parse(instruction);
+
+                        // Incrementally move position by that amount
+                        for (var move = 0; move < movement; move++)
+                        {
+                            var prevPosition = position;
+                            var preDir = dir;
+                            position += dir;
+
+                            // If we go off the grid, wrap around
+                            (position, dir) = HandleWrapAround(position, dir);
+
+                            // If the next position is wall, stop instruction, and ensure position is last position (which must have been a open tile), and dir is last dir
+                            var cell = Cells[position];
+                            if (cell.IsWall)
+                            {
+                                position = prevPosition;
+                                dir = preDir;
+                                break;
+                            }
+
+                            cell.Tile = DirectionToArrow(dir);
+                        }
+
+                        break;
+                }
+
+                Cells[position].Tile = DirectionToArrow(dir);
+            }
+
+            // The final password is the sum of 1000 times the row (Y), 4 times the column (X), and the facing.
+            // Facing is 0 for right (>), 1 for down (v), 2 for left (<), and 3 for up (^).
+
+            var row = (long)position.Y;
+            var column = (long)position.X;
+            var facing = DirectionToArrow(dir) switch
+            {
+                '>' => 0,
+                'v' => 1,
+                '<' => 2,
+                '^' => 3,
+                _ => throw new InvalidOperationException("Invalid dir")
+            };
+
+            var isExample = (int)Max.Y == 12;
+            if (isExample)
+            {
+                Cells.ToStringGrid(x => x.Key, x => x.Value.Tile, ' ').RenderGridToConsole();
+            }
+
+            return 1000 * row + 4 * column + facing;
+        }
     }
 
     public record Line(int Min, int Max);
@@ -224,7 +230,7 @@ public partial class Day22Solver : ISolver
         _ => throw new InvalidOperationException("Invalid dir: " + dir)
     };
 
-    static IReadOnlyCollection<string> ParseInstructions(string instructions) =>
+    static string[] ParseInstructions(string instructions) =>
         ParseInstructionsRegex.Matches(instructions).Select(match => match.Value).ToArray();
 
     static readonly Regex ParseInstructionsRegex = BuildParseInstructionsRegex();
