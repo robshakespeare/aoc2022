@@ -24,6 +24,7 @@ public partial class Day22Solver : ISolver
 
         var dir = GridUtils.East;
         var position = map.LocateStart();
+        map.Cells[position].Tile = DirectionToArrow(dir);
 
         // Do the plotting!
         foreach (var instruction in instructions)
@@ -78,6 +79,12 @@ public partial class Day22Solver : ISolver
             '^' => 3,
             _ => throw new InvalidOperationException("Invalid dir")
         };
+
+        var isExample = (int)map.Max.Y == 12;
+        if (isExample)
+        {
+            map.Cells.ToStringGrid(x => x.Key, x => x.Value.Tile, ' ').RenderGridToConsole();
+        }
 
         return 1000 * row + 4 * column + facing;
     }
