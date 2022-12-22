@@ -24,68 +24,6 @@ public class Day22SolverTests
         """;
 
     [Test]
-    public void RotateClockwiseTests()
-    {
-        // right -- East
-        // down -- South
-        // left -- West
-        // up -- North
-
-        // R = clockwise
-
-        var dir = GridUtils.East;
-        Console.WriteLine(dir);
-        dir.Should().Be(GridUtils.East);
-
-        dir = MathUtils.RotateDirection(dir, 90);
-        Console.WriteLine(dir);
-        dir.Should().Be(GridUtils.South);
-
-        dir = MathUtils.RotateDirection(dir, 90);
-        Console.WriteLine(dir);
-        dir.Should().Be(GridUtils.West);
-
-        dir = MathUtils.RotateDirection(dir, 90);
-        Console.WriteLine(dir);
-        dir.Should().Be(GridUtils.North);
-
-        dir = MathUtils.RotateDirection(dir, 90);
-        Console.WriteLine(dir);
-        dir.Should().Be(GridUtils.East);
-    }
-
-    [Test]
-    public void RotateCounterclockwiseTests()
-    {
-        // right -- East
-        // down -- South
-        // left -- West
-        // up -- North
-
-        // L = counterclockwise
-
-        var dir = GridUtils.East;
-        Console.WriteLine(dir);
-        dir.Should().Be(GridUtils.East);
-
-        dir = MathUtils.RotateDirection(dir, -90);
-        Console.WriteLine(dir);
-        dir.Should().Be(GridUtils.North);
-
-        dir = MathUtils.RotateDirection(dir, -90);
-        Console.WriteLine(dir);
-        dir.Should().Be(GridUtils.West);
-
-        dir = MathUtils.RotateDirection(dir, -90);
-        Console.WriteLine(dir);
-        dir.Should().Be(GridUtils.South);
-
-        dir = MathUtils.RotateDirection(dir, -90);
-        Console.WriteLine(dir);
-        dir.Should().Be(GridUtils.East);
-    }
-
-    [Test]
     public void Part1Example()
     {
         // ACT
@@ -123,5 +61,70 @@ public class Day22SolverTests
 
         // ASSERT
         part2Result.Should().Be(null);
+    }
+
+    public class RotationExploration
+    {
+        [Test]
+        public void RotateClockwiseTests()
+        {
+            // right -- East
+            // down -- South
+            // left -- West
+            // up -- North
+
+            // R = clockwise
+
+            var dir = GridUtils.East;
+            Console.WriteLine(dir);
+            dir.Should().Be(GridUtils.East);
+
+            dir = MathUtils.RotateDirection(dir, 90);
+            Console.WriteLine(dir);
+            dir.Should().Be(GridUtils.South);
+
+            dir = MathUtils.RotateDirection(dir, 90);
+            Console.WriteLine(dir);
+            dir.Should().Be(GridUtils.West);
+
+            dir = MathUtils.RotateDirection(dir, 90);
+            Console.WriteLine(dir);
+            dir.Should().Be(GridUtils.North);
+
+            dir = MathUtils.RotateDirection(dir, 90);
+            Console.WriteLine(dir);
+            dir.Should().Be(GridUtils.East);
+        }
+
+        [Test]
+        public void RotateCounterclockwiseTests()
+        {
+            // right -- East
+            // down -- South
+            // left -- West
+            // up -- North
+
+            // L = counterclockwise
+
+            var dir = GridUtils.East;
+            Console.WriteLine(dir);
+            dir.Should().Be(GridUtils.East);
+
+            dir = MathUtils.RotateDirection(dir, -90);
+            Console.WriteLine(dir);
+            dir.Should().Be(GridUtils.North);
+
+            dir = MathUtils.RotateDirection(dir, -90);
+            Console.WriteLine(dir);
+            dir.Should().Be(GridUtils.West);
+
+            dir = MathUtils.RotateDirection(dir, -90);
+            Console.WriteLine(dir);
+            dir.Should().Be(GridUtils.South);
+
+            dir = MathUtils.RotateDirection(dir, -90);
+            Console.WriteLine(dir);
+            dir.Should().Be(GridUtils.East);
+        }
     }
 }

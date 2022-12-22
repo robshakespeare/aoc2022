@@ -7,60 +7,59 @@ public partial class Day22Solver : ISolver
     private static readonly Matrix3x2 RotateRightClockwise = Matrix3x2.CreateRotation(90.DegreesToRadians());
     private static readonly Matrix3x2 RotateLeftCounterclockwise = Matrix3x2.CreateRotation(-90.DegreesToRadians());
 
-    public long? SolvePart1(PuzzleInput input) => Map.Create(input).FollowInstructions();
+    public long? SolvePart1(PuzzleInput input) => Map.Create(input, isCube: false).FollowInstructions();
 
-    public long? SolvePart2(PuzzleInput input)
-    {
-        // 1 has 3 fall offs
-        // 2 has 3 fall offs
-        // 3 has 2 fall offs
-        // 4 has 1 fall off
-        // 5 has 2 fall offs
-        // 6 has 3 fall offs
+    // 1 has 3 fall offs
+    // 2 has 3 fall offs
+    // 3 has 2 fall offs
+    // 4 has 1 fall off
+    // 5 has 2 fall offs
+    // 6 has 3 fall offs
 
-        // 1-4 already
-        // 1-2: 180° (hence 2-1: 180°)
-        // 1-3: -90° (hence 3-1: 90°)
-        // 1-6: 180° (hence 6-1: 180°)
+    // 1-4 already
+    // 1-2: 180° (hence 2-1: 180°)
+    // 1-3: -90° (hence 3-1: 90°)
+    // 1-6: 180° (hence 6-1: 180°)
 
-        // 2-3 already
-        // 2-1: 180° (hence 1-2: 180°)
-        // 2-5: 180° (hence 5-2: 180°)
-        // 2-6: 90° (hence 6-2: -90°)
+    // 2-3 already
+    // 2-1: 180° (hence 1-2: 180°)
+    // 2-5: 180° (hence 5-2: 180°)
+    // 2-6: 90° (hence 6-2: -90°)
 
-        // 3-2 already
-        // 3-4 already
-        // 3-1: 90° (hence 1-3: -90°)
-        // 3-5: -90° (hence 5-3: 90°)
+    // 3-2 already
+    // 3-4 already
+    // 3-1: 90° (hence 1-3: -90°)
+    // 3-5: -90° (hence 5-3: 90°)
 
-        // 4-1 already
-        // 4-3 already
-        // 4-5 already
-        // 4-6: 90° (hence 6-4: -90°)
+    // 4-1 already
+    // 4-3 already
+    // 4-5 already
+    // 4-6: 90° (hence 6-4: -90°)
 
-        // 5-4 already
-        // 5-6 already
-        // 5-2: 180° (hence 2-5: 180°)
-        // 5-3: 90° (hence 3-5: -90°)
+    // 5-4 already
+    // 5-6 already
+    // 5-2: 180° (hence 2-5: 180°)
+    // 5-3: 90° (hence 3-5: -90°)
 
-        // 6-5 already
-        // 6-1: 180° (hence 1-6: 180°)
-        // 6-2: -90° (hence 2-6: 90°)
-        // 6-4: -90° (hence 4-6: 90°)
-
-        return null;
-    }
+    // 6-5 already
+    // 6-1: 180° (hence 1-6: 180°)
+    // 6-2: -90° (hence 2-6: 90°)
+    // 6-4: -90° (hence 4-6: 90°)
+    public long? SolvePart2(PuzzleInput input) => Map.Create(input, isCube: true).FollowInstructions();
 
     public record Map(
         Dictionary<Vector2, Cell> Cells,
         string[] Instructions,
+        bool IsCube,
         Vector2 Min,
         Vector2 Max,
         Dictionary<int, Line> MinMaxX,
         Dictionary<int, Line> MinMaxY,
         int FaceSize)
     {
-        public static Map Create(string input)
+        public Face[] Faces { get; private set; } = Array.Empty<Face>();
+
+        public static Map Create(string input, bool isCube)
         {
             var parts = input.Split($"{Environment.NewLine}{Environment.NewLine}");
             var instructions = ParseInstructions(parts[1]);
@@ -85,7 +84,7 @@ public partial class Day22Solver : ISolver
 
             var faceSize = (int)Math.Max(max.X, max.Y) / 4;
 
-            return new Map(cells, instructions, min, max, minMaxX, minMaxY, faceSize).AssignFaceIds();
+            return new Map(cells, instructions, isCube, min, max, minMaxX, minMaxY, faceSize).AssignFaces();
         }
 
         private static Dictionary<int, Line> BuildMinMax(bool isX, Dictionary<Vector2, Cell> cells, Vector2 mapMin, Vector2 mapMax)
@@ -119,7 +118,7 @@ public partial class Day22Solver : ISolver
             return minMax;
         }
 
-        private Map AssignFaceIds()
+        private Map AssignFaces()
         {
             var ids = new Dictionary<int, List<Cell>>();
 
@@ -137,6 +136,8 @@ public partial class Day22Solver : ISolver
                 }
             }
 
+            Faces = Cells.Values.GroupBy(cell => cell.FaceId).Select(grp => Face.Create(grp.Key, grp.ToDictionary(cell => cell.Position))).ToArray();
+
             return this;
         }
 
@@ -153,7 +154,12 @@ public partial class Day22Solver : ISolver
             return position;
         }
 
-        public (Vector2 resultPosition, Vector2 resultDir) HandleWrapAround(Vector2 position, Vector2 dir)
+        public (Vector2 resultPosition, Vector2 resultDir) HandleWrapAround3d(Vector2 position, Vector2 dir)
+        {
+            throw new InvalidOperationException("rs-todo!");
+        }
+
+        public (Vector2 resultPosition, Vector2 resultDir) HandleWrapAround2d(Vector2 position, Vector2 dir)
         {
             var isYMove = Math.Abs(dir.Y) != 0;
             var componentIndex = isYMove ? 1 : 0;
@@ -205,10 +211,29 @@ public partial class Day22Solver : ISolver
                         {
                             var prevPosition = position;
                             var preDir = dir;
-                            position += dir;
 
-                            // If we go off the grid, wrap around
-                            (position, dir) = HandleWrapAround(position, dir);
+                            position += dir;
+                            (position, dir) = IsCube
+                                ? HandleWrapAround3d(position, dir)
+                                : HandleWrapAround2d(position, dir);
+
+                            //if (IsCube)
+                            //{
+                            //    // rs-todo: check for if we're currently on an edge, and if so, just jump to corresponding pos and dir
+                            //    if (isOnEdge)
+                            //    {
+                            //        throw new InvalidOperationException("rs-todo!");
+                            //    }
+                            //    else
+                            //    {
+                            //        position += dir;
+                            //    }
+                            //}
+                            //else
+                            //{
+                            //    position += dir;
+                            //    (position, dir) = HandleWrapAround2d(position, dir);
+                            //}
 
                             // If the next position is wall, stop instruction, and ensure position is last position (which must have been a open tile), and dir is last dir
                             var cell = Cells[position];
@@ -251,7 +276,29 @@ public partial class Day22Solver : ISolver
 
             Cells.ToStringGrid(x => x.Key, x => x.Value.FaceId, ' ').RenderGridToConsole(); // rs-todo: rem this
 
+            //Faces.ToStringGrid(x => x.Key, x => x.Value.FaceId, ' ').RenderGridToConsole(); // rs-todo: rem this
+
             return 1000 * row + 4 * column + facing;
+        }
+    }
+
+    public record Face(char Id, Dictionary<Vector2, Cell> Cells, Vector2 Min, Vector2 Max)
+    {
+        //public Dictionary<Vector2, int> Edges { get; } = new(); // Where Value is the "EdgeId"
+        
+
+        public static Face Create(char id, Dictionary<Vector2, Cell> cells)
+        {
+            var min = new Vector2(float.MaxValue);
+            var max = new Vector2(float.MinValue);
+
+            foreach (var (p, _) in cells)
+            {
+                min = Vector2.Min(min, p);
+                max = Vector2.Max(max, p);
+            }
+
+            return new Face(id, cells, min, max);
         }
     }
 
