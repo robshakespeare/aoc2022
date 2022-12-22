@@ -1,3 +1,5 @@
+using System.Net;
+
 namespace AoC.Day22;
 
 public partial class Day22Solver : ISolver
@@ -11,8 +13,42 @@ public partial class Day22Solver : ISolver
 
     public long? SolvePart2(PuzzleInput input)
     {
-        // When we wrap, we rotate the direction by 90 degrees clockwise in, A-B case (4-6)
-        // Down becomes up, C-D case (5-2)
+        // 1 has 3 fall offs
+        // 2 has 3 fall offs
+        // 3 has 2 fall offs
+        // 4 has 1 fall off
+        // 5 has 2 fall offs
+        // 6 has 3 fall offs
+
+        // 1-4 already
+        // 1-2: 180° (hence 2-1: 180°)
+        // 1-3: -90° (hence 3-1: 90°)
+        // 1-6: 180° (hence 6-1: 180°)
+
+        // 2-3 already
+        // 2-1: 180° (hence 1-2: 180°)
+        // 2-5: 180° (hence 5-2: 180°)
+        // 2-6: 90° (hence 6-2: -90°)
+
+        // 3-2 already
+        // 3-4 already
+        // 3-1: 90° (hence 1-3: -90°)
+        // 3-5: -90° (hence 5-3: 90°)
+
+        // 4-1 already
+        // 4-3 already
+        // 4-5 already
+        // 4-6: 90° (hence 6-4: -90°)
+
+        // 5-4 already
+        // 5-6 already
+        // 5-2: 180° (hence 2-5: 180°)
+        // 5-3: 90° (hence 3-5: -90°)
+
+        // 6-5 already
+        // 6-1: 180° (hence 1-6: 180°)
+        // 6-2: -90° (hence 2-6: 90°)
+        // 6-4: -90° (hence 4-6: 90°)
 
         return null;
     }
