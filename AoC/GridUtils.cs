@@ -3,22 +3,22 @@ namespace AoC;
 public static class GridUtils
 {
     /// <summary>
-    /// North direction, i.e. (0, -1)
+    /// North direction, i.e. (0, -1), up
     /// </summary>
     public static readonly Vector2 North = new(0, -1);
 
     /// <summary>
-    /// East direction, i.e. (1, 0)
+    /// East direction, i.e. (1, 0), right
     /// </summary>
     public static readonly Vector2 East = new(1, 0);
 
     /// <summary>
-    /// South direction, i.e. (0, 1)
+    /// South direction, i.e. (0, 1), down
     /// </summary>
     public static readonly Vector2 South = new(0, 1);
 
     /// <summary>
-    /// West direction, i.e. (-1, 0)
+    /// West direction, i.e. (-1, 0), left
     /// </summary>
     public static readonly Vector2 West = new(-1, 0);
 

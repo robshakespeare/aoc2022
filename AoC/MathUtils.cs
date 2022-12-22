@@ -42,7 +42,7 @@ public static class MathUtils
     public static float DegreesToRadians(this int degrees) => Convert.ToSingle(degrees * DegreesToRadiansFactor);
 
     /// <summary>
-    /// Rotates the specified direction vector, around the zero vector (0,0) center point, by the specified number of degrees.
+    /// Rotates the specified direction vector clockwise, around the zero vector (0,0) center point, by the specified number of degrees.
     /// </summary>
     /// <remarks>
     /// Note: This method expects the direction vector to be centered around the zero vector (0,0).
