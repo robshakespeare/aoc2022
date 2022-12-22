@@ -155,34 +155,20 @@ public partial class Day22Solver : ISolver
 
         public (Vector2 resultPosition, Vector2 resultDir) HandleWrapAround(Vector2 position, Vector2 dir)
         {
-            // rs-todo: if this method stays, it can be simplified to use the component index approach
-            if (Math.Abs(dir.Y) != 0)
+            var isYMove = Math.Abs(dir.Y) != 0;
+            var componentIndex = isYMove ? 1 : 0;
+            var otherComponentIndex = isYMove ? 0 : 1;
+            var minMax = (isYMove ? MinMaxY : MinMaxX)[(int)position[otherComponentIndex]];
+            var pos = position[componentIndex];
+
+            if (pos > minMax.Max)
             {
-                var minMaxY = MinMaxY[(int)position.X];
-
-                if (position.Y > minMaxY.Max)
-                {
-                    position.Y = minMaxY.Min;
-                }
-
-                if (position.Y < minMaxY.Min)
-                {
-                    position.Y = minMaxY.Max;
-                }
+                position[componentIndex] = minMax.Min;
             }
-            else
+
+            if (pos < minMax.Min)
             {
-                var minMaxX = MinMaxX[(int)position.Y];
-
-                if (position.X > minMaxX.Max)
-                {
-                    position.X = minMaxX.Min;
-                }
-
-                if (position.X < minMaxX.Min)
-                {
-                    position.X = minMaxX.Max;
-                }
+                position[componentIndex] = minMax.Max;
             }
 
             return (position, dir);
