@@ -1,5 +1,3 @@
-using System.Net;
-
 namespace AoC.Day22;
 
 public partial class Day22Solver : ISolver
@@ -59,7 +57,8 @@ public partial class Day22Solver : ISolver
         Vector2 Min,
         Vector2 Max,
         Dictionary<int, Line> MinMaxX,
-        Dictionary<int, Line> MinMaxY)
+        Dictionary<int, Line> MinMaxY,
+        int FaceSize)
     {
         public static Map Create(string input)
         {
@@ -84,7 +83,9 @@ public partial class Day22Solver : ISolver
             var minMaxX = BuildMinMax(true, cells, min, max); // MinMaxX: Where Key is Y
             var minMaxY = BuildMinMax(false, cells, min, max); // MinMaxY: Where Key is X
 
-            return new Map(cells, instructions, min, max, minMaxX, minMaxY);
+            var faceSize = (int)Math.Max(max.X, max.Y) / 4;
+
+            return new Map(cells, instructions, min, max, minMaxX, minMaxY, faceSize).AssignFaceIds();
         }
 
         private static Dictionary<int, Line> BuildMinMax(bool isX, Dictionary<Vector2, Cell> cells, Vector2 mapMin, Vector2 mapMax)
@@ -116,6 +117,27 @@ public partial class Day22Solver : ISolver
             }
 
             return minMax;
+        }
+
+        private Map AssignFaceIds()
+        {
+            var ids = new Dictionary<int, List<Cell>>();
+
+            foreach (var cell in Cells.Values.Where(cell => !cell.IsVoid))
+            {
+                var id = (int)Math.Ceiling(cell.Position.Y / FaceSize) * 10 + (int)Math.Ceiling(cell.Position.X / FaceSize);
+                ids.GetOrAdd(id, () => new List<Cell>()).Add(cell);
+            }
+
+            foreach (var (cells, n) in ids.Values.Select((cells, idx) => (cells, n: idx + 1)))
+            {
+                foreach (var cell in cells)
+                {
+                    cell.FaceId = n.ToString().Single();
+                }
+            }
+
+            return this;
         }
 
         public Vector2 LocateStart()
@@ -234,11 +256,14 @@ public partial class Day22Solver : ISolver
                 _ => throw new InvalidOperationException("Invalid dir")
             };
 
-            var isExample = (int)Max.Y == 12;
-            if (isExample)
-            {
-                Cells.ToStringGrid(x => x.Key, x => x.Value.Tile, ' ').RenderGridToConsole();
-            }
+            // rs-todo: bring back:
+            //var isExample = (int)Max.Y == 12;
+            //if (isExample)
+            //{
+            //    Cells.ToStringGrid(x => x.Key, x => x.Value.Tile, ' ').RenderGridToConsole();
+            //}
+
+            Cells.ToStringGrid(x => x.Key, x => x.Value.FaceId, ' ').RenderGridToConsole(); // rs-todo: rem this
 
             return 1000 * row + 4 * column + facing;
         }
@@ -255,6 +280,8 @@ public partial class Day22Solver : ISolver
         public bool IsVoid => Tile == ' ';
 
         public bool IsOpen => !IsWall && !IsVoid;
+
+        public char FaceId { get; set; } = ' ';
     }
 
     static char DirectionToArrow(Vector2 dir) => dir switch
