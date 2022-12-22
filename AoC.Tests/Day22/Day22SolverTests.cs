@@ -68,41 +68,6 @@ public class Day22SolverTests
         part1Result.Should().Be(1428);
     }
 
-    //[Test]
-    //public void Part2Example()
-    //{
-    //    // ACT
-    //    var part2ExampleResult = _sut.SolvePart2(ExampleInput);
-
-    //    // ASSERT
-    //    part2ExampleResult.Should().Be(5031);
-    //}
-
-    //[Test]
-    //public void Part2Example_ResultMapIsAsExpected()
-    //{
-    //    // ACT
-    //    var part2ExampleResult = Day22Solver.Map.Create(ExampleInput.ReplaceLineEndings(), isCube: true).FollowInstructions();
-
-    //    var map = part2ExampleResult.Map.Cells.ToStringGrid(x => x.Key, x => x.Value.Tile, ' ').RenderGridToConsole();
-
-    //    // ASSERT
-    //    map.Should().Be("""
-    //                >>v#    
-    //                .#v.    
-    //                #.v.    
-    //                ..v.    
-    //        ...#..^...v#    
-    //        .>>>>>^.#.>>    
-    //        .^#....#....    
-    //        .^........#.    
-    //                ...#..v.
-    //                .....#v.
-    //                .#v<<<<.
-    //                ..v...#.
-    //        """.ReplaceLineEndings());
-    //}
-
     [Test]
     public void Part2ReTest()
     {

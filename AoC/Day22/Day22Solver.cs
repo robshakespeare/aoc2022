@@ -4,74 +4,11 @@ public partial class Day22Solver : ISolver
 {
     public string DayName => "Monkey Map";
 
-    private static readonly Matrix3x2 RotateRightClockwise = Matrix3x2.CreateRotation(90.DegreesToRadians());
-    private static readonly Matrix3x2 RotateLeftCounterclockwise = Matrix3x2.CreateRotation(-90.DegreesToRadians());
-
     public long? SolvePart1(PuzzleInput input) => Map.Create(input, isCube: false).FollowInstructions().Password;
 
-    // 1 has 3 fall offs
-    // 2 has 3 fall offs
-    // 3 has 2 fall offs
-    // 4 has 1 fall off
-    // 5 has 2 fall offs
-    // 6 has 3 fall offs
-
-    // 1-4 already
-    // 1-2: 180° (hence 2-1: 180°)
-    // 1-3: -90° (hence 3-1: 90°)
-    // 1-6: 180° (hence 6-1: 180°)
-
-    // 2-3 already
-    // 2-1: 180° (hence 1-2: 180°)
-    // 2-5: 180° (hence 5-2: 180°)
-    // 2-6: 90° (hence 6-2: -90°)
-
-    // 3-2 already
-    // 3-4 already
-    // 3-1: 90° (hence 1-3: -90°)
-    // 3-5: -90° (hence 5-3: 90°)
-
-    // 4-1 already
-    // 4-3 already
-    // 4-5 already
-    // 4-6: 90° (hence 6-4: -90°)
-
-    // 5-4 already
-    // 5-6 already
-    // 5-2: 180° (hence 2-5: 180°)
-    // 5-3: 90° (hence 3-5: -90°)
-
-    // 6-5 already
-    // 6-1: 180° (hence 1-6: 180°)
-    // 6-2: -90° (hence 2-6: 90°)
-    // 6-4: -90° (hence 4-6: 90°)
     public long? SolvePart2(PuzzleInput input) => Map.Create(input, isCube: true).FollowInstructions().Password;
 
-    //private static readonly string[] ManuallyCalculatedExamplePairs =
-    //{
-    //    "NU", // R-D | index
-    //    "DI", // L-D | index
-    //    "BV", 
-    //    "KT",
-    //    "AE",
-    //    "HW",
-    //    "GS"
-    //};
-
-    //private static readonly string[] ManuallyCalculatedRealPairs =
-    //{
-    //    "GJ", // same index | G: down  -> left    | J: right -> up
-    //    "FR", // flip index | F: right -> left    | R: right -> left  
-    //    "LM", // same index | L: left  -> down    | M: up    -> right  
-    //    "AX", // same index | A: up    -> right   | X: left  -> down 
-    //    "EW", // same index | E: up    -> up      | W: down  -> down  
-    //    "SV", // same index | S: down  -> left    | V: right -> up  
-    //    "DP" //  flip index | D: left  -> right   | P: left  -> right  
-    //};
-
-    // EW | same index | E: up    > up    | W: down  > down
-
-    private const string ManuallyCalculated3dCubeSetup = """
+    const string ManuallyCalculated3dCubeSetup = """
         GJ | same index | G: down  > left  | J: right > up
         FR | flip index | F: right > left  | R: right > left
         LM | same index | L: left  > down  | M: up    > right
@@ -206,7 +143,10 @@ public partial class Day22Solver : ISolver
 
             OuterEdges = Faces.SelectMany(f => f.Edges.Where(e => e.IsOuter)).ToArray();
 
-            PairEdgesOfEachFace();
+            if (FaceSize == 50)
+            {
+                PairEdgesOfEachFace();
+            }
 
             return this;
         }
@@ -305,6 +245,9 @@ public partial class Day22Solver : ISolver
             return (position, dir);
         }
 
+        private static readonly Matrix3x2 RotateRightClockwise = Matrix3x2.CreateRotation(90.DegreesToRadians());
+        private static readonly Matrix3x2 RotateLeftCounterclockwise = Matrix3x2.CreateRotation(-90.DegreesToRadians());
+
         public (long Password, Map Map) FollowInstructions()
         {
             // You begin the path in the leftmost open tile of the top row of tiles. Initially, you are facing to the right
@@ -342,24 +285,6 @@ public partial class Day22Solver : ISolver
                                 ? HandleWrapAround3d(position, dir)
                                 : HandleWrapAround2d(position, dir);
 
-                            //if (IsCube)
-                            //{
-                            //    // rs-todo: check for if we're currently on an edge, and if so, just jump to corresponding pos and dir
-                            //    if (isOnEdge)
-                            //    {
-                            //        throw new InvalidOperationException("rs-todo!");
-                            //    }
-                            //    else
-                            //    {
-                            //        position += dir;
-                            //    }
-                            //}
-                            //else
-                            //{
-                            //    position += dir;
-                            //    (position, dir) = HandleWrapAround2d(position, dir);
-                            //}
-
                             // If the next position is wall, stop instruction, and ensure position is last position (which must have been a open tile), and dir is last dir
                             var cell = Cells[position];
                             if (cell.IsWall)
@@ -393,12 +318,6 @@ public partial class Day22Solver : ISolver
             };
 
             var password = 1000 * row + 4 * column + facing;
-
-            // rs-todo: rem this temp logging
-            //Cells.ToStringGrid(x => x.Key, x => x.Value.FaceId, ' ').RenderGridToConsole(); // rs-todo: rem this
-
-            Faces.SelectMany(x => x.Edges.Where(e => e.IsOuter).SelectMany(e => e.Positions.Select(p => (e, p))))
-                .ToStringGrid(x => x.p, x => x.e.Id, ' ').RenderGridToConsole(); // rs-todo: rem this
 
             return (password, this);
         }
@@ -445,10 +364,6 @@ public partial class Day22Solver : ISolver
 
     public record Edge(char Id, Line2 Line, Vector2 Normal, Face Face)
     {
-        //public HashSet<Vector2> Positions { get; } = Enumerable.Range(0, (int)Vector2.Distance(Line.Max + Line.Dir, Line.Min))
-        //    .Select(i => Line.Min + Line.Dir * i)
-        //    .ToHashSet();
-
         public List<Vector2> Positions { get; } = Enumerable.Range(0, (int)Vector2.Distance(Line.Max + Line.Dir, Line.Min))
             .Select(i => Line.Min + Line.Dir * i)
             .ToList();
