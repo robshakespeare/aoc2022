@@ -34,6 +34,19 @@ public static class MathUtils
         return angleBetween < 0 ? 360 + angleBetween : angleBetween;
     }
 
+    ///// <summary>
+    ///// Calculates the angle, in degrees, between the two specified vectors.
+    ///// The order of the 2 vectors matters, and hence can be used to find out whether one is to the left or right of the other.
+    ///// </summary>
+    //public static double AngleBetween(Vector2 vector1, Vector2 vector2) // rs-todo: rem this probably
+    //{
+    //    var sin = vector1.X * vector2.Y - vector2.X * vector1.Y;
+    //    var cos = vector1.X * vector2.X + vector1.Y * vector2.Y;
+
+    //    var angleBetween = Math.Atan2(sin, cos) * (180 / Math.PI);
+    //    return angleBetween;
+    //}
+
     private const double DegreesToRadiansFactor = Math.PI / 180;
 
     /// <summary>

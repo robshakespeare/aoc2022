@@ -34,6 +34,31 @@ public class Day22SolverTests
     }
 
     [Test]
+    public void Part1Example_ResultMapIsAsExpected()
+    {
+        // ACT
+        var part1ExampleResult = Day22Solver.Map.Create(ExampleInput.ReplaceLineEndings(), isCube: false).FollowInstructions();
+
+        var map = part1ExampleResult.Map.Cells.ToStringGrid(x => x.Key, x => x.Value.Tile, ' ').RenderGridToConsole();
+
+        // ASSERT
+        map.Should().Be("""
+                    >>v#    
+                    .#v.    
+                    #.v.    
+                    ..v.    
+            ...#...v..v#    
+            >>>v...>#.>>    
+            ..#v...#....    
+            ...>>>>v..#.    
+                    ...#....
+                    .....#..
+                    .#......
+                    ......#.
+            """.ReplaceLineEndings());
+    }
+
+    [Test]
     public void Part1ReTest()
     {
         // ACT
@@ -51,6 +76,31 @@ public class Day22SolverTests
 
         // ASSERT
         part2ExampleResult.Should().Be(5031);
+    }
+
+    [Test]
+    public void Part2Example_ResultMapIsAsExpected()
+    {
+        // ACT
+        var part2ExampleResult = Day22Solver.Map.Create(ExampleInput.ReplaceLineEndings(), isCube: true).FollowInstructions();
+
+        var map = part2ExampleResult.Map.Cells.ToStringGrid(x => x.Key, x => x.Value.Tile, ' ').RenderGridToConsole();
+
+        // ASSERT
+        map.Should().Be("""
+                    >>v#    
+                    .#v.    
+                    #.v.    
+                    ..v.    
+            ...#..^...v#    
+            .>>>>>^.#.>>    
+            .^#....#....    
+            .^........#.    
+                    ...#..v.
+                    .....#v.
+                    .#v<<<<.
+                    ..v...#.
+            """.ReplaceLineEndings());
     }
 
     [Test]

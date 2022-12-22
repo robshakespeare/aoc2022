@@ -7,7 +7,7 @@ public partial class Day22Solver : ISolver
     private static readonly Matrix3x2 RotateRightClockwise = Matrix3x2.CreateRotation(90.DegreesToRadians());
     private static readonly Matrix3x2 RotateLeftCounterclockwise = Matrix3x2.CreateRotation(-90.DegreesToRadians());
 
-    public long? SolvePart1(PuzzleInput input) => Map.Create(input, isCube: false).FollowInstructions();
+    public long? SolvePart1(PuzzleInput input) => Map.Create(input, isCube: false).FollowInstructions().Password;
 
     // 1 has 3 fall offs
     // 2 has 3 fall offs
@@ -45,7 +45,7 @@ public partial class Day22Solver : ISolver
     // 6-1: 180° (hence 1-6: 180°)
     // 6-2: -90° (hence 2-6: 90°)
     // 6-4: -90° (hence 4-6: 90°)
-    public long? SolvePart2(PuzzleInput input) => Map.Create(input, isCube: true).FollowInstructions();
+    public long? SolvePart2(PuzzleInput input) => Map.Create(input, isCube: true).FollowInstructions().Password;
 
     public record Map(
         Dictionary<Vector2, Cell> Cells,
@@ -101,11 +101,6 @@ public partial class Day22Solver : ISolver
 
                 for (var component = (int)mapMin[componentIndex]; component <= (int)mapMax[componentIndex]; component++)
                 {
-                    //if (cells.TryGetValue(isX
-                    //            ? new Vector2(component, otherComponent)
-                    //            : new Vector2(otherComponent, component),
-                    //        out var cell) &&
-                    //    !cell.IsVoid)
                     if (!IsVoid(cells, isX
                             ? new Vector2(component, otherComponent)
                             : new Vector2(otherComponent, component)))
@@ -135,16 +130,85 @@ public partial class Day22Solver : ISolver
             {
                 foreach (var cell in cells)
                 {
-                    cell.FaceId = n.ToString().Single();
+                    cell.FaceId = n.ToString()[0];
                 }
             }
 
             Faces = Cells.Values
                 .Where(cell => !cell.IsVoid)
                 .GroupBy(cell => cell.FaceId)
-                .Select(grp => Face.Create(grp.Key, grp.ToDictionary(cell => cell.Position))).ToArray();
+                .Select(grp => Face.Create(grp.Key, grp.ToDictionary(cell => cell.Position), this)).ToArray();
+
+            PairEdgesOfEachFace();
 
             return this;
+        }
+
+        private void PairEdgesOfEachFace()
+        {
+            var outerEdges = Faces.SelectMany(f => f.Edges.Where(e => e.IsOuter)).ToArray();
+
+            Edge[] GetUnpaired() => outerEdges.Where(e => e.PairedEdge == null).ToArray();
+
+            IEnumerable<(Edge A, Edge B)> GetRemainingCandidates()
+            {
+                var unpaired = GetUnpaired();
+
+                return unpaired.SelectMany(a => unpaired
+                        .Where(b => a.Face != b.Face)
+                        .Select(b => string.Concat(new[] { a.Id, b.Id }.Order())))
+                    .Distinct()
+                    .Select(s => (unpaired.First(e => e.Id == s[0]), unpaired.First(e => e.Id == s[1])));
+            }
+
+            Console.WriteLine($"#unpaired: {GetUnpaired().Length}");
+
+            // Pair the 90 degree edges first
+            foreach (var (a, b) in GetRemainingCandidates())
+            {
+                // Check they're on the same corner
+                if (a.Line.Min + a.Normal == b.Line.Min + b.Normal ||
+                    a.Line.Max + a.Normal == b.Line.Max + b.Normal ||
+                    a.Line.Max + a.Normal == b.Line.Min + b.Normal)
+                {
+                    Console.WriteLine($"{a.Id}{b.Id}: angle {MathUtils.AngleBetween(a.Line.Dir, b.Line.Dir)}");
+                    a.PairedEdge = b;
+                    b.PairedEdge = a;
+                }
+            }
+
+            // Pair the "same facing" ones
+            foreach (var (a, b) in GetRemainingCandidates()
+                         .Where(x => x.A.Normal == x.B.Normal)
+                         //.Where(x => x.A.Line.Max + x.A.Line.Dir != x.B.Line.Min - x.B.Line.Dir)
+                         .GroupBy(x => x.A.Normal)
+                         .Where(x =>
+                         {
+                             //Console.WriteLine(string.Join(", ", x.Select(x => $"huh: {x.A.Id}{x.B.Id}")));
+                             return x.Count() == 1;
+                         })
+                         .Select(x => x.First()))
+            {
+                Console.WriteLine($"{a.Id}{b.Id}: same face");
+                a.PairedEdge = b;
+                b.PairedEdge = a;
+            }
+
+            Console.WriteLine($"#unpaired: {GetUnpaired().Length}");
+
+            //// Sanity check
+            //if (GetUnpaired().Length != 4)
+            //{
+            //    throw new InvalidOperationException("Unexpected cube state");
+            //}
+
+            // Use process of elimination to pair the remaining 4
+            foreach (var (a, b) in GetRemainingCandidates())
+            {
+                Console.WriteLine($"{a.Id}{b.Id}: one option");
+            }
+
+            
         }
 
         public Vector2 LocateStart()
@@ -159,8 +223,6 @@ public partial class Day22Solver : ISolver
 
             return position;
         }
-
-        //public bool IsVoid(Vector2 position) => !Cells.TryGetValue(position, out var cell) || cell.IsVoid;
 
         public bool IsVoid(Vector2 position) => IsVoid(Cells, position);
 
@@ -195,7 +257,7 @@ public partial class Day22Solver : ISolver
             return (position, dir);
         }
 
-        public long FollowInstructions()
+        public (long Password, Map Map) FollowInstructions()
         {
             // You begin the path in the leftmost open tile of the top row of tiles. Initially, you are facing to the right
             // right -- East
@@ -282,29 +344,23 @@ public partial class Day22Solver : ISolver
                 _ => throw new InvalidOperationException("Invalid dir")
             };
 
-            // rs-todo: bring back:
-            //var isExample = (int)Max.Y == 12;
-            //if (isExample)
-            //{
-            //    Cells.ToStringGrid(x => x.Key, x => x.Value.Tile, ' ').RenderGridToConsole();
-            //}
+            var password = 1000 * row + 4 * column + facing;
 
-            Cells.ToStringGrid(x => x.Key, x => x.Value.FaceId, ' ').RenderGridToConsole(); // rs-todo: rem this
+            // rs-todo: rem this temp logging
+            //Cells.ToStringGrid(x => x.Key, x => x.Value.FaceId, ' ').RenderGridToConsole(); // rs-todo: rem this
 
-            Faces.SelectMany(x => x.Edges.SelectMany(e => e.Positions.Select(p => (e, p))))
+            Faces.SelectMany(x => x.Edges.Where(e => e.IsOuter).SelectMany(e => e.Positions.Select(p => (e, p))))
                 .ToStringGrid(x => x.p, x => x.e.Id, ' ').RenderGridToConsole(); // rs-todo: rem this
 
-            return 1000 * row + 4 * column + facing;
+            return (password, this);
         }
     }
 
-    public record Face(char Id, Dictionary<Vector2, Cell> Cells, Vector2 Min, Vector2 Max)
+    public record Face(char Id, Dictionary<Vector2, Cell> Cells, Vector2 Min, Vector2 Max, Map Map)
     {
-        //public Dictionary<Vector2, int> Edges { get; } = new(); // Where Value is the "EdgeId"
-
         public Edge[] Edges { get; private set; } = Array.Empty<Edge>();
 
-        public static Face Create(char id, Dictionary<Vector2, Cell> cells)
+        public static Face Create(char id, Dictionary<Vector2, Cell> cells, Map map)
         {
             var min = new Vector2(float.MaxValue);
             var max = new Vector2(float.MinValue);
@@ -315,7 +371,7 @@ public partial class Day22Solver : ISolver
                 max = Vector2.Max(max, p);
             }
 
-            return new Face(id, cells, min, max).AssignEdges();
+            return new Face(id, cells, min, max, map).AssignEdges();
         }
 
         private Face AssignEdges()
@@ -325,30 +381,29 @@ public partial class Day22Solver : ISolver
             var bl = new Vector2(Min.X, Max.Y);
             var br = Max;
 
-            // top: tl -> tr
-            // rgt: tr -> br
-            // bot: bl -> br
-            // lef: tl -> bl
-
             var faceN = (Id - '1') * 4;
 
             Edges = new[]
             {
-                new Edge((char)('A' + faceN + 0), new Line2(tl, tr), GridUtils.North),
-                new Edge((char)('A' + faceN + 1), new Line2(tr, br), GridUtils.East),
-                new Edge((char)('A' + faceN + 2), new Line2(bl, br), GridUtils.South),
-                new Edge((char)('A' + faceN + 3), new Line2(tl, bl), GridUtils.West)
+                new Edge((char)('A' + faceN + 0), new Line2(tl, tr), GridUtils.North, this), // top: tl -> tr
+                new Edge((char)('A' + faceN + 1), new Line2(tr, br), GridUtils.East, this), //  rgt: tr -> br
+                new Edge((char)('A' + faceN + 2), new Line2(bl, br), GridUtils.South, this), // bot: bl -> br
+                new Edge((char)('A' + faceN + 3), new Line2(tl, bl), GridUtils.West, this) //   lef: tl -> bl
             }.ToArray();
 
             return this;
         }
     }
 
-    public record Edge(char Id, Line2 Line, Vector2 Normal)
+    public record Edge(char Id, Line2 Line, Vector2 Normal, Face Face)
     {
         public HashSet<Vector2> Positions { get; } = Enumerable.Range(0, (int)Vector2.Distance(Line.Max + Line.Dir, Line.Min))
             .Select(i => Line.Min + Line.Dir * i)
             .ToHashSet();
+
+        public bool IsOuter { get; } = Face.Map.IsVoid(Line.Min + Normal);
+
+        public Edge? PairedEdge { get; set; }
     }
 
     /// <remarks>
