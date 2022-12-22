@@ -47,27 +47,44 @@ public partial class Day22Solver : ISolver
     // 6-4: -90° (hence 4-6: 90°)
     public long? SolvePart2(PuzzleInput input) => Map.Create(input, isCube: true).FollowInstructions().Password;
 
-    private static string[] ManuallyCalculatedExamplePairs =
+    private static readonly string[] ManuallyCalculatedExamplePairs =
     {
-        "NU",
-        "DI",
-        "BV",
+        "NU", // R-D | index
+        "DI", // L-D | index
+        "BV", 
         "KT",
         "AE",
         "HW",
         "GS"
     };
 
-    private static string[] ManuallyCalculatedRealPairs =
+    private static readonly string[] ManuallyCalculatedRealPairs =
     {
-        "GJ",
-        "AV",
-        "EW",
-        "LM",
-        "FR",
-        "SV",
-        "DP"
+        "GJ", // same index: D>L R>U
+        "FR", // flip index
+        "LM", // same index
+        "AX", // same index
+        "EW", // same index
+        "SV", // same index
+        "DP" // flip index
+
+        //"AV",
+        //"EW",
+        //"LM",
+        //"FR",
+        //"SV",
+        //"DP"
+
+        //"GJ", // index same
+        //"AV", 
+        //"EW",
+        //"LM",
+        //"FR", // flip index, 
+        //"SV",
+        //"DP"
     };
+
+    public record PairInfo(bool FlipIndex);
 
     public record Map(
         Dictionary<Vector2, Cell> Cells,
@@ -80,6 +97,8 @@ public partial class Day22Solver : ISolver
         int FaceSize)
     {
         public Face[] Faces { get; private set; } = Array.Empty<Face>();
+
+        public Edge[] OuterEdges { get; private set; } = Array.Empty<Edge>();
 
         public static Map Create(string input, bool isCube)
         {
@@ -161,6 +180,8 @@ public partial class Day22Solver : ISolver
                 .GroupBy(cell => cell.FaceId)
                 .Select(grp => Face.Create(grp.Key, grp.ToDictionary(cell => cell.Position), this)).ToArray();
 
+            OuterEdges = Faces.SelectMany(f => f.Edges.Where(e => e.IsOuter)).ToArray();
+
             PairEdgesOfEachFace();
 
             return this;
@@ -170,77 +191,18 @@ public partial class Day22Solver : ISolver
         {
             var pairs = FaceSize == 50 ? ManuallyCalculatedRealPairs : ManuallyCalculatedExamplePairs;
 
-            var outerEdges = Faces.SelectMany(f => f.Edges.Where(e => e.IsOuter)).ToDictionary(e => e.Id);
+            var outerEdges = OuterEdges.ToDictionary(e => e.Id);
 
             foreach (var (a, b) in pairs.Select(pair => (outerEdges[pair[0]], outerEdges[pair[1]])))
             {
                 a.PairedEdge = b;
                 b.PairedEdge = a;
+
+                Console.WriteLine($"{a.Id}{b.Id} -- angle: {MathUtils.AngleBetween(a.Normal, b.Normal)}");
             }
 
-            //var outerEdges = Faces.SelectMany(f => f.Edges.Where(e => e.IsOuter)).ToArray();
-
-            //Edge[] GetUnpaired() => outerEdges.Where(e => e.PairedEdge == null).ToArray();
-
-            //IEnumerable<(Edge A, Edge B)> GetRemainingCandidates()
-            //{
-            //    var unpaired = GetUnpaired();
-
-            //    return unpaired.SelectMany(a => unpaired
-            //            .Where(b => a.Face != b.Face)
-            //            .Select(b => string.Concat(new[] { a.Id, b.Id }.Order())))
-            //        .Distinct()
-            //        .Select(s => (unpaired.First(e => e.Id == s[0]), unpaired.First(e => e.Id == s[1])));
-            //}
-
-            //Console.WriteLine($"#unpaired: {GetUnpaired().Length}");
-
-            //// Pair the 90 degree edges first
-            //foreach (var (a, b) in GetRemainingCandidates())
-            //{
-            //    // Check they're on the same corner
-            //    if (a.Line.Min + a.Normal == b.Line.Min + b.Normal ||
-            //        a.Line.Max + a.Normal == b.Line.Max + b.Normal ||
-            //        a.Line.Max + a.Normal == b.Line.Min + b.Normal)
-            //    {
-            //        Console.WriteLine($"{a.Id}{b.Id}: angle {MathUtils.AngleBetween(a.Line.Dir, b.Line.Dir)}");
-            //        a.PairedEdge = b;
-            //        b.PairedEdge = a;
-            //    }
-            //}
-
-            //// Pair the "same facing" ones
-            //foreach (var (a, b) in GetRemainingCandidates()
-            //             .Where(x => x.A.Normal == x.B.Normal)
-            //             //.Where(x => x.A.Line.Max + x.A.Line.Dir != x.B.Line.Min - x.B.Line.Dir)
-            //             .GroupBy(x => x.A.Normal)
-            //             .Where(x =>
-            //             {
-            //                 //Console.WriteLine(string.Join(", ", x.Select(x => $"huh: {x.A.Id}{x.B.Id}")));
-            //                 return x.Count() == 1;
-            //             })
-            //             .Select(x => x.First()))
-            //{
-            //    Console.WriteLine($"{a.Id}{b.Id}: same face");
-            //    a.PairedEdge = b;
-            //    b.PairedEdge = a;
-            //}
-
-            //Console.WriteLine($"#unpaired: {GetUnpaired().Length}");
-
-            ////// Sanity check
-            ////if (GetUnpaired().Length != 4)
-            ////{
-            ////    throw new InvalidOperationException("Unexpected cube state");
-            ////}
-
-            //// Use process of elimination to pair the remaining 4
-            //foreach (var (a, b) in GetRemainingCandidates())
-            //{
-            //    Console.WriteLine($"{a.Id}{b.Id}: one option");
-            //}
-
-
+            // Compute the transitions, i.e. what happens to the position and direction
+            
         }
 
         public Vector2 LocateStart()
@@ -262,8 +224,17 @@ public partial class Day22Solver : ISolver
 
         public (Vector2 resultPosition, Vector2 resultDir) HandleWrapAround3d(Vector2 position, Vector2 dir)
         {
+            if (!IsVoid(position))
+            {
+                return (position, dir);
+            }
+
             // If we reached a void, then step back one in the opposite dir to get on our edge
             // And then map that position to the corresponding position on the paired edge
+            var prevPosition = position + Vector2.Negate(dir);
+
+            var prevEdge = OuterEdges.First(e => e.Positions.Contains(prevPosition));
+            var nextEdge = prevEdge.PairedEdge ?? throw new InvalidOperationException("Unexpected: No paired edge");
 
             throw new InvalidOperationException("rs-todo!");
         }
