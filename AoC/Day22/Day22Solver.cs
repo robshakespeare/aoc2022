@@ -47,6 +47,28 @@ public partial class Day22Solver : ISolver
     // 6-4: -90° (hence 4-6: 90°)
     public long? SolvePart2(PuzzleInput input) => Map.Create(input, isCube: true).FollowInstructions().Password;
 
+    private static string[] ManuallyCalculatedExamplePairs =
+    {
+        "NU",
+        "DI",
+        "BV",
+        "KT",
+        "AE",
+        "HW",
+        "GS"
+    };
+
+    private static string[] ManuallyCalculatedRealPairs =
+    {
+        "GJ",
+        "AV",
+        "EW",
+        "LM",
+        "FR",
+        "SV",
+        "DP"
+    };
+
     public record Map(
         Dictionary<Vector2, Cell> Cells,
         string[] Instructions,
@@ -146,69 +168,79 @@ public partial class Day22Solver : ISolver
 
         private void PairEdgesOfEachFace()
         {
-            var outerEdges = Faces.SelectMany(f => f.Edges.Where(e => e.IsOuter)).ToArray();
+            var pairs = FaceSize == 50 ? ManuallyCalculatedRealPairs : ManuallyCalculatedExamplePairs;
 
-            Edge[] GetUnpaired() => outerEdges.Where(e => e.PairedEdge == null).ToArray();
+            var outerEdges = Faces.SelectMany(f => f.Edges.Where(e => e.IsOuter)).ToDictionary(e => e.Id);
 
-            IEnumerable<(Edge A, Edge B)> GetRemainingCandidates()
+            foreach (var (a, b) in pairs.Select(pair => (outerEdges[pair[0]], outerEdges[pair[1]])))
             {
-                var unpaired = GetUnpaired();
-
-                return unpaired.SelectMany(a => unpaired
-                        .Where(b => a.Face != b.Face)
-                        .Select(b => string.Concat(new[] { a.Id, b.Id }.Order())))
-                    .Distinct()
-                    .Select(s => (unpaired.First(e => e.Id == s[0]), unpaired.First(e => e.Id == s[1])));
-            }
-
-            Console.WriteLine($"#unpaired: {GetUnpaired().Length}");
-
-            // Pair the 90 degree edges first
-            foreach (var (a, b) in GetRemainingCandidates())
-            {
-                // Check they're on the same corner
-                if (a.Line.Min + a.Normal == b.Line.Min + b.Normal ||
-                    a.Line.Max + a.Normal == b.Line.Max + b.Normal ||
-                    a.Line.Max + a.Normal == b.Line.Min + b.Normal)
-                {
-                    Console.WriteLine($"{a.Id}{b.Id}: angle {MathUtils.AngleBetween(a.Line.Dir, b.Line.Dir)}");
-                    a.PairedEdge = b;
-                    b.PairedEdge = a;
-                }
-            }
-
-            // Pair the "same facing" ones
-            foreach (var (a, b) in GetRemainingCandidates()
-                         .Where(x => x.A.Normal == x.B.Normal)
-                         //.Where(x => x.A.Line.Max + x.A.Line.Dir != x.B.Line.Min - x.B.Line.Dir)
-                         .GroupBy(x => x.A.Normal)
-                         .Where(x =>
-                         {
-                             //Console.WriteLine(string.Join(", ", x.Select(x => $"huh: {x.A.Id}{x.B.Id}")));
-                             return x.Count() == 1;
-                         })
-                         .Select(x => x.First()))
-            {
-                Console.WriteLine($"{a.Id}{b.Id}: same face");
                 a.PairedEdge = b;
                 b.PairedEdge = a;
             }
 
-            Console.WriteLine($"#unpaired: {GetUnpaired().Length}");
+            //var outerEdges = Faces.SelectMany(f => f.Edges.Where(e => e.IsOuter)).ToArray();
 
-            //// Sanity check
-            //if (GetUnpaired().Length != 4)
+            //Edge[] GetUnpaired() => outerEdges.Where(e => e.PairedEdge == null).ToArray();
+
+            //IEnumerable<(Edge A, Edge B)> GetRemainingCandidates()
             //{
-            //    throw new InvalidOperationException("Unexpected cube state");
+            //    var unpaired = GetUnpaired();
+
+            //    return unpaired.SelectMany(a => unpaired
+            //            .Where(b => a.Face != b.Face)
+            //            .Select(b => string.Concat(new[] { a.Id, b.Id }.Order())))
+            //        .Distinct()
+            //        .Select(s => (unpaired.First(e => e.Id == s[0]), unpaired.First(e => e.Id == s[1])));
             //}
 
-            // Use process of elimination to pair the remaining 4
-            foreach (var (a, b) in GetRemainingCandidates())
-            {
-                Console.WriteLine($"{a.Id}{b.Id}: one option");
-            }
+            //Console.WriteLine($"#unpaired: {GetUnpaired().Length}");
 
-            
+            //// Pair the 90 degree edges first
+            //foreach (var (a, b) in GetRemainingCandidates())
+            //{
+            //    // Check they're on the same corner
+            //    if (a.Line.Min + a.Normal == b.Line.Min + b.Normal ||
+            //        a.Line.Max + a.Normal == b.Line.Max + b.Normal ||
+            //        a.Line.Max + a.Normal == b.Line.Min + b.Normal)
+            //    {
+            //        Console.WriteLine($"{a.Id}{b.Id}: angle {MathUtils.AngleBetween(a.Line.Dir, b.Line.Dir)}");
+            //        a.PairedEdge = b;
+            //        b.PairedEdge = a;
+            //    }
+            //}
+
+            //// Pair the "same facing" ones
+            //foreach (var (a, b) in GetRemainingCandidates()
+            //             .Where(x => x.A.Normal == x.B.Normal)
+            //             //.Where(x => x.A.Line.Max + x.A.Line.Dir != x.B.Line.Min - x.B.Line.Dir)
+            //             .GroupBy(x => x.A.Normal)
+            //             .Where(x =>
+            //             {
+            //                 //Console.WriteLine(string.Join(", ", x.Select(x => $"huh: {x.A.Id}{x.B.Id}")));
+            //                 return x.Count() == 1;
+            //             })
+            //             .Select(x => x.First()))
+            //{
+            //    Console.WriteLine($"{a.Id}{b.Id}: same face");
+            //    a.PairedEdge = b;
+            //    b.PairedEdge = a;
+            //}
+
+            //Console.WriteLine($"#unpaired: {GetUnpaired().Length}");
+
+            ////// Sanity check
+            ////if (GetUnpaired().Length != 4)
+            ////{
+            ////    throw new InvalidOperationException("Unexpected cube state");
+            ////}
+
+            //// Use process of elimination to pair the remaining 4
+            //foreach (var (a, b) in GetRemainingCandidates())
+            //{
+            //    Console.WriteLine($"{a.Id}{b.Id}: one option");
+            //}
+
+
         }
 
         public Vector2 LocateStart()
