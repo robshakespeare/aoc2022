@@ -1,5 +1,4 @@
 using static System.Environment;
-using static AoC.Day22.Day22Solver;
 
 namespace AoC.Day22;
 
@@ -47,7 +46,6 @@ public partial class Day22Solver : ISolver
                         position += dir;
 
                         // If we go off the grid, wrap around
-                        // rs-todo: handle wrap around
                         position = map.HandleWrapAround(position, dir);
 
                         // If the next position is wall, stop instruction, and ensure position is last position (which must have been a open tile)
@@ -111,30 +109,6 @@ public partial class Day22Solver : ISolver
             var minMaxX = BuildMinMax(true, cells, min, max); // MinMaxX: Where Key is Y
             var minMaxY = BuildMinMax(false, cells, min, max); // MinMaxY: Where Key is X
 
-            //var minMaxX = new Dictionary<int, Line>(); // MinMaxX: Where Key is Y
-            //var minMaxY = new Dictionary<int, Line>(); // MinMaxY: Where Key is X
-
-            //// rs-todo: get the min and max for each row and column??
-            //for (var y = (int)min.Y; y < (int)max.Y; y++)
-            //{
-            //    var x = (int)min.X;
-            //    var minX = int.MaxValue;
-            //    var maxX = x;
-
-            //    while (cells.TryGetValue(new Vector2(x, y), out var cell))
-            //    {
-            //        if (!cell.IsVoid)
-            //        {
-            //            minX = Math.Min(minX, x);
-            //        }
-
-            //        maxX = x;
-            //        x++;
-            //    }
-
-            //    minMaxX[y] = new Line(minX, maxX);
-            //}
-
             return new Map(cells, min, max, minMaxX, minMaxY);
         }
 
@@ -160,15 +134,6 @@ public partial class Day22Solver : ISolver
                     {
                         min = Math.Min(min, component);
                         max = Math.Max(max, component);
-
-                        //if (!cell.IsVoid)
-                        //{
-                        //    min = Math.Min(min, component);
-                        //    max = Math.Max(max, component);
-                        //}
-
-                        //max = otherComponent;
-                        //component++;
                     }
                 }
 
