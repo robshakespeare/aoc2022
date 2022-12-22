@@ -214,6 +214,28 @@ public class GridUtilsTests
                 },
                 WithStrictOrdering);
         }
+
+        [Test]
+        public void RotateGrid_50x50_90deg() // rs-todo: keep?
+        {
+            var input = Enumerable.Range(0, 50).Select(y => string.Concat(Enumerable.Repeat((char)('A' + y % 26), 50))).ToArray();
+
+            // ACT
+            var result = GridUtils.RotateGrid(input, -90);
+
+            // ASSERT
+            Console.WriteLine(string.Join(Environment.NewLine, input));
+            Console.WriteLine();
+            Console.WriteLine(string.Join(Environment.NewLine, result));
+            //result.Should().BeEquivalentTo(
+            //    new[]
+            //    {
+            //        "987",
+            //        "654",
+            //        "321"
+            //    },
+            //    WithStrictOrdering);
+        }
     }
 
     public class TheScaleGridMethod

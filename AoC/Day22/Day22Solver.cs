@@ -101,11 +101,14 @@ public partial class Day22Solver : ISolver
 
                 for (var component = (int)mapMin[componentIndex]; component <= (int)mapMax[componentIndex]; component++)
                 {
-                    if (cells.TryGetValue(isX
-                                ? new Vector2(component, otherComponent)
-                                : new Vector2(otherComponent, component),
-                            out var cell) &&
-                        !cell.IsVoid)
+                    //if (cells.TryGetValue(isX
+                    //            ? new Vector2(component, otherComponent)
+                    //            : new Vector2(otherComponent, component),
+                    //        out var cell) &&
+                    //    !cell.IsVoid)
+                    if (!IsVoid(cells, isX
+                            ? new Vector2(component, otherComponent)
+                            : new Vector2(otherComponent, component)))
                     {
                         min = Math.Min(min, component);
                         max = Math.Max(max, component);
@@ -136,7 +139,10 @@ public partial class Day22Solver : ISolver
                 }
             }
 
-            Faces = Cells.Values.GroupBy(cell => cell.FaceId).Select(grp => Face.Create(grp.Key, grp.ToDictionary(cell => cell.Position))).ToArray();
+            Faces = Cells.Values
+                .Where(cell => !cell.IsVoid)
+                .GroupBy(cell => cell.FaceId)
+                .Select(grp => Face.Create(grp.Key, grp.ToDictionary(cell => cell.Position))).ToArray();
 
             return this;
         }
@@ -154,8 +160,17 @@ public partial class Day22Solver : ISolver
             return position;
         }
 
+        //public bool IsVoid(Vector2 position) => !Cells.TryGetValue(position, out var cell) || cell.IsVoid;
+
+        public bool IsVoid(Vector2 position) => IsVoid(Cells, position);
+
+        private static bool IsVoid(Dictionary<Vector2, Cell> cells, Vector2 position) => !cells.TryGetValue(position, out var cell) || cell.IsVoid;
+
         public (Vector2 resultPosition, Vector2 resultDir) HandleWrapAround3d(Vector2 position, Vector2 dir)
         {
+            // If we reached a void, then step back one in the opposite dir to get on our edge
+            // And then map that position to the corresponding position on the paired edge
+
             throw new InvalidOperationException("rs-todo!");
         }
 
@@ -276,7 +291,8 @@ public partial class Day22Solver : ISolver
 
             Cells.ToStringGrid(x => x.Key, x => x.Value.FaceId, ' ').RenderGridToConsole(); // rs-todo: rem this
 
-            //Faces.ToStringGrid(x => x.Key, x => x.Value.FaceId, ' ').RenderGridToConsole(); // rs-todo: rem this
+            Faces.SelectMany(x => x.Edges.SelectMany(e => e.Positions.Select(p => (e, p))))
+                .ToStringGrid(x => x.p, x => x.e.Id, ' ').RenderGridToConsole(); // rs-todo: rem this
 
             return 1000 * row + 4 * column + facing;
         }
@@ -285,7 +301,8 @@ public partial class Day22Solver : ISolver
     public record Face(char Id, Dictionary<Vector2, Cell> Cells, Vector2 Min, Vector2 Max)
     {
         //public Dictionary<Vector2, int> Edges { get; } = new(); // Where Value is the "EdgeId"
-        
+
+        public Edge[] Edges { get; private set; } = Array.Empty<Edge>();
 
         public static Face Create(char id, Dictionary<Vector2, Cell> cells)
         {
@@ -298,8 +315,48 @@ public partial class Day22Solver : ISolver
                 max = Vector2.Max(max, p);
             }
 
-            return new Face(id, cells, min, max);
+            return new Face(id, cells, min, max).AssignEdges();
         }
+
+        private Face AssignEdges()
+        {
+            var tl = Min;
+            var tr = new Vector2(Max.X, Min.Y);
+            var bl = new Vector2(Min.X, Max.Y);
+            var br = Max;
+
+            // top: tl -> tr
+            // rgt: tr -> br
+            // bot: bl -> br
+            // lef: tl -> bl
+
+            var faceN = (Id - '1') * 4;
+
+            Edges = new[]
+            {
+                new Edge((char)('A' + faceN + 0), new Line2(tl, tr), GridUtils.North),
+                new Edge((char)('A' + faceN + 1), new Line2(tr, br), GridUtils.East),
+                new Edge((char)('A' + faceN + 2), new Line2(bl, br), GridUtils.South),
+                new Edge((char)('A' + faceN + 3), new Line2(tl, bl), GridUtils.West)
+            }.ToArray();
+
+            return this;
+        }
+    }
+
+    public record Edge(char Id, Line2 Line, Vector2 Normal)
+    {
+        public HashSet<Vector2> Positions { get; } = Enumerable.Range(0, (int)Vector2.Distance(Line.Max + Line.Dir, Line.Min))
+            .Select(i => Line.Min + Line.Dir * i)
+            .ToHashSet();
+    }
+
+    /// <remarks>
+    /// Min and Max are inclusive.
+    /// </remarks>
+    public record Line2(Vector2 Min, Vector2 Max)
+    {
+        public Vector2 Dir { get; } = Vector2.Normalize(Max - Min);
     }
 
     public record Line(int Min, int Max);
