@@ -1,5 +1,3 @@
-using static System.Environment;
-
 namespace AoC.Day22;
 
 public partial class Day22Solver : ISolver
@@ -11,7 +9,7 @@ public partial class Day22Solver : ISolver
 
     public long? SolvePart1(PuzzleInput input)
     {
-        var parts = input.ToString().Split($"{NewLine}{NewLine}");
+        var parts = input.ToString().Split($"{Environment.NewLine}{Environment.NewLine}");
 
         var map = Map.Create(parts[0]);
         var instructions = ParseInstructions(parts[1]);
@@ -44,16 +42,18 @@ public partial class Day22Solver : ISolver
                     for (var move = 0; move < movement; move++)
                     {
                         var prevPosition = position;
+                        var preDir = dir;
                         position += dir;
 
                         // If we go off the grid, wrap around
-                        position = map.HandleWrapAround(position, dir);
+                        (position, dir) = map.HandleWrapAround(position, dir);
 
-                        // If the next position is wall, stop instruction, and ensure position is last position (which must have been a open tile)
+                        // If the next position is wall, stop instruction, and ensure position is last position (which must have been a open tile), and dir is last dir
                         var cell = map.Cells[position];
                         if (cell.IsWall)
                         {
                             position = prevPosition;
+                            dir = preDir;
                             break;
                         }
 
@@ -91,6 +91,9 @@ public partial class Day22Solver : ISolver
 
     public long? SolvePart2(PuzzleInput input)
     {
+        // When we wrap, we rotate the direction by 90 degrees clockwise in, A-B case (4-6)
+        // Down becomes up, C-D case (5-2)
+
         return null;
     }
 
@@ -163,8 +166,9 @@ public partial class Day22Solver : ISolver
             return position;
         }
 
-        public Vector2 HandleWrapAround(Vector2 position, Vector2 dir)
+        public (Vector2 resultPosition, Vector2 resultDir) HandleWrapAround(Vector2 position, Vector2 dir)
         {
+            // rs-todo: if this method stays, it can be simplified to use the component index approach
             if (Math.Abs(dir.Y) != 0)
             {
                 var minMaxY = MinMaxY[(int)position.X];
@@ -194,7 +198,7 @@ public partial class Day22Solver : ISolver
                 }
             }
 
-            return position;
+            return (position, dir);
         }
     }
 
