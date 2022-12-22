@@ -47,41 +47,26 @@ public partial class Day22Solver : ISolver
     // 6-4: -90° (hence 4-6: 90°)
     public long? SolvePart2(PuzzleInput input) => Map.Create(input, isCube: true).FollowInstructions().Password;
 
-    private static readonly string[] ManuallyCalculatedExamplePairs =
-    {
-        "NU", // R-D | index
-        "DI", // L-D | index
-        "BV", 
-        "KT",
-        "AE",
-        "HW",
-        "GS"
-    };
+    //private static readonly string[] ManuallyCalculatedExamplePairs =
+    //{
+    //    "NU", // R-D | index
+    //    "DI", // L-D | index
+    //    "BV", 
+    //    "KT",
+    //    "AE",
+    //    "HW",
+    //    "GS"
+    //};
 
     private static readonly string[] ManuallyCalculatedRealPairs =
     {
-        "GJ", // same index: D>L R>U
-        "FR", // flip index
-        "LM", // same index
-        "AX", // same index
-        "EW", // same index
-        "SV", // same index
-        "DP" // flip index
-
-        //"AV",
-        //"EW",
-        //"LM",
-        //"FR",
-        //"SV",
-        //"DP"
-
-        //"GJ", // index same
-        //"AV", 
-        //"EW",
-        //"LM",
-        //"FR", // flip index, 
-        //"SV",
-        //"DP"
+        "GJ", // same index | G: down  -> left    | J: right -> up
+        "FR", // flip index | F: right -> left    | R: right -> left  
+        "LM", // same index | L: left  -> down    | M: up    -> right  
+        "AX", // same index | A: up    -> right   | X: left  -> down 
+        "EW", // same index | E: up    -> up      | W: down  -> down  
+        "SV", // same index | S: down  -> left    | V: right -> up  
+        "DP" //  flip index | D: left  -> right   | P: left  -> right  
     };
 
     public record PairInfo(bool FlipIndex);
@@ -189,7 +174,7 @@ public partial class Day22Solver : ISolver
 
         private void PairEdgesOfEachFace()
         {
-            var pairs = FaceSize == 50 ? ManuallyCalculatedRealPairs : ManuallyCalculatedExamplePairs;
+            var pairs = ManuallyCalculatedRealPairs;
 
             var outerEdges = OuterEdges.ToDictionary(e => e.Id);
 

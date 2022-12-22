@@ -58,15 +58,15 @@ public class Day22SolverTests
             """.ReplaceLineEndings());
     }
 
-    [Test]
-    public void Part1ReTest()
-    {
-        // ACT
-        var part1Result = _sut.SolvePart1();
+    //[Test]
+    //public void Part1ReTest()
+    //{
+    //    // ACT
+    //    var part1Result = _sut.SolvePart1();
 
-        // ASSERT
-        part1Result.Should().Be(1428);
-    }
+    //    // ASSERT
+    //    part1Result.Should().Be(1428);
+    //}
 
     [Test]
     public void Part2Example()
