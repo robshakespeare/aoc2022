@@ -58,18 +58,57 @@ public partial class Day22Solver : ISolver
     //    "GS"
     //};
 
-    private static readonly string[] ManuallyCalculatedRealPairs =
-    {
-        "GJ", // same index | G: down  -> left    | J: right -> up
-        "FR", // flip index | F: right -> left    | R: right -> left  
-        "LM", // same index | L: left  -> down    | M: up    -> right  
-        "AX", // same index | A: up    -> right   | X: left  -> down 
-        "EW", // same index | E: up    -> up      | W: down  -> down  
-        "SV", // same index | S: down  -> left    | V: right -> up  
-        "DP" //  flip index | D: left  -> right   | P: left  -> right  
-    };
+    //private static readonly string[] ManuallyCalculatedRealPairs =
+    //{
+    //    "GJ", // same index | G: down  -> left    | J: right -> up
+    //    "FR", // flip index | F: right -> left    | R: right -> left  
+    //    "LM", // same index | L: left  -> down    | M: up    -> right  
+    //    "AX", // same index | A: up    -> right   | X: left  -> down 
+    //    "EW", // same index | E: up    -> up      | W: down  -> down  
+    //    "SV", // same index | S: down  -> left    | V: right -> up  
+    //    "DP" //  flip index | D: left  -> right   | P: left  -> right  
+    //};
 
-    public record PairInfo(bool FlipIndex);
+    // EW | same index | E: up    > up    | W: down  > down
+
+    private const string ManuallyCalculated3dCubeSetup = """
+        GJ | same index | G: down  > left  | J: right > up
+        FR | flip index | F: right > left  | R: right > left
+        LM | same index | L: left  > down  | M: up    > right
+        AX | same index | A: up    > right | X: left  > down
+        EW | same index | E: up    > up    | W: down  > down
+        SV | same index | S: down  > left  | V: right > up
+        DP | flip index | D: left  > right | P: left  > right
+        """;
+
+    public record PairInfo(char A, char B, bool FlipIndex, Dictionary<(char, Vector2), Vector2> DirChanges)
+    {
+        public static PairInfo[] Create(string setup = ManuallyCalculated3dCubeSetup) =>
+            setup.ReadLines().Select(line =>
+            {
+                var parts = line.Split(" | ");
+                var pairs = parts[0];
+                var flipIndex = parts[1] == "flip index";
+
+                var mapDir = (string dir) => dir.Trim() switch
+                {
+                    "up" => GridUtils.North,
+                    "down" => GridUtils.South,
+                    "left" => GridUtils.West,
+                    "right" => GridUtils.East,
+                    _ => throw new InvalidOperationException("Invalid string dir")
+                };
+
+                var dirChanges = parts[2..4].Select(x =>
+                {
+                    var d = x.Split(':', '>');
+
+                    return (edgeId: d[0].Single(), from: mapDir(d[1]), to: mapDir(d[2]));
+                }).ToDictionary(x => (x.edgeId, x.from), x => x.to);
+
+                return new PairInfo(pairs[0], pairs[1], flipIndex, dirChanges);
+            }).ToArray();
+    }
 
     public record Map(
         Dictionary<Vector2, Cell> Cells,
@@ -174,20 +213,20 @@ public partial class Day22Solver : ISolver
 
         private void PairEdgesOfEachFace()
         {
-            var pairs = ManuallyCalculatedRealPairs;
+            var pairInfo = PairInfo.Create();
 
             var outerEdges = OuterEdges.ToDictionary(e => e.Id);
 
-            foreach (var (a, b) in pairs.Select(pair => (outerEdges[pair[0]], outerEdges[pair[1]])))
+            foreach (var pairInf in pairInfo)
             {
+                var a = outerEdges[pairInf.A];
+                var b = outerEdges[pairInf.B];
+
                 a.PairedEdge = b;
                 b.PairedEdge = a;
 
-                Console.WriteLine($"{a.Id}{b.Id} -- angle: {MathUtils.AngleBetween(a.Normal, b.Normal)}");
+                a.PairInfo = b.PairInfo = pairInf;
             }
-
-            // Compute the transitions, i.e. what happens to the position and direction
-            
         }
 
         public Vector2 LocateStart()
@@ -218,10 +257,31 @@ public partial class Day22Solver : ISolver
             // And then map that position to the corresponding position on the paired edge
             var prevPosition = position + Vector2.Negate(dir);
 
-            var prevEdge = OuterEdges.First(e => e.Positions.Contains(prevPosition));
+            var prevEdge = OuterEdges.Single(e => e.Normal == dir && e.Positions.Contains(prevPosition));
             var nextEdge = prevEdge.PairedEdge ?? throw new InvalidOperationException("Unexpected: No paired edge");
+            var pairInfo = prevEdge.PairInfo ?? throw new InvalidOperationException("Unexpected: No pairing info");
 
-            throw new InvalidOperationException("rs-todo!");
+            try
+            {
+                dir = pairInfo.DirChanges[(prevEdge.Id, dir)];
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"Dir change lookup failed. Pair {pairInfo.A}{pairInfo.B}, prevPosition: {prevPosition}", e);
+            }
+
+            var index = prevEdge.Positions.IndexOf(prevPosition);
+
+            if (index == -1) throw new InvalidOperationException("Unexpected, didn't find prev pos");
+
+            if (pairInfo.FlipIndex)
+            {
+                index = FaceSize - 1 - index;
+            }
+
+            position = nextEdge.Positions[index];
+
+            return (position, dir);
         }
 
         public (Vector2 resultPosition, Vector2 resultDir) HandleWrapAround2d(Vector2 position, Vector2 dir)
@@ -385,13 +445,19 @@ public partial class Day22Solver : ISolver
 
     public record Edge(char Id, Line2 Line, Vector2 Normal, Face Face)
     {
-        public HashSet<Vector2> Positions { get; } = Enumerable.Range(0, (int)Vector2.Distance(Line.Max + Line.Dir, Line.Min))
+        //public HashSet<Vector2> Positions { get; } = Enumerable.Range(0, (int)Vector2.Distance(Line.Max + Line.Dir, Line.Min))
+        //    .Select(i => Line.Min + Line.Dir * i)
+        //    .ToHashSet();
+
+        public List<Vector2> Positions { get; } = Enumerable.Range(0, (int)Vector2.Distance(Line.Max + Line.Dir, Line.Min))
             .Select(i => Line.Min + Line.Dir * i)
-            .ToHashSet();
+            .ToList();
 
         public bool IsOuter { get; } = Face.Map.IsVoid(Line.Min + Normal);
 
         public Edge? PairedEdge { get; set; }
+
+        public PairInfo? PairInfo { get; set; }
     }
 
     /// <remarks>

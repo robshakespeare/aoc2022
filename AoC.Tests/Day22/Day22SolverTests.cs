@@ -58,50 +58,50 @@ public class Day22SolverTests
             """.ReplaceLineEndings());
     }
 
+    [Test]
+    public void Part1ReTest()
+    {
+        // ACT
+        var part1Result = _sut.SolvePart1();
+
+        // ASSERT
+        part1Result.Should().Be(1428);
+    }
+
     //[Test]
-    //public void Part1ReTest()
+    //public void Part2Example()
     //{
     //    // ACT
-    //    var part1Result = _sut.SolvePart1();
+    //    var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
     //    // ASSERT
-    //    part1Result.Should().Be(1428);
+    //    part2ExampleResult.Should().Be(5031);
     //}
 
-    [Test]
-    public void Part2Example()
-    {
-        // ACT
-        var part2ExampleResult = _sut.SolvePart2(ExampleInput);
+    //[Test]
+    //public void Part2Example_ResultMapIsAsExpected()
+    //{
+    //    // ACT
+    //    var part2ExampleResult = Day22Solver.Map.Create(ExampleInput.ReplaceLineEndings(), isCube: true).FollowInstructions();
 
-        // ASSERT
-        part2ExampleResult.Should().Be(5031);
-    }
+    //    var map = part2ExampleResult.Map.Cells.ToStringGrid(x => x.Key, x => x.Value.Tile, ' ').RenderGridToConsole();
 
-    [Test]
-    public void Part2Example_ResultMapIsAsExpected()
-    {
-        // ACT
-        var part2ExampleResult = Day22Solver.Map.Create(ExampleInput.ReplaceLineEndings(), isCube: true).FollowInstructions();
-
-        var map = part2ExampleResult.Map.Cells.ToStringGrid(x => x.Key, x => x.Value.Tile, ' ').RenderGridToConsole();
-
-        // ASSERT
-        map.Should().Be("""
-                    >>v#    
-                    .#v.    
-                    #.v.    
-                    ..v.    
-            ...#..^...v#    
-            .>>>>>^.#.>>    
-            .^#....#....    
-            .^........#.    
-                    ...#..v.
-                    .....#v.
-                    .#v<<<<.
-                    ..v...#.
-            """.ReplaceLineEndings());
-    }
+    //    // ASSERT
+    //    map.Should().Be("""
+    //                >>v#    
+    //                .#v.    
+    //                #.v.    
+    //                ..v.    
+    //        ...#..^...v#    
+    //        .>>>>>^.#.>>    
+    //        .^#....#....    
+    //        .^........#.    
+    //                ...#..v.
+    //                .....#v.
+    //                .#v<<<<.
+    //                ..v...#.
+    //        """.ReplaceLineEndings());
+    //}
 
     [Test]
     public void Part2ReTest()
@@ -110,7 +110,7 @@ public class Day22SolverTests
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(142380);
     }
 
     public class RotationExploration
