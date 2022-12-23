@@ -34,24 +34,16 @@ public class Day23Solver : ISolver
     public static (Dictionary<Vector2, Elf> ElfGrid, int RoundNumberReached) Simulate(Elf[] elves, int numOfRounds = 10)
     {
         var elfGrid = elves.ToDictionary(elf => elf.Position);
-
         var candidateMovements = CandidateMovementsTemplate.ToList();
-
-        //Logger("== Initial State ==");
-        //Logger(elvesGrid.ToStringGrid(x => x.Key, _ => '#', '.').RenderGridToString());
-        //Logger("");
-
         bool elvesMoved;
         var roundNumber = 0;
 
-        //for (var roundNumber = 1; roundNumber <= numOfRounds && elvesMoved; roundNumber++)
         do
         {
             roundNumber++;
             elvesMoved = false;
 
             Dictionary<Vector2, long> proposedPositions = new();
-            //CandidateMovement? firstChosenMove = null;
 
             // First half of round, all Elves decide their proposed position
             foreach (var proposalResult in elves.Select(elf => elf.UpdateProposedPosition(elfGrid, candidateMovements)))
@@ -59,8 +51,6 @@ public class Day23Solver : ISolver
                 if (proposalResult != null)
                 {
                     proposedPositions.AddOrIncrement(proposalResult.Value.ProposedPosition);
-
-                    //firstChosenMove ??= proposalResult.Value.Move;
                 }
             }
 
@@ -99,8 +89,6 @@ public class Day23Solver : ISolver
         public Vector2 Position { get; set; } = Position;
 
         public Vector2? ProposedPosition { get; private set; }
-
-        //public List<CandidateMovement> CandidateMovements { get; } = CandidateMovementsTemplate.ToList();
 
         public (Vector2 ProposedPosition, CandidateMovement Move)? UpdateProposedPosition(
             IReadOnlyDictionary<Vector2, Elf> elvesGrid,
