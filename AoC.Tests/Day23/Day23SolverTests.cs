@@ -6,7 +6,17 @@ public class Day23SolverTests
 {
     private readonly Day23Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    static Day23SolverTests() => Day23Solver.Logger = TestContext.Progress.WriteLine;
+
+    private const string ExampleInput = """
+        ....#..
+        ..###.#
+        #...#.#
+        .#...##
+        #.###..
+        ##.#.##
+        .#..#..
+        """;
 
     [Test]
     public void Part1Example()
@@ -15,7 +25,33 @@ public class Day23SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(110);
+    }
+
+    [Test]
+    public void Part1TinyExample()
+    {
+        // ACT
+        var elvesGrid = Day23Solver.Simulate(Day23Solver.ParseElves("""
+            .....
+            ..##.
+            ..#..
+            .....
+            ..##.
+            .....
+            """));
+
+        var result = elvesGrid.ToStringGrid(x => x.Key, _ => '#', '.').RenderGridToString();
+
+        // ASSERT
+        result.Should().Be("""
+            ..#..
+            ....#
+            #....
+            ....#
+            .....
+            ..#..
+            """.ReplaceLineEndings());
     }
 
     [Test]
