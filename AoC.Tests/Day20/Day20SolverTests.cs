@@ -58,7 +58,7 @@ public class Day20SolverTests
 
         // ASSERT
         part2Result.Should().NotBe(-9808);
-        part2Result.Should().BeOfType<long>().Which.Should().BeLessThan(2086595712363);
+        part2Result.Should().BeLessThan(2086595712363);
 
         part2Result.Should().Be(1664569352803);
     }

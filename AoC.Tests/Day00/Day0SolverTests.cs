@@ -50,7 +50,7 @@ public class Day0SolverTests
         var part2ExampleResult = _sut.SolvePart2("8,18,24");
 
         // ASSERT
-        part2ExampleResult.Should().BeOfType<string>().Which.Should().EndWith("72");
+        part2ExampleResult.Should().EndWith("72");
     }
 
     [Test]
@@ -61,7 +61,7 @@ public class Day0SolverTests
         _sut.SolvePart2(out var part2ResultFull);
 
         // ASSERT
-        part2Result.Should().BeOfType<string>().Which.Should().EndWith("840").And.StartWith("Hello World!");
+        part2Result.Should().EndWith("840").And.StartWith("Hello World!");
 
         part2ResultFull.Value.Should().BeOfType<string>().Which.Should().EndWith("840");
         part2ResultFull.IsStarted.Should().BeTrue();

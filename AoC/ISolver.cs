@@ -16,12 +16,18 @@ public interface ISolver : ISolver<long?, long?>
 {
 }
 
-public interface ISolver<out TOutputPart1, out TOutputPart2> : ISolverBase
+public interface ISolvePart1<out TOutputPart1> : ISolverBase
 {
     public TOutputPart1? SolvePart1(PuzzleInput input);
+}
 
+public interface ISolvePart2<out TOutputPart2> : ISolverBase
+{
     public TOutputPart2? SolvePart2(PuzzleInput input);
+}
 
+public interface ISolver<out TOutputPart1, out TOutputPart2> : ISolvePart1<TOutputPart1>, ISolvePart2<TOutputPart2>
+{
     object? ISolverBase.SolvePart1AsObject(PuzzleInput input) => SolvePart1(input);
 
     object? ISolverBase.SolvePart2AsObject(PuzzleInput input) => SolvePart2(input);
@@ -70,9 +76,9 @@ public static class SolverBaseExtensions
         await Updated();
     }
 
-    public static object? SolvePart1(this ISolverBase solver) => solver.SolvePart1(out _);
+    public static TOutputPart1? SolvePart1<TOutputPart1>(this ISolvePart1<TOutputPart1> solver) => (TOutputPart1?)solver.SolvePart1(out _);
 
-    public static object? SolvePart2(this ISolverBase solver) => solver.SolvePart2(out _);
+    public static TOutputPart2? SolvePart2<TOutputPart2>(this ISolvePart2<TOutputPart2> solver) => (TOutputPart2?)solver.SolvePart2(out _);
 
     public static object? SolvePart1(
         this ISolverBase solver,

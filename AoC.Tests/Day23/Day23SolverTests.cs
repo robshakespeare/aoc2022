@@ -41,9 +41,11 @@ public class Day23SolverTests
             .....
             """));
 
-        Console.WriteLine($"First round where no Elf moved: {roundNumberReached}");
-
         var result = elfGrid.ToStringGrid(x => x.Key, _ => '#', '.').RenderGridToString();
+
+        Console.WriteLine(result);
+        Console.WriteLine();
+        Console.WriteLine($"First round where no Elf moved: {roundNumberReached}");
 
         // ASSERT
         result.Should().Be("""
@@ -54,6 +56,7 @@ public class Day23SolverTests
             .....
             ..#..
             """.ReplaceLineEndings());
+        roundNumberReached.Should().Be(4);
     }
 
     [Test]
