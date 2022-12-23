@@ -75,9 +75,7 @@ public class Day18SolverTests
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        var part2ResultLong = part2Result.Should().BeOfType<long>().Which;
-        part2ResultLong.Should().BeLessThan(3694);
-
+        part2Result.Should().BeLessThan(3694);
         part2Result.Should().NotBe(1651);
         part2Result.Should().NotBe(3070);
         part2Result.Should().NotBe(3694);

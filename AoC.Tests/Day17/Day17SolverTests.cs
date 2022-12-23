@@ -46,10 +46,9 @@ public class Day17SolverTests
     public void Part2ReTest()
     {
         // ACT
-        var part2ResultObject = _sut.SolvePart2();
+        var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        var part2Result = part2ResultObject.Should().BeOfType<long>().Subject;
         part2Result.Should().BeLessThan(1541449318430);
         part2Result.Should().NotBe(1541449318401);
         part2Result.Should().NotBe(null);
