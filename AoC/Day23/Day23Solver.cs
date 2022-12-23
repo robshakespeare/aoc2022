@@ -40,16 +40,16 @@ public class Day23Solver : ISolver
 
         var candidateMovements = CandidateMovementsTemplate.ToList();
 
-        Logger("== Initial State ==");
-        Logger(elvesGrid.ToStringGrid(x => x.Key, _ => '#', '.').RenderGridToString());
-        Logger("");
+        //Logger("== Initial State ==");
+        //Logger(elvesGrid.ToStringGrid(x => x.Key, _ => '#', '.').RenderGridToString());
+        //Logger("");
 
         bool elvesMoved = true;
 
         for (var roundNumber = 1; roundNumber <= numOfRounds && elvesMoved; roundNumber++)
         {
             Dictionary<Vector2, long> proposedPositions = new();
-            CandidateMovement? firstChosenMove = null;
+            //CandidateMovement? firstChosenMove = null;
 
             // First half of round, all Elves decide their proposed position
             foreach (var proposalResult in elves.Select(elf => elf.UpdateProposedPosition(elvesGrid, candidateMovements)))
@@ -58,7 +58,7 @@ public class Day23Solver : ISolver
                 {
                     proposedPositions.AddOrIncrement(proposalResult.Value.ProposedPosition);
 
-                    firstChosenMove ??= proposalResult.Value.Move;
+                    //firstChosenMove ??= proposalResult.Value.Move;
                 }
             }
 
@@ -81,20 +81,18 @@ public class Day23Solver : ISolver
             }
 
             //  Finally, at the end of the round, the first direction the Elves considered is moved to the end of the list of directions
-            if (firstChosenMove != null)
+            var firstChosenMove = candidateMovements[0];
+            if (!candidateMovements.Remove(firstChosenMove))
             {
-                if (!candidateMovements.Remove(firstChosenMove))
-                {
-                    throw new InvalidOperationException("Error, expected to remove move.");
-                }
-
-                candidateMovements.Add(firstChosenMove);
+                throw new InvalidOperationException("Error, expected to remove move.");
             }
 
+            candidateMovements.Add(firstChosenMove);
+
             // rs-todo: rem all temp logging
-            Logger($"== End of Round {roundNumber} ==");
-            Logger(elvesGrid.ToStringGrid(x => x.Key, _ => '#', '.').RenderGridToString());
-            Logger("");
+            //Logger($"== End of Round {roundNumber} ==");
+            //Logger(elvesGrid.ToStringGrid(x => x.Key, _ => '#', '.').RenderGridToString());
+            //Logger("");
         }
 
         return elvesGrid;

@@ -61,7 +61,7 @@ public class Day23SolverTests
         var part1Result = _sut.SolvePart1();
 
         // ASSERT
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(4000);
     }
 
     [Test]
