@@ -9,12 +9,12 @@ public class Day23Solver : ISolver
     public long? SolvePart1(PuzzleInput input)
     {
         var elves = ParseElves(input);
-        var elvesGrid = Simulate(elves);
+        var elfGrid = Simulate(elves).ElfGrid;
 
         var min = new Vector2(float.MaxValue);
         var max = new Vector2(float.MinValue);
 
-        foreach (var (p, _) in elvesGrid)
+        foreach (var (p, _) in elfGrid)
         {
             min = Vector2.Min(min, p);
             max = Vector2.Max(max, p);
@@ -27,16 +27,13 @@ public class Day23Solver : ISolver
         return area - elves.Length;
     }
 
-    public long? SolvePart2(PuzzleInput input)
-    {
-        return null;
-    }
+    public long? SolvePart2(PuzzleInput input) => Simulate(ParseElves(input), numOfRounds: int.MaxValue).RoundNumberReached;
 
     public static Action<string> Logger { get; set; } = Console.WriteLine;
 
-    public static Dictionary<Vector2, Elf> Simulate(Elf[] elves, int numOfRounds = 10)
+    public static (Dictionary<Vector2, Elf> ElfGrid, int RoundNumberReached) Simulate(Elf[] elves, int numOfRounds = 10)
     {
-        var elvesGrid = elves.ToDictionary(elf => elf.Position);
+        var elfGrid = elves.ToDictionary(elf => elf.Position);
 
         var candidateMovements = CandidateMovementsTemplate.ToList();
 
@@ -44,15 +41,20 @@ public class Day23Solver : ISolver
         //Logger(elvesGrid.ToStringGrid(x => x.Key, _ => '#', '.').RenderGridToString());
         //Logger("");
 
-        bool elvesMoved = true;
+        bool elvesMoved;
+        var roundNumber = 0;
 
-        for (var roundNumber = 1; roundNumber <= numOfRounds && elvesMoved; roundNumber++)
+        //for (var roundNumber = 1; roundNumber <= numOfRounds && elvesMoved; roundNumber++)
+        do
         {
+            roundNumber++;
+            elvesMoved = false;
+
             Dictionary<Vector2, long> proposedPositions = new();
             //CandidateMovement? firstChosenMove = null;
 
             // First half of round, all Elves decide their proposed position
-            foreach (var proposalResult in elves.Select(elf => elf.UpdateProposedPosition(elvesGrid, candidateMovements)))
+            foreach (var proposalResult in elves.Select(elf => elf.UpdateProposedPosition(elfGrid, candidateMovements)))
             {
                 if (proposalResult != null)
                 {
@@ -63,7 +65,6 @@ public class Day23Solver : ISolver
             }
 
             // Second half of round, move elves who were the only one to propose a distinct position
-            elvesMoved = false;
             foreach (var elf in elves)
             {
                 if (elf.ProposedPosition != null)
@@ -72,8 +73,8 @@ public class Day23Solver : ISolver
 
                     if (proposedPositions[elfProposedPosition] == 1)
                     {
-                        elvesGrid.Remove(elf.Position);
-                        elvesGrid.Add(elfProposedPosition, elf);
+                        elfGrid.Remove(elf.Position);
+                        elfGrid.Add(elfProposedPosition, elf);
                         elf.Position = elfProposedPosition;
                         elvesMoved = true;
                     }
@@ -88,14 +89,9 @@ public class Day23Solver : ISolver
             }
 
             candidateMovements.Add(firstChosenMove);
+        } while (elvesMoved && roundNumber < numOfRounds);
 
-            // rs-todo: rem all temp logging
-            //Logger($"== End of Round {roundNumber} ==");
-            //Logger(elvesGrid.ToStringGrid(x => x.Key, _ => '#', '.').RenderGridToString());
-            //Logger("");
-        }
-
-        return elvesGrid;
+        return (elfGrid, roundNumber);
     }
 
     public record Elf(int ElfId, Vector2 Position)

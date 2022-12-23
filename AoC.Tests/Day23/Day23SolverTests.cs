@@ -32,7 +32,7 @@ public class Day23SolverTests
     public void Part1TinyExample()
     {
         // ACT
-        var elvesGrid = Day23Solver.Simulate(Day23Solver.ParseElves("""
+        var (elfGrid, roundNumberReached) = Day23Solver.Simulate(Day23Solver.ParseElves("""
             .....
             ..##.
             ..#..
@@ -41,7 +41,9 @@ public class Day23SolverTests
             .....
             """));
 
-        var result = elvesGrid.ToStringGrid(x => x.Key, _ => '#', '.').RenderGridToString();
+        Console.WriteLine($"First round where no Elf moved: {roundNumberReached}");
+
+        var result = elfGrid.ToStringGrid(x => x.Key, _ => '#', '.').RenderGridToString();
 
         // ASSERT
         result.Should().Be("""
@@ -71,7 +73,7 @@ public class Day23SolverTests
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(20);
     }
 
     [Test]
@@ -81,6 +83,6 @@ public class Day23SolverTests
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(1040);
     }
 }
