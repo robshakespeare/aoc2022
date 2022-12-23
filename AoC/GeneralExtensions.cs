@@ -43,7 +43,7 @@ public static class GeneralExtensions
     /// <summary>
     /// Increments the value in the dictionary matching the key by the specified amount, or adds the amount in to the dictionary if no matching key is found.
     /// </summary>
-    public static void AddOrIncrement<TKey>(this Dictionary<TKey, long> dictionary, TKey key, long amount) where TKey : notnull
+    public static void AddOrIncrement<TKey>(this Dictionary<TKey, long> dictionary, TKey key, long amount = 1) where TKey : notnull
     {
         if (!dictionary.ContainsKey(key))
         {
