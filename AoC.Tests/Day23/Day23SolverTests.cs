@@ -77,6 +77,7 @@ public class Day23SolverTests
     }
 
     [Test]
+    [LongRunningTest("2.5 seconds")]
     public void Part2ReTest()
     {
         // ACT

@@ -34,7 +34,7 @@ public class Day23Solver : ISolver
     public static (Dictionary<Vector2, Elf> ElfGrid, int RoundNumberReached) Simulate(Elf[] elves, int numOfRounds = 10)
     {
         var elfGrid = elves.ToDictionary(elf => elf.Position);
-        var candidateMovements = CandidateMovementsTemplate.ToList();
+        var candidateMovements = new Queue<CandidateMovement>(CandidateMovementsTemplate);
         bool elvesMoved;
         var roundNumber = 0;
 
@@ -72,13 +72,7 @@ public class Day23Solver : ISolver
             }
 
             //  Finally, at the end of the round, the first direction the Elves considered is moved to the end of the list of directions
-            var firstChosenMove = candidateMovements[0];
-            if (!candidateMovements.Remove(firstChosenMove))
-            {
-                throw new InvalidOperationException("Error, expected to remove move.");
-            }
-
-            candidateMovements.Add(firstChosenMove);
+            candidateMovements.Enqueue(candidateMovements.Dequeue());
         } while (elvesMoved && roundNumber < numOfRounds);
 
         return (elfGrid, roundNumber);
@@ -106,13 +100,13 @@ public class Day23Solver : ISolver
             var chosenMove = candidateMovements
                 .FirstOrDefault(move => !move.RequiredFreeAdjacentDirections.Select(dir => Position + dir).Any(elvesGrid.ContainsKey));
 
-            if (chosenMove != null)
+            if (chosenMove == null)
             {
-                ProposedPosition = Position + chosenMove.Direction;
-                return (ProposedPosition.Value, chosenMove);
+                return null;
             }
 
-            return null;
+            ProposedPosition = Position + chosenMove.Direction;
+            return (ProposedPosition.Value, chosenMove);
         }
     }
 
