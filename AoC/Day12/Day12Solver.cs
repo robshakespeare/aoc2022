@@ -33,10 +33,7 @@ public class Day12Solver : ISolver
         return (heightmap, nodes, end);
     }
 
-    record Node(Vector2 Position, char Elevation, char Char) : IAStarSearchNode
-    {
-        public int Cost => 1;
-    }
+    record Node(Vector2 Position, char Elevation, char Char) : IAStarSearchNode;
 
     static long FindShortestPathToEnd(Node[][] heightmap, IEnumerable<Node> starts, Node end) =>
         new AStarSearch<Node>(node =>

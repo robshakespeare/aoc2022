@@ -6,7 +6,7 @@ namespace AoC;
 /// </summary>
 public interface IAStarSearchNode
 {
-    int Cost { get; }
+    int Cost => 1;
 }
 
 public class AStarSearch<TNode> where TNode : IAStarSearchNode, IEquatable<TNode>
@@ -29,7 +29,7 @@ public class AStarSearch<TNode> where TNode : IAStarSearchNode, IEquatable<TNode
         public static Path Begin(TNode begin) => new(new[] {begin}, begin, 0);
     }
 
-    public delegate long Heuristic(TNode child, TNode goal);
+    public delegate long Heuristic(TNode child);
 
     private readonly Func<TNode, IEnumerable<TNode>> _getSuccessors;
     private readonly Heuristic _getHeuristic;
@@ -46,7 +46,7 @@ public class AStarSearch<TNode> where TNode : IAStarSearchNode, IEquatable<TNode
     public AStarSearch(Func<TNode, IEnumerable<TNode>> getSuccessors, Heuristic? getHeuristic = null)
     {
         _getSuccessors = getSuccessors;
-        _getHeuristic = getHeuristic ?? ((_, _) => 0);
+        _getHeuristic = getHeuristic ?? (_ => 0);
     }
 
     /// <summary>
@@ -56,9 +56,14 @@ public class AStarSearch<TNode> where TNode : IAStarSearchNode, IEquatable<TNode
 
     /// <summary>
     /// Finds the shortest path between any number of start points and a goal.
+    /// </summary>
+    public Path FindShortestPath(IEnumerable<TNode> starts, TNode goal) => FindShortestPath(starts, node => node.Equals(goal));
+
+    /// <summary>
+    /// Finds the shortest path between any number of start points and reaching a goal.
     /// Written from the pseudocode at: https://cse442-17f.github.io/A-Star-Search-and-Dijkstras-Algorithm/
     /// </summary>
-    public Path FindShortestPath(IEnumerable<TNode> starts, TNode goal)
+    public Path FindShortestPath(IEnumerable<TNode> starts, Func<TNode, bool> isGoal)
     {
         var explore = new PriorityQueue<Path, long>(starts.Select(start => (Path.Begin(start), 0L)));
         var seen = new HashSet<TNode>();
@@ -69,7 +74,7 @@ public class AStarSearch<TNode> where TNode : IAStarSearchNode, IEquatable<TNode
             var node = path.CurrentNode;
 
             // if node is the goal return the path
-            if (node.Equals(goal))
+            if (isGoal(node))
             {
                 return path;
             }
@@ -80,7 +85,7 @@ public class AStarSearch<TNode> where TNode : IAStarSearchNode, IEquatable<TNode
                 foreach (var child in _getSuccessors(node))
                 {
                     var childPath = path.Append(child);
-                    explore.Enqueue(childPath, childPath.TotalCost + _getHeuristic(child, goal)); // the heuristic is added here as a part of the priority
+                    explore.Enqueue(childPath, childPath.TotalCost + _getHeuristic(child)); // the heuristic is added here as a part of the priority
                 }
 
                 seen.Add(node);

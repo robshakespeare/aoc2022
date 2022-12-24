@@ -4,18 +4,14 @@ public class AStarSearchTests
 {
     record Node(Vector2 Position, int Cost) : IAStarSearchNode;
 
-    private static (Node[][] grid, AStarSearch<Node> search) Parse(string gridLevels)
-    {
-        var grid = gridLevels.ReadLines().Select(
+    private static Node[][] ParseGrid(string gridLevels) =>
+        gridLevels.ReadLines().Select(
             (line, y) => line.Select(
                 (c, x) => new Node(new Vector2(x, y), int.Parse(c.ToString()))).ToArray()).ToArray();
 
-        var search = new AStarSearch<Node>(
-            getSuccessors: node => grid.GetAdjacent(node.Position, GridUtils.DirectionsExcludingDiagonal),
-            getHeuristic: (node, goal) => MathUtils.ManhattanDistance(node.Position, goal.Position));
-
-        return (grid, search);
-    }
+    private static AStarSearch<Node> BuildSearch(Node[][] grid, Node goal) =>
+        new(getSuccessors: node => grid.GetAdjacent(node.Position, GridUtils.DirectionsExcludingDiagonal),
+            getHeuristic: node => MathUtils.ManhattanDistance(node.Position, goal.Position));
 
     private static void DisplayPathAsGrid(AStarSearch<Node>.Path path)
     {
@@ -41,10 +37,13 @@ public class AStarSearchTests
 1293138521
 2311944581";
 
-        var (grid, search) = Parse(gridLevels);
+        var grid = ParseGrid(gridLevels);
+        var start = grid[0][0];
+        var goal = grid[^1][^1];
+        var search = BuildSearch(grid, goal);
 
         // ACT
-        var result = search.FindShortestPath(grid[0][0], grid[^1][^1]);
+        var result = search.FindShortestPath(start, goal);
 
         // ASSERT
         DisplayPathAsGrid(result);
@@ -69,10 +68,13 @@ public class AStarSearchTests
 111919141
 999911171";
 
-        var (grid, search) = Parse(gridLevels);
+        var grid = ParseGrid(gridLevels);
+        var start = grid[0][0];
+        var goal = grid[^1][^1];
+        var search = BuildSearch(grid, goal);
 
         // ACT
-        var result = search.FindShortestPath(grid[0][0], grid[^1][^1]);
+        var result = search.FindShortestPath(start, goal);
 
         // ASSERT
         DisplayPathAsGrid(result);
@@ -90,10 +92,7 @@ public class AStarSearchTests
             abdefghi
             """;
 
-        private record Node2(Vector2 Position, char Char) : IAStarSearchNode
-        {
-            public int Cost => 1;
-        }
+        private record Node2(Vector2 Position, char Char) : IAStarSearchNode;
 
         private readonly Node2[][] _grid;
         private readonly AStarSearch<Node2> _search;
