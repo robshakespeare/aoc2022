@@ -23,10 +23,7 @@ public partial class Day16Solver : ISolver
 
     public Action<string> Logger { get; set; } = Console.WriteLine;
 
-    record Valve(string Id, long BitId, int FlowRate, IReadOnlyList<string> LeadsTo) : IAStarSearchNode
-    {
-        public int Cost => 1;
-    }
+    record Valve(string Id, long BitId, int FlowRate, IReadOnlyList<string> LeadsTo) : IAStarSearchNode;
 
     class Explorer
     {

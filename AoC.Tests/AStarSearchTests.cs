@@ -92,10 +92,7 @@ public class AStarSearchTests
             abdefghi
             """;
 
-        private record Node2(Vector2 Position, char Char) : IAStarSearchNode
-        {
-            public int Cost => 1;
-        }
+        private record Node2(Vector2 Position, char Char) : IAStarSearchNode;
 
         private readonly Node2[][] _grid;
         private readonly AStarSearch<Node2> _search;
