@@ -6,7 +6,59 @@ public class Day24SolverTests
 {
     private readonly Day24Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = """
+        #.######
+        #>>.<^<#
+        #.<..<<#
+        #>v.><>#
+        #<^v^^>#
+        ######.#
+        """;
+
+    [Test]
+    public void MapSuccessorTests()
+    {
+        var initialMap = Day24Solver.Map.Parse("""
+            #.#####
+            #.....#
+            #>....#
+            #.....#
+            #...v.#
+            #.....#
+            #####.#
+            """);
+
+        // ACT
+        Console.WriteLine("=== Initial Grid ===");
+        Console.WriteLine(initialMap.ToString());
+        Console.WriteLine();
+
+        var map = initialMap;
+        for (var i = 1; i <= 5; i++)
+        {
+            map = map.Successor();
+
+            Console.WriteLine($"=== After minute {i} ===");
+            Console.WriteLine(map.ToString());
+            Console.WriteLine();
+
+            if (i < 5)
+            {
+                map.ToString().Should().NotBe(initialMap.ToString());
+            }
+        }
+
+        // ASSERT
+        map.ToString().Should().Be("""
+            #.#####
+            #.....#
+            #>....#
+            #.....#
+            #...v.#
+            #.....#
+            #####.#
+            """.ReplaceLineEndings());
+    }
 
     [Test]
     public void Part1Example()
@@ -15,7 +67,7 @@ public class Day24SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be(18);
     }
 
     [Test]
