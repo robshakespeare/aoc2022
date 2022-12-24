@@ -1,4 +1,3 @@
-using static AoC.Day24.Day24Solver;
 using static AoC.GridUtils;
 
 namespace AoC.Day24;
@@ -7,25 +6,106 @@ public class Day24Solver : ISolver
 {
     public string DayName => "Blizzard Basin";
 
-    private DateTime _lastReported = DateTime.MinValue;
+    private static readonly IReadOnlyList<Vector2> ExpeditionDirections = new[] { North, West, East, South, Vector2.Zero };
 
+    /// <summary>
+    /// What is the fewest number of minutes required to avoid the blizzards and reach the goal?
+    /// </summary>
     public long? SolvePart1(PuzzleInput input)
     {
-        // A* Search, each move costs 1, heuristic is the remaining cost to reach goal (manhattan distance)
-        // On each minute, you can move up, down, left, or right, or you can wait in place.
-        // You cannot share a position with a blizzard.
+        return null; // rs-todo: only temp!
 
-        var nextDirections = new[] { North, West, East, South, Vector2.Zero };
         var initialMap = Map.Parse(input);
-        var goal = initialMap.Goal;
+        return FindShortestPath(initialMap, initialMap.Start, initialMap.Goal).MinuteNumber;
+
+        //var search = new AStarSearch<Expedition>(
+        //    getSuccessors: current =>
+        //    {
+        //        if ((DateTime.Now - _lastReported).TotalSeconds > 10)
+        //        {
+        //            var distRemain = MathUtils.ManhattanDistance(current.Position, goal);
+
+        //            Logger($"Expedition update: Minute: {current.MinuteNumber}, Position: {current.Position}, Distance remaining: {distRemain}");
+        //            _lastReported = DateTime.Now;
+        //        }
+
+        //        var nextMinute = current.MinuteNumber + 1;
+        //        var nextMap = current.Map.Successor();
+
+        //        var nextBlizzards = nextMap.Blizzards.Select(b => b.Position).ToHashSet();
+
+        //        var expeditions = ExpeditionDirections
+        //            .Select(nextDirection => current.Position + nextDirection)
+        //            .Where(nextPosition => /*nextPosition != initialMap.Start &&*/
+        //                                   !nextBlizzards.Contains(nextPosition) &&
+        //                                   !initialMap.IsOutOfBounds(nextPosition))
+        //            .Select(nextPosition => new Expedition(nextPosition, nextMap, nextMinute));
+        //        return expeditions;
+        //    },
+        //    getHeuristic: current => MathUtils.ManhattanDistance(current.Position, goal));
+
+        //var shortestPath = search.FindShortestPath(
+        //    starts: new[] { new Expedition(initialMap.Start, initialMap, 0) },
+        //    isGoal: expedition => expedition.Position == goal);
+
+        ////var path = shortestPath.Nodes.ToArray();
+
+        ////Console.WriteLine(path[^2].ToString());
+        ////Console.WriteLine();
+
+        ////Console.WriteLine(shortestPath.CurrentNode.ToString());
+        ////Console.WriteLine();
+
+        //return shortestPath.TotalCost;
+    }
+
+    /// <summary>
+    /// How quickly can you make it from the start to the goal, then back to the start, then back to the goal?
+    /// </summary>
+    public long? SolvePart2(PuzzleInput input)
+    {
+        var initialMap = Map.Parse(input);
+        //var goals = new[] { (initialMap.Goal), initialMap.Start, initialMap.Goal };
+
+        var expeditions = new List<Expedition>();
+        var map = initialMap;
+
+        for (var expeditionNum = 1; expeditionNum <= 3; expeditionNum++)
+        {
+            var start = expeditionNum == 2 ? map.Goal : map.Start;
+            var goal = expeditionNum == 2 ? map.Start : map.Goal;
+
+            var expedition = FindShortestPath(map, start, goal);
+            map = expedition.Map;
+            expeditions.Add(expedition);
+            Logger($"=== Reached goal {expeditionNum}, this expedition's minutes: {expedition.MinuteNumber} ===");
+            if (expeditionNum == 2)
+            {
+                Logger("Got snacks! :)");
+            }
+            Logger("");
+        }
+
+        return expeditions.Sum(e => e.MinuteNumber);
+    }
+
+    /// <summary>
+    /// A* Search, each move costs 1, heuristic is the remaining cost to reach goal (manhattan distance)
+    /// On each minute, you can move up, down, left, or right, or you can wait in place.
+    /// You cannot share a position with a blizzard.
+    /// </summary>
+    private static Expedition FindShortestPath(Map map, Vector2 start, Vector2 goal)
+    {
+        _lastReported = DateTime.MinValue;
+
         var search = new AStarSearch<Expedition>(
             getSuccessors: current =>
             {
-                if ((DateTime.Now - _lastReported).TotalSeconds > 10)
+                if ((DateTime.Now - _lastReported).TotalSeconds > 5)
                 {
                     var distRemain = MathUtils.ManhattanDistance(current.Position, goal);
 
-                    Console.WriteLine($"Expedition update: MinuteNumber: {current.MinuteNumber}, Pos: {current.Position}, distRemain: {distRemain}");
+                    Logger($"Expedition update: Minute: {current.MinuteNumber}, Position: {current.Position}, Distance remaining: {distRemain}");
                     _lastReported = DateTime.Now;
                 }
 
@@ -34,35 +114,24 @@ public class Day24Solver : ISolver
 
                 var nextBlizzards = nextMap.Blizzards.Select(b => b.Position).ToHashSet();
 
-                var expeditions = nextDirections
+                var expeditions = ExpeditionDirections
                     .Select(nextDirection => current.Position + nextDirection)
-                    .Where(nextPosition => /*nextPosition != initialMap.Start &&*/
-                                           !nextBlizzards.Contains(nextPosition) &&
-                                           !initialMap.IsOutOfBounds(nextPosition))
+                    .Where(nextPosition => !nextBlizzards.Contains(nextPosition) &&
+                                           !map.IsOutOfBounds(nextPosition))
                     .Select(nextPosition => new Expedition(nextPosition, nextMap, nextMinute));
                 return expeditions;
             },
             getHeuristic: current => MathUtils.ManhattanDistance(current.Position, goal));
 
-        var shortestPath = search.FindShortestPath(
-            starts: new[] { new Expedition(initialMap.Start, initialMap, 0) },
+        var findShortestPath = search.FindShortestPath(
+            starts: new[] { new Expedition(start, map, 0) },
             isGoal: expedition => expedition.Position == goal);
 
-        var path = shortestPath.Nodes.ToArray();
-
-        Console.WriteLine(path[^2].ToString());
-        Console.WriteLine();
-
-        Console.WriteLine(shortestPath.CurrentNode.ToString());
-        Console.WriteLine();
-
-        return shortestPath.TotalCost;
+        return findShortestPath.CurrentNode;
     }
 
-    public long? SolvePart2(PuzzleInput input)
-    {
-        return null;
-    }
+    public static Action<string> Logger { get; set; } = Console.WriteLine;
+    private static DateTime _lastReported = DateTime.MinValue;
 
     public class Expedition : IAStarSearchNode, IEquatable<Expedition>
     {
@@ -79,31 +148,10 @@ public class Day24Solver : ISolver
             _map = map;
         }
 
-        //public override bool Equals(object? obj)
-        //{
-        //    if (ReferenceEquals(null, obj)) return false;
-        //    if (ReferenceEquals(this, obj)) return true;
-        //    if (obj.GetType() != this.GetType()) return false;
-        //    return Equals((Expedition)obj);
-        //}
-
-        //public bool Equals(Expedition? other)
-        //{
-        //    if (ReferenceEquals(null, other)) return false;
-        //    if (ReferenceEquals(this, other)) return true;
-        //    return Position.Equals(other.Position) && MinuteNumber == other.MinuteNumber;
-        //}
-
-        //public override int GetHashCode()
-        //{
-        //    return HashCode.Combine(Position, MinuteNumber);
-        //}
-
         public override bool Equals(object? obj) => obj is Expedition other && Equals(other);
 
         public bool Equals(Expedition? other) => other != null &&
                                                  Position == other.Position &&
-                                                 //MinuteNumber == other.MinuteNumber &&
                                                  Map.Equals(other.Map);
 
         public override int GetHashCode() => HashCode.Combine(Position, Map);
@@ -113,8 +161,7 @@ public class Day24Solver : ISolver
         public override string ToString() => Map.Render(Position);
     }
 
-    public class Map//record Map(
-        //Vector2 WallMin, Vector2 WallMax, Vector2 Start, Vector2 Goal, IReadOnlySet<Vector2> Walls, IReadOnlyList<Blizzard> Blizzards)
+    public class Map
     {
         public Vector2 WallMin { get; }
         public Vector2 WallMax { get; }
@@ -244,13 +291,6 @@ public class Day24Solver : ISolver
 
             return string.Join(Environment.NewLine, grid.Select(line => string.Concat(line)));
         }
-
-        //public string ToString(Vector2? expeditionPosition) =>
-        //    Walls.Select(p => (pos: p, chr: '#'))
-        //        .Concat(Blizzards.Select(b => (pos: b.Position, chr: b.Char)))
-        //        .Append((pos: expeditionPosition ?? Start, chr: expeditionPosition != null ? 'E' : '.'))
-        //        .ToStringGrid(c => c.pos, c => c.chr, '.')
-        //        .RenderGridToString();
 
         public override string ToString() => _asString.Value;
     }
