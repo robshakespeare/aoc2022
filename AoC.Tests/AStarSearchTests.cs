@@ -4,19 +4,14 @@ public class AStarSearchTests
 {
     record Node(Vector2 Position, int Cost) : IAStarSearchNode;
 
-    private static Node[][] ParseGrid(string gridLevels)
-    {
-        return gridLevels.ReadLines().Select(
+    private static Node[][] ParseGrid(string gridLevels) =>
+        gridLevels.ReadLines().Select(
             (line, y) => line.Select(
                 (c, x) => new Node(new Vector2(x, y), int.Parse(c.ToString()))).ToArray()).ToArray();
-    }
 
-    private static AStarSearch<Node> BuildSearch(Node[][] grid, Node goal)
-    {
-        return new AStarSearch<Node>(
-            getSuccessors: node => grid.GetAdjacent(node.Position, GridUtils.DirectionsExcludingDiagonal),
+    private static AStarSearch<Node> BuildSearch(Node[][] grid, Node goal) =>
+        new(getSuccessors: node => grid.GetAdjacent(node.Position, GridUtils.DirectionsExcludingDiagonal),
             getHeuristic: node => MathUtils.ManhattanDistance(node.Position, goal.Position));
-    }
 
     private static void DisplayPathAsGrid(AStarSearch<Node>.Path path)
     {

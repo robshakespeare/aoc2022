@@ -6,7 +6,7 @@ namespace AoC;
 /// </summary>
 public interface IAStarSearchNode
 {
-    int Cost { get; }
+    int Cost => 1;
 }
 
 public class AStarSearch<TNode> where TNode : IAStarSearchNode, IEquatable<TNode>
@@ -60,7 +60,7 @@ public class AStarSearch<TNode> where TNode : IAStarSearchNode, IEquatable<TNode
     public Path FindShortestPath(IEnumerable<TNode> starts, TNode goal) => FindShortestPath(starts, node => node.Equals(goal));
 
     /// <summary>
-    /// Finds the shortest path between any number of start points and a goal.
+    /// Finds the shortest path between any number of start points and reaching a goal.
     /// Written from the pseudocode at: https://cse442-17f.github.io/A-Star-Search-and-Dijkstras-Algorithm/
     /// </summary>
     public Path FindShortestPath(IEnumerable<TNode> starts, Func<TNode, bool> isGoal)
