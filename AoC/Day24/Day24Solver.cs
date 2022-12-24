@@ -61,7 +61,7 @@ public class Day24Solver : ISolver
         var search = new AStarSearch<Expedition>(
             getSuccessors: current =>
             {
-                if ((DateTime.Now - _lastReported).TotalSeconds > 2.5)
+                if ((DateTime.Now - _lastReported).TotalSeconds > 0.25)
                 {
                     var distRemain = MathUtils.ManhattanDistance(current.Position, goal);
 
@@ -72,12 +72,10 @@ public class Day24Solver : ISolver
                 var nextMinute = current.MinuteNumber + 1;
                 var nextMap = current.Map.Successor();
 
-                var nextBlizzards = nextMap.Blizzards.Select(b => b.Position).ToHashSet();
-
                 var expeditions = ExpeditionDirections
                     .Select(nextDirection => current.Position + nextDirection)
-                    .Where(nextPosition => !nextBlizzards.Contains(nextPosition) &&
-                                           !map.IsOutOfBounds(nextPosition))
+                    .Where(nextPosition => !nextMap.BlizzardPositions.Contains(nextPosition) &&
+                                           !nextMap.IsOutOfBounds(nextPosition))
                     .Select(nextPosition => new Expedition(nextPosition, nextMap, nextMinute));
                 return expeditions;
             },
@@ -123,27 +121,36 @@ public class Day24Solver : ISolver
         public Vector2 Goal { get; }
         public IReadOnlySet<Vector2> Walls { get; }
         public IReadOnlyList<Blizzard> Blizzards { get; }
+        public IReadOnlySet<Vector2> BlizzardPositions { get; }
 
         private readonly string _template;
-
+        private readonly int _mapIndex;
+        private readonly int _cycleSize;
+        private readonly Map?[] _mapCache;
         private readonly Lazy<string> _asString;
 
         public Map(
-            Vector2 wallMin, Vector2 wallMax, Vector2 start, Vector2 goal, IReadOnlySet<Vector2> walls, IReadOnlyList<Blizzard> blizzards, string template)
+            Vector2 wallMin, Vector2 wallMax, Vector2 start, Vector2 goal, IReadOnlySet<Vector2> walls, IReadOnlyList<Blizzard> blizzards, string template,
+            int cycleSize, Map?[] mapCache)
         {
             _template = template;
+            _mapIndex = 0;
+            _cycleSize = cycleSize;
+            _mapCache = mapCache;
             WallMin = wallMin;
             WallMax = wallMax;
             Start = start;
             Goal = goal;
             Walls = walls;
             Blizzards = blizzards;
+            BlizzardPositions = blizzards.Select(b => b.Position).ToHashSet();
             _asString = new Lazy<string>(() => Render());
         }
 
-        public Map(Map s, IReadOnlyList<Blizzard> blizzards) : this(s.WallMin, s.WallMax, s.Start, s.Goal, s.Walls, s.Blizzards, s._template)
+        public Map(Map s, IReadOnlyList<Blizzard> blizzards, int mapIndex) : this(s.WallMin, s.WallMax, s.Start, s.Goal, s.Walls, blizzards, s._template,
+            s._cycleSize, s._mapCache)
         {
-            Blizzards = blizzards;
+            _mapIndex = mapIndex;
         }
 
         public bool Equals(Map? other) => other != null && _asString.Value == other._asString.Value;
@@ -185,7 +192,12 @@ public class Day24Solver : ISolver
                 .Append((pos: goal, chr: 'G'))
                 .ToStringGrid(c => c.pos, c => c.chr, '.').RenderGridToString();
 
-            return new Map(wallMin, wallMax, start, goal, walls, blizzards, template);
+            var size = wallMax - wallMin - Vector2.One;
+            var cycleSize = (int)MathUtils.LeastCommonMultiple((int)size.X, (int)size.Y);
+            var mapCache = new Map?[cycleSize];
+            var map = new Map(wallMin, wallMax, start, goal, walls, blizzards, template, cycleSize, mapCache);
+            mapCache[0] = map;
+            return map;
         }
 
         public bool IsOutOfBounds(Vector2 position) => Walls.Contains(position) ||
@@ -224,7 +236,9 @@ public class Day24Solver : ISolver
                 return prevBlizzard with { Position = nextPosition };
             }
 
-            return new Map(this, Blizzards.Select(NextBlizzard).ToArray());
+            var mapIndex = (_mapIndex + 1) % _cycleSize;
+
+            return _mapCache[mapIndex] ?? (_mapCache[mapIndex] = new Map(this, Blizzards.Select(NextBlizzard).ToArray(), mapIndex));
         }
 
         public string Render(Vector2? expeditionPosition = null)
