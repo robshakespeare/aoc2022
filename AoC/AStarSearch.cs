@@ -6,7 +6,7 @@ namespace AoC;
 /// </summary>
 public interface IAStarSearchNode
 {
-    int Cost { get; }
+    int Cost => 1;
 }
 
 public class AStarSearch<TNode> where TNode : IAStarSearchNode, IEquatable<TNode>

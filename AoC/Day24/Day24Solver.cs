@@ -6,57 +6,13 @@ public class Day24Solver : ISolver
 {
     public string DayName => "Blizzard Basin";
 
-    private static readonly IReadOnlyList<Vector2> ExpeditionDirections = new[] { North, West, East, South, Vector2.Zero };
-
     /// <summary>
     /// What is the fewest number of minutes required to avoid the blizzards and reach the goal?
     /// </summary>
     public long? SolvePart1(PuzzleInput input)
     {
-        return null; // rs-todo: only temp!
-
         var initialMap = Map.Parse(input);
         return FindShortestPath(initialMap, initialMap.Start, initialMap.Goal).MinuteNumber;
-
-        //var search = new AStarSearch<Expedition>(
-        //    getSuccessors: current =>
-        //    {
-        //        if ((DateTime.Now - _lastReported).TotalSeconds > 10)
-        //        {
-        //            var distRemain = MathUtils.ManhattanDistance(current.Position, goal);
-
-        //            Logger($"Expedition update: Minute: {current.MinuteNumber}, Position: {current.Position}, Distance remaining: {distRemain}");
-        //            _lastReported = DateTime.Now;
-        //        }
-
-        //        var nextMinute = current.MinuteNumber + 1;
-        //        var nextMap = current.Map.Successor();
-
-        //        var nextBlizzards = nextMap.Blizzards.Select(b => b.Position).ToHashSet();
-
-        //        var expeditions = ExpeditionDirections
-        //            .Select(nextDirection => current.Position + nextDirection)
-        //            .Where(nextPosition => /*nextPosition != initialMap.Start &&*/
-        //                                   !nextBlizzards.Contains(nextPosition) &&
-        //                                   !initialMap.IsOutOfBounds(nextPosition))
-        //            .Select(nextPosition => new Expedition(nextPosition, nextMap, nextMinute));
-        //        return expeditions;
-        //    },
-        //    getHeuristic: current => MathUtils.ManhattanDistance(current.Position, goal));
-
-        //var shortestPath = search.FindShortestPath(
-        //    starts: new[] { new Expedition(initialMap.Start, initialMap, 0) },
-        //    isGoal: expedition => expedition.Position == goal);
-
-        ////var path = shortestPath.Nodes.ToArray();
-
-        ////Console.WriteLine(path[^2].ToString());
-        ////Console.WriteLine();
-
-        ////Console.WriteLine(shortestPath.CurrentNode.ToString());
-        ////Console.WriteLine();
-
-        //return shortestPath.TotalCost;
     }
 
     /// <summary>
@@ -65,7 +21,6 @@ public class Day24Solver : ISolver
     public long? SolvePart2(PuzzleInput input)
     {
         var initialMap = Map.Parse(input);
-        //var goals = new[] { (initialMap.Goal), initialMap.Start, initialMap.Goal };
 
         var expeditions = new List<Expedition>();
         var map = initialMap;
@@ -78,16 +33,21 @@ public class Day24Solver : ISolver
             var expedition = FindShortestPath(map, start, goal);
             map = expedition.Map;
             expeditions.Add(expedition);
+
             Logger($"=== Reached goal {expeditionNum}, this expedition's minutes: {expedition.MinuteNumber} ===");
             if (expeditionNum == 2)
             {
-                Logger("Got snacks! :)");
+                Logger("");
+                Logger("Got snacks! 🍩 🍰 🎂 🍪 🍫 🧁 🍨 🥨 😊");
             }
+
             Logger("");
         }
 
         return expeditions.Sum(e => e.MinuteNumber);
     }
+
+    private static readonly IReadOnlyList<Vector2> ExpeditionDirections = new[] { North, West, East, South, Vector2.Zero };
 
     /// <summary>
     /// A* Search, each move costs 1, heuristic is the remaining cost to reach goal (manhattan distance)
@@ -101,7 +61,7 @@ public class Day24Solver : ISolver
         var search = new AStarSearch<Expedition>(
             getSuccessors: current =>
             {
-                if ((DateTime.Now - _lastReported).TotalSeconds > 5)
+                if ((DateTime.Now - _lastReported).TotalSeconds > 2.5)
                 {
                     var distRemain = MathUtils.ManhattanDistance(current.Position, goal);
 
@@ -124,7 +84,7 @@ public class Day24Solver : ISolver
             getHeuristic: current => MathUtils.ManhattanDistance(current.Position, goal));
 
         var findShortestPath = search.FindShortestPath(
-            starts: new[] { new Expedition(start, map, 0) },
+            starts: new[] { new Expedition(start, map) },
             isGoal: expedition => expedition.Position == goal);
 
         return findShortestPath.CurrentNode;
@@ -137,26 +97,20 @@ public class Day24Solver : ISolver
     {
         public Vector2 Position { get; }
         public int MinuteNumber { get; }
-        public Map Map => _map ?? throw new InvalidOperationException("Goal map is unknown");
+        public Map Map { get; }
 
-        private readonly Map? _map;
-
-        public Expedition(Vector2 position, Map map, int minuteNumber)
+        public Expedition(Vector2 position, Map map, int minuteNumber = 0)
         {
             Position = position;
             MinuteNumber = minuteNumber;
-            _map = map;
+            Map = map;
         }
 
         public override bool Equals(object? obj) => obj is Expedition other && Equals(other);
 
-        public bool Equals(Expedition? other) => other != null &&
-                                                 Position == other.Position &&
-                                                 Map.Equals(other.Map);
+        public bool Equals(Expedition? other) => other != null && Position == other.Position && Map.Equals(other.Map);
 
         public override int GetHashCode() => HashCode.Combine(Position, Map);
-
-        public int Cost => 1;
 
         public override string ToString() => Map.Render(Position);
     }
@@ -184,7 +138,7 @@ public class Day24Solver : ISolver
             Goal = goal;
             Walls = walls;
             Blizzards = blizzards;
-            _asString = new Lazy<string>(() => Render(null));
+            _asString = new Lazy<string>(() => Render());
         }
 
         public Map(Map s, IReadOnlyList<Blizzard> blizzards) : this(s.WallMin, s.WallMax, s.Start, s.Goal, s.Walls, s.Blizzards, s._template)
@@ -235,10 +189,8 @@ public class Day24Solver : ISolver
         }
 
         public bool IsOutOfBounds(Vector2 position) => Walls.Contains(position) ||
-                                                       position.X > WallMax.X ||
-                                                       position.X < WallMin.X ||
-                                                       position.Y > WallMax.Y ||
-                                                       position.Y < WallMin.Y;
+                                                       position.X > WallMax.X || position.X < WallMin.X ||
+                                                       position.Y > WallMax.Y || position.Y < WallMin.Y;
 
         /// <summary>
         /// In one minute, each blizzard moves one position in the direction it is pointing.
@@ -275,7 +227,7 @@ public class Day24Solver : ISolver
             return new Map(this, Blizzards.Select(NextBlizzard).ToArray());
         }
 
-        public string Render(Vector2? expeditionPosition)
+        public string Render(Vector2? expeditionPosition = null)
         {
             var grid = _template.ReadLines().Select(line => line.ToCharArray()).ToArray();
 

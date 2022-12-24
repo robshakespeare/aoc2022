@@ -73,7 +73,7 @@ public class Day24SolverTests
     }
 
     [Test]
-    [Ignore("Takes around 70 seconds")]
+    [Ignore("Takes around 30 seconds")]
     public void Part1ReTest()
     {
         // ACT
@@ -96,6 +96,7 @@ public class Day24SolverTests
     }
 
     [Test]
+    [Ignore("Takes around 1.5 minutes")]
     public void Part2ReTest()
     {
         // ACT
