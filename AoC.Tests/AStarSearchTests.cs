@@ -4,17 +4,18 @@ public class AStarSearchTests
 {
     record Node(Vector2 Position, int Cost) : IAStarSearchNode;
 
-    private static (Node[][] grid, AStarSearch<Node> search) Parse(string gridLevels)
+    private static Node[][] ParseGrid(string gridLevels)
     {
-        var grid = gridLevels.ReadLines().Select(
+        return gridLevels.ReadLines().Select(
             (line, y) => line.Select(
                 (c, x) => new Node(new Vector2(x, y), int.Parse(c.ToString()))).ToArray()).ToArray();
+    }
 
-        var search = new AStarSearch<Node>(
+    private static AStarSearch<Node> BuildSearch(Node[][] grid, Node goal)
+    {
+        return new AStarSearch<Node>(
             getSuccessors: node => grid.GetAdjacent(node.Position, GridUtils.DirectionsExcludingDiagonal),
-            getHeuristic: (node, goal) => MathUtils.ManhattanDistance(node.Position, goal.Position));
-
-        return (grid, search);
+            getHeuristic: node => MathUtils.ManhattanDistance(node.Position, goal.Position));
     }
 
     private static void DisplayPathAsGrid(AStarSearch<Node>.Path path)
@@ -41,10 +42,13 @@ public class AStarSearchTests
 1293138521
 2311944581";
 
-        var (grid, search) = Parse(gridLevels);
+        var grid = ParseGrid(gridLevels);
+        var start = grid[0][0];
+        var goal = grid[^1][^1];
+        var search = BuildSearch(grid, goal);
 
         // ACT
-        var result = search.FindShortestPath(grid[0][0], grid[^1][^1]);
+        var result = search.FindShortestPath(start, goal);
 
         // ASSERT
         DisplayPathAsGrid(result);
@@ -69,10 +73,13 @@ public class AStarSearchTests
 111919141
 999911171";
 
-        var (grid, search) = Parse(gridLevels);
+        var grid = ParseGrid(gridLevels);
+        var start = grid[0][0];
+        var goal = grid[^1][^1];
+        var search = BuildSearch(grid, goal);
 
         // ACT
-        var result = search.FindShortestPath(grid[0][0], grid[^1][^1]);
+        var result = search.FindShortestPath(start, goal);
 
         // ASSERT
         DisplayPathAsGrid(result);

@@ -50,13 +50,13 @@ public class Day24SolverTests
 
         // ASSERT
         map.ToString().Should().Be("""
-            #.#####
+            #S#####
             #.....#
             #>....#
             #.....#
             #...v.#
             #.....#
-            #####.#
+            #####G#
             """.ReplaceLineEndings());
     }
 
@@ -78,6 +78,7 @@ public class Day24SolverTests
 
         // ASSERT
         part1Result.Should().BeGreaterThan(153);
+        part1Result.Should().BeGreaterThan(154);
         part1Result.Should().Be(null);
     }
 

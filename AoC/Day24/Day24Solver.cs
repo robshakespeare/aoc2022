@@ -1,3 +1,4 @@
+using static AoC.Day24.Day24Solver;
 using static AoC.GridUtils;
 
 namespace AoC.Day24;
@@ -5,6 +6,8 @@ namespace AoC.Day24;
 public class Day24Solver : ISolver
 {
     public string DayName => "Blizzard Basin";
+
+    private DateTime _lastReported = DateTime.MinValue;
 
     public long? SolvePart1(PuzzleInput input)
     {
@@ -14,26 +17,46 @@ public class Day24Solver : ISolver
 
         var nextDirections = new[] { North, West, East, South, Vector2.Zero };
         var initialMap = Map.Parse(input);
+        var goal = initialMap.Goal;
         var search = new AStarSearch<Expedition>(
             getSuccessors: current =>
             {
+                if ((DateTime.Now - _lastReported).TotalSeconds > 10)
+                {
+                    var distRemain = MathUtils.ManhattanDistance(current.Position, goal);
+
+                    Console.WriteLine($"Expedition update: MinuteNumber: {current.MinuteNumber}, Pos: {current.Position}, distRemain: {distRemain}");
+                    _lastReported = DateTime.Now;
+                }
+
+                var nextMinute = current.MinuteNumber + 1;
                 var nextMap = current.Map.Successor();
 
                 var nextBlizzards = nextMap.Blizzards.Select(b => b.Position).ToHashSet();
 
-                return nextDirections
+                var expeditions = nextDirections
                     .Select(nextDirection => current.Position + nextDirection)
-                    .Where(nextPosition => nextPosition != initialMap.Start &&
+                    .Where(nextPosition => /*nextPosition != initialMap.Start &&*/
                                            !nextBlizzards.Contains(nextPosition) &&
-                                           !initialMap.IsWall(nextPosition))
-                    .Select(nextPosition => new Expedition(nextPosition, nextMap));
+                                           !initialMap.IsOutOfBounds(nextPosition))
+                    .Select(nextPosition => new Expedition(nextPosition, nextMap, nextMinute));
+                return expeditions;
             },
-            getHeuristic: (current, goal) => MathUtils.ManhattanDistance(current.Position, goal.Position));
+            getHeuristic: current => MathUtils.ManhattanDistance(current.Position, goal));
 
-        return search.FindShortestPath(
-            start: new Expedition(initialMap.Start, initialMap),
-            goal: Expedition.Goal(initialMap.Goal)
-        ).TotalCost;
+        var shortestPath = search.FindShortestPath(
+            starts: new[] { new Expedition(initialMap.Start, initialMap, 0) },
+            isGoal: expedition => expedition.Position == goal);
+
+        var path = shortestPath.Nodes.ToArray();
+
+        Console.WriteLine(path[^2].ToString());
+        Console.WriteLine();
+
+        Console.WriteLine(shortestPath.CurrentNode.ToString());
+        Console.WriteLine();
+
+        return shortestPath.TotalCost;
     }
 
     public long? SolvePart2(PuzzleInput input)
@@ -44,52 +67,89 @@ public class Day24Solver : ISolver
     public class Expedition : IAStarSearchNode, IEquatable<Expedition>
     {
         public Vector2 Position { get; }
+        public int MinuteNumber { get; }
         public Map Map => _map ?? throw new InvalidOperationException("Goal map is unknown");
 
         private readonly Map? _map;
 
-        public Expedition(Vector2 position, Map map)
+        public Expedition(Vector2 position, Map map, int minuteNumber)
         {
             Position = position;
+            MinuteNumber = minuteNumber;
             _map = map;
         }
 
-        private Expedition(Vector2 position)
-        {
-            Position = position;
-        }
+        //public override bool Equals(object? obj)
+        //{
+        //    if (ReferenceEquals(null, obj)) return false;
+        //    if (ReferenceEquals(this, obj)) return true;
+        //    if (obj.GetType() != this.GetType()) return false;
+        //    return Equals((Expedition)obj);
+        //}
 
-        public static Expedition Goal(Vector2 position) => new(position);
+        //public bool Equals(Expedition? other)
+        //{
+        //    if (ReferenceEquals(null, other)) return false;
+        //    if (ReferenceEquals(this, other)) return true;
+        //    return Position.Equals(other.Position) && MinuteNumber == other.MinuteNumber;
+        //}
+
+        //public override int GetHashCode()
+        //{
+        //    return HashCode.Combine(Position, MinuteNumber);
+        //}
 
         public override bool Equals(object? obj) => obj is Expedition other && Equals(other);
 
-        public bool Equals(Expedition? other) => other != null && other.Position == Position;
+        public bool Equals(Expedition? other) => other != null &&
+                                                 Position == other.Position &&
+                                                 //MinuteNumber == other.MinuteNumber &&
+                                                 Map.Equals(other.Map);
 
-        public override int GetHashCode() => Position.GetHashCode();
+        public override int GetHashCode() => HashCode.Combine(Position, Map);
 
         public int Cost => 1;
+
+        public override string ToString() => Map.Render(Position);
     }
 
-    public record Map(
-        Vector2 WallMin, Vector2 WallMax, Vector2 Start, Vector2 Goal, IReadOnlySet<Vector2> Walls, IReadOnlyList<Blizzard> Blizzards)
+    public class Map//record Map(
+        //Vector2 WallMin, Vector2 WallMax, Vector2 Start, Vector2 Goal, IReadOnlySet<Vector2> Walls, IReadOnlyList<Blizzard> Blizzards)
     {
-        //public Vector2 WallMin { get; }
-        //public Vector2 WallMax { get; }
-        //public Vector2 Start { get; }
-        //public Vector2 Goal { get; }
-        //public IReadOnlySet<Vector2> Walls { get; }
-        //public IReadOnlyList<Blizzard> Blizzards { get; }
+        public Vector2 WallMin { get; }
+        public Vector2 WallMax { get; }
+        public Vector2 Start { get; }
+        public Vector2 Goal { get; }
+        public IReadOnlySet<Vector2> Walls { get; }
+        public IReadOnlyList<Blizzard> Blizzards { get; }
 
-        //public Map(
-        //    Vector2 wallMin, Vector2 wallMax, Vector2 start, Vector2 goal, IReadOnlySet<Vector2> walls, IReadOnlyList<Blizzard> blizzards)
-        //{
-        //    WallMin = wallMin;
-        //    WallMax = wallMax;
-        //    Start = start;
-        //    Goal = goal;
-        //    Walls = walls;
-        //    Blizzards = blizzards;
-        //}
+        private readonly string _template;
+
+        private readonly Lazy<string> _asString;
+
+        public Map(
+            Vector2 wallMin, Vector2 wallMax, Vector2 start, Vector2 goal, IReadOnlySet<Vector2> walls, IReadOnlyList<Blizzard> blizzards, string template)
+        {
+            _template = template;
+            WallMin = wallMin;
+            WallMax = wallMax;
+            Start = start;
+            Goal = goal;
+            Walls = walls;
+            Blizzards = blizzards;
+            _asString = new Lazy<string>(() => Render(null));
+        }
+
+        public Map(Map s, IReadOnlyList<Blizzard> blizzards) : this(s.WallMin, s.WallMax, s.Start, s.Goal, s.Walls, s.Blizzards, s._template)
+        {
+            Blizzards = blizzards;
+        }
+
+        public bool Equals(Map? other) => other != null && _asString.Value == other._asString.Value;
+
+        public override bool Equals(object? obj) => obj is Map other && Equals(other);
+
+        public override int GetHashCode() => _asString.Value.GetHashCode();
 
         public static Map Parse(string input)
         {
@@ -119,10 +179,19 @@ public class Day24Solver : ISolver
                     _ => throw new InvalidOperationException("Invalid blizzard char: " + b.chr)
                 }, b.chr)).ToArray();
 
-            return new Map(wallMin, wallMax, start, goal, walls, blizzards);
+            var template = walls.Select(p => (pos: p, chr: '#'))
+                .Append((pos: start, chr: 'S'))
+                .Append((pos: goal, chr: 'G'))
+                .ToStringGrid(c => c.pos, c => c.chr, '.').RenderGridToString();
+
+            return new Map(wallMin, wallMax, start, goal, walls, blizzards, template);
         }
 
-        public bool IsWall(Vector2 position) => Walls.Contains(position);
+        public bool IsOutOfBounds(Vector2 position) => Walls.Contains(position) ||
+                                                       position.X > WallMax.X ||
+                                                       position.X < WallMin.X ||
+                                                       position.Y > WallMax.Y ||
+                                                       position.Y < WallMin.Y;
 
         /// <summary>
         /// In one minute, each blizzard moves one position in the direction it is pointing.
@@ -156,17 +225,34 @@ public class Day24Solver : ISolver
                 return prevBlizzard with { Position = nextPosition };
             }
 
-            return this with
-            {
-                Blizzards = Blizzards.Select(NextBlizzard).ToArray()
-            };
+            return new Map(this, Blizzards.Select(NextBlizzard).ToArray());
         }
 
-        public override string ToString() =>
-            Walls.Select(p => (pos: p, chr: '#'))
-                .Concat(Blizzards.Select(b => (pos: b.Position, chr: b.Char)))
-                .ToStringGrid(c => c.pos, c => c.chr, '.')
-                .RenderGridToString();
+        public string Render(Vector2? expeditionPosition)
+        {
+            var grid = _template.ReadLines().Select(line => line.ToCharArray()).ToArray();
+
+            foreach (var blizzard in Blizzards)
+            {
+                grid[(int)blizzard.Position.Y][(int)blizzard.Position.X] = blizzard.Char;
+            }
+
+            if (expeditionPosition != null)
+            {
+                grid[(int)expeditionPosition.Value.Y][(int)expeditionPosition.Value.X] = 'E';
+            }
+
+            return string.Join(Environment.NewLine, grid.Select(line => string.Concat(line)));
+        }
+
+        //public string ToString(Vector2? expeditionPosition) =>
+        //    Walls.Select(p => (pos: p, chr: '#'))
+        //        .Concat(Blizzards.Select(b => (pos: b.Position, chr: b.Char)))
+        //        .Append((pos: expeditionPosition ?? Start, chr: expeditionPosition != null ? 'E' : '.'))
+        //        .ToStringGrid(c => c.pos, c => c.chr, '.')
+        //        .RenderGridToString();
+
+        public override string ToString() => _asString.Value;
     }
 
     public record Blizzard(Vector2 Position, Vector2 Dir, char Char);
