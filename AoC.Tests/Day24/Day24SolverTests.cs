@@ -6,6 +6,8 @@ public class Day24SolverTests
 {
     private readonly Day24Solver _sut = new();
 
+    static Day24SolverTests() => Day24Solver.Logger = TestContext.Progress.WriteLine;
+
     private const string ExampleInput = """
         #.######
         #>>.<^<#
@@ -71,6 +73,7 @@ public class Day24SolverTests
     }
 
     [Test]
+    [Ignore("Takes around 70 seconds")]
     public void Part1ReTest()
     {
         // ACT
@@ -79,7 +82,7 @@ public class Day24SolverTests
         // ASSERT
         part1Result.Should().BeGreaterThan(153);
         part1Result.Should().BeGreaterThan(154);
-        part1Result.Should().Be(null);
+        part1Result.Should().Be(271);
     }
 
     [Test]
@@ -89,7 +92,7 @@ public class Day24SolverTests
         var part2ExampleResult = _sut.SolvePart2(ExampleInput);
 
         // ASSERT
-        part2ExampleResult.Should().Be(null);
+        part2ExampleResult.Should().Be(54);
     }
 
     [Test]
@@ -99,6 +102,6 @@ public class Day24SolverTests
         var part2Result = _sut.SolvePart2();
 
         // ASSERT
-        part2Result.Should().Be(null);
+        part2Result.Should().Be(813);
     }
 }
