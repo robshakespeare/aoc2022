@@ -1,3 +1,5 @@
+using static AoC.GridUtils;
+
 namespace AoC.Day24;
 
 public class Day24Solver : ISolver
@@ -6,12 +8,66 @@ public class Day24Solver : ISolver
 
     public long? SolvePart1(PuzzleInput input)
     {
-        return null;
+        // A* Search, each move costs 1, heuristic is the remaining cost to reach goal (manhattan distance)
+        // On each minute, you can move up, down, left, or right, or you can wait in place.
+        // You cannot share a position with a blizzard.
+
+        var nextDirections = new[] { North, West, East, South, Vector2.Zero };
+        var initialMap = Map.Parse(input);
+        var search = new AStarSearch<Expedition>(
+            getSuccessors: current =>
+            {
+                var nextMap = current.Map.Successor();
+
+                var nextBlizzards = nextMap.Blizzards.Select(b => b.Position).ToHashSet();
+
+                return nextDirections
+                    .Select(nextDirection => current.Position + nextDirection)
+                    .Where(nextPosition => nextPosition != initialMap.Start &&
+                                           !nextBlizzards.Contains(nextPosition) &&
+                                           !initialMap.IsWall(nextPosition))
+                    .Select(nextPosition => new Expedition(nextPosition, nextMap));
+            },
+            getHeuristic: (current, goal) => MathUtils.ManhattanDistance(current.Position, goal.Position));
+
+        return search.FindShortestPath(
+            start: new Expedition(initialMap.Start, initialMap),
+            goal: Expedition.Goal(initialMap.Goal)
+        ).TotalCost;
     }
 
     public long? SolvePart2(PuzzleInput input)
     {
         return null;
+    }
+
+    public class Expedition : IAStarSearchNode, IEquatable<Expedition>
+    {
+        public Vector2 Position { get; }
+        public Map Map => _map ?? throw new InvalidOperationException("Goal map is unknown");
+
+        private readonly Map? _map;
+
+        public Expedition(Vector2 position, Map map)
+        {
+            Position = position;
+            _map = map;
+        }
+
+        private Expedition(Vector2 position)
+        {
+            Position = position;
+        }
+
+        public static Expedition Goal(Vector2 position) => new(position);
+
+        public override bool Equals(object? obj) => obj is Expedition other && Equals(other);
+
+        public bool Equals(Expedition? other) => other != null && other.Position == Position;
+
+        public override int GetHashCode() => Position.GetHashCode();
+
+        public int Cost => 1;
     }
 
     public record Map(
@@ -56,15 +112,17 @@ public class Day24Solver : ISolver
             var blizzards = inputCells.Where(c => c.chr is not ('.' or '#')).Select(
                 b => new Blizzard(b.pos, b.chr switch
                 {
-                    '^' => GridUtils.North,
-                    'v' => GridUtils.South,
-                    '<' => GridUtils.West,
-                    '>' => GridUtils.East,
+                    '^' => North,
+                    'v' => South,
+                    '<' => West,
+                    '>' => East,
                     _ => throw new InvalidOperationException("Invalid blizzard char: " + b.chr)
                 }, b.chr)).ToArray();
 
             return new Map(wallMin, wallMax, start, goal, walls, blizzards);
         }
+
+        public bool IsWall(Vector2 position) => Walls.Contains(position);
 
         /// <summary>
         /// In one minute, each blizzard moves one position in the direction it is pointing.
