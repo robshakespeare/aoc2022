@@ -42,6 +42,7 @@ public class AStarSearch<TNode> where TNode : IAStarSearchNode, IEquatable<TNode
     /// <param name="getHeuristic">
     ///     Delegate to call to get the heuristic for reaching the goal from the specified current node;
     ///     or null to use no heuristic (i.e. no heuristic will strictly be a Dijkstra Search).
+    ///     The heuristic is the estimated remaining cost to reach the goal from the current node.
     /// </param>
     public AStarSearch(Func<TNode, IEnumerable<TNode>> getSuccessors, Heuristic? getHeuristic = null)
     {
