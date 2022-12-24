@@ -40,11 +40,6 @@ public static class GridUtils
     };
 
     /// <summary>
-    /// None diagonal directions in a 2D plane (i.e. North, West, East, South).
-    /// </summary>
-    public static readonly Vector2[] DirectionsExcludingDiagonal = {North, West, East, South};
-
-    /// <summary>
     /// The center spot, i.e. (0, 0), and all directions in a 2D plane, including diagonal.
     /// </summary>
     public static readonly Vector2[] CenterAndDirectionsIncludingDiagonal =

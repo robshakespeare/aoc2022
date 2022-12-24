@@ -26,7 +26,7 @@ public class Day8Solver : ISolver
                 var isVisible = false;
                 var scenicScore = 1;
 
-                foreach (var direction in GridUtils.DirectionsExcludingDiagonal)
+                foreach (var direction in new[] {GridUtils.North, GridUtils.West, GridUtils.East, GridUtils.South})
                 {
                     var (treesInDirection, edgeReached) = GetVisibleTreesInDirection(grid, position, direction, treeUnderConsideration);
                     isVisible |= edgeReached;

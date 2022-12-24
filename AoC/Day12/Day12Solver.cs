@@ -43,7 +43,7 @@ public class Day12Solver : ISolver
         {
             var currentNode = heightmap.Get(node.Position);
             return heightmap
-                .GetAdjacent(currentNode.Position, GridUtils.DirectionsExcludingDiagonal)
+                .GetAdjacent(currentNode.Position, new[] {GridUtils.North, GridUtils.West, GridUtils.East, GridUtils.South})
                 .Where(nextNode => nextNode.Elevation <= currentNode.Elevation + 1);
         }).FindShortestPath(starts, end).TotalCost;
 }

@@ -11,7 +11,7 @@ public class AStarSearchTests
                 (c, x) => new Node(new Vector2(x, y), int.Parse(c.ToString()))).ToArray()).ToArray();
 
         var search = new AStarSearch<Node>(
-            getSuccessors: node => grid.GetAdjacent(node.Position, GridUtils.DirectionsExcludingDiagonal),
+            getSuccessors: node => grid.GetAdjacent(node.Position, new[] {GridUtils.North, GridUtils.West, GridUtils.East, GridUtils.South}),
             getHeuristic: (node, goal) => MathUtils.ManhattanDistance(node.Position, goal.Position));
 
         return (grid, search);
@@ -106,7 +106,7 @@ public class AStarSearchTests
             {
                 var currentNode = _grid.Get(node.Position);
                 return _grid
-                    .GetAdjacent(currentNode.Position, GridUtils.DirectionsExcludingDiagonal)
+                    .GetAdjacent(currentNode.Position, new[] {GridUtils.North, GridUtils.West, GridUtils.East, GridUtils.South})
                     .Where(nextNode => nextNode.Char <= currentNode.Char + 1);
             });
         }
