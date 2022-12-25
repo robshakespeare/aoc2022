@@ -6,7 +6,70 @@ public class Day25SolverTests
 {
     private readonly Day25Solver _sut = new();
 
-    private const string ExampleInput = @"";
+    private const string ExampleInput = """
+        1=-0-2
+        12111
+        2=0=
+        21
+        2=01
+        111
+        20012
+        112
+        1=-1=
+        1-12
+        12
+        1=
+        122
+        """;
+
+    public record NormalNumberSnafuCounterpart(int Number, string Snafu);
+
+    public static IReadOnlyList<TestCaseData> NormalNumberSnafuCounterparts { get; } = """
+                1              1
+                2              2
+                3             1=
+                4             1-
+                5             10
+                6             11
+                7             12
+                8             2=
+                9             2-
+               10             20
+               15            1=0
+               20            1-0
+              976          2=-01
+             2022         1=11-2
+            12345        1-0---0
+        314159265  1121-1110-1=0
+        """.ReadLines().Select(line =>
+    {
+        var parts = line.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return new TestCaseData(new NormalNumberSnafuCounterpart(int.Parse(parts[0]), parts[1]));
+    }).ToArray();
+
+    [Test]
+    public void DoesHaveTestCaseData()
+    {
+        var testCaseData = NormalNumberSnafuCounterparts;
+
+        Console.WriteLine(string.Join(Environment.NewLine, testCaseData));
+
+        // ASSERT
+        testCaseData.Should().NotBeEmpty();
+        NormalNumberSnafuCounterparts.Should().BeSameAs(testCaseData);
+    }
+
+    [TestCaseSource(nameof(NormalNumberSnafuCounterparts))]
+    public void SnafuToNormalNumber_Tests(NormalNumberSnafuCounterpart testCase)
+    {
+        // ACT
+        var resultNumber = Day25Solver.SnafuToNormalNumber(testCase.Snafu);
+
+        // ASSERT
+        resultNumber.Should().Be(testCase.Number);
+    }
+
+    // rs-todo: NormalNumberToSnafu
 
     [Test]
     public void Part1Example()
@@ -15,7 +78,7 @@ public class Day25SolverTests
         var part1ExampleResult = _sut.SolvePart1(ExampleInput);
 
         // ASSERT
-        part1ExampleResult.Should().Be(null);
+        part1ExampleResult.Should().Be("2=-1=0");
     }
 
     [Test]
