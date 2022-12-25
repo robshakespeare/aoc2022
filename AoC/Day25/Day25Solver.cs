@@ -11,6 +11,8 @@
 // .                                                                                                     .
 // .:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:._.:*~*:*~*:._.:*~*:.
 
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
 namespace AoC.Day25;
 
 public class Day25Solver : ISolver<string, string>
@@ -49,8 +51,65 @@ public class Day25Solver : ISolver<string, string>
         return b * u;
     }).Sum();
 
-    public static string NormalNumberToSnafu(long number)
+    public static int SnafuDigitsRequired(long number)
     {
-        return "rs-todo";
+        var n = 1;
+
+        while (Math.Pow(5, n) / 2 <= number)
+        {
+            n++;
+        }
+
+        return n;
     }
+
+    private static char[] baseChars = { '2', '1', '0', '-', '=' };
+
+    public static string NormalNumberToSnafu(long value)
+    {
+        // we can only go back -2
+
+        return "rs-todo!";
+
+        //string result = string.Empty;
+        //int targetBase = baseChars.Length;
+
+        //do
+        //{
+        //    var prev = value;
+        //    var rem = value % targetBase;
+        //    result = baseChars[rem] + result;
+        //    value = value / targetBase;
+
+        //    Console.WriteLine(new { prev, value, rem, result });
+        //}
+        //while (value > 0);
+
+        //return result;
+
+        //var snafuChars = new List<char>();
+        //const int targetBase = 5;
+
+        //do
+        //{
+        //    var prev = number;
+
+        //    (number, var rem) = Math.DivRem(number, targetBase);
+
+        //    Console.WriteLine(new { prev, number, rem });
+
+        //    snafuChars.Add(BaseChars[(int)rem]);
+
+        //    //result = baseChars[value % targetBase] + result;
+        //    //value = value / targetBase;
+        //}
+        //while (number > 0);
+
+        //return string.Concat(snafuChars);
+    }
+
+    //public static string NormalNumberToSnafu(long number) => string.Concat(number.ToString().Reverse().Select((chr, n) =>
+    //{
+    //    return $"todo: (c:{chr} n:{n})!";
+    //}).Reverse());
 }

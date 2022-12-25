@@ -25,6 +25,7 @@ public class Day25SolverTests
     public record NormalNumberSnafuCounterpart(int Number, string Snafu);
 
     public static IReadOnlyList<TestCaseData> NormalNumberSnafuCounterparts { get; } = """
+                0              0
                 1              1
                 2              2
                 3             1=
@@ -35,8 +36,26 @@ public class Day25SolverTests
                 8             2=
                 9             2-
                10             20
+               11             21
+               12             22
+               13            1==
+               14            1=-
                15            1=0
+               16            1=1
+               17            1=2
+               18            1-=
+               19            1--
                20            1-0
+               21            1-1
+               22            1-2
+               23            10=
+               24            10-
+               25            100
+              122           10-2
+              123           100=
+              124           100-
+              125           1000
+              625          10000
               976          2=-01
              2022         1=11-2
             12345        1-0---0
@@ -67,6 +86,16 @@ public class Day25SolverTests
 
         // ASSERT
         resultNumber.Should().Be(testCase.Number);
+    }
+
+    [TestCaseSource(nameof(NormalNumberSnafuCounterparts))]
+    public void SnafuDigitsRequired_Tests(NormalNumberSnafuCounterpart testCase)
+    {
+        // ACT
+        var result = Day25Solver.SnafuDigitsRequired(testCase.Number);
+
+        // ASSERT
+        result.Should().Be(testCase.Snafu.Length);
     }
 
     [TestCaseSource(nameof(NormalNumberSnafuCounterparts))]
