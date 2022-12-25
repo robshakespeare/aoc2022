@@ -22,6 +22,10 @@ public class Day25Solver : ISolver<string, string>
     /// </summary>
     public string? SolvePart1(PuzzleInput input)
     {
+        var sumOfFuelRequirements = input.ReadLines().Select(SnafuToNormalNumber).Sum();
+
+        Console.WriteLine($"Sum of the fuel requirements: {sumOfFuelRequirements}");
+
         return null;
     }
 
@@ -30,10 +34,10 @@ public class Day25Solver : ISolver<string, string>
         return null;
     }
 
-    public static int SnafuToNormalNumber(string snafuInput) => snafuInput.Reverse().Select((chr, n) =>
+    public static long SnafuToNormalNumber(string snafuInput) => snafuInput.Reverse().Select((chr, n) =>
     {
-        var b = (int)Math.Pow(5, n);
-        var u = chr switch
+        var b = (long)Math.Pow(5, n);
+        long u = chr switch
         {
             '2' => 2,
             '1' => 1,
@@ -45,7 +49,7 @@ public class Day25Solver : ISolver<string, string>
         return b * u;
     }).Sum();
 
-    public static string NormalNumberToSnafu(int number)
+    public static string NormalNumberToSnafu(long number)
     {
         return "rs-todo";
     }
