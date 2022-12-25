@@ -69,7 +69,15 @@ public class Day25SolverTests
         resultNumber.Should().Be(testCase.Number);
     }
 
-    // rs-todo: NormalNumberToSnafu
+    [TestCaseSource(nameof(NormalNumberSnafuCounterparts))]
+    public void NormalNumberToSnafu_Tests(NormalNumberSnafuCounterpart testCase)
+    {
+        // ACT
+        var resultNumber = Day25Solver.NormalNumberToSnafu(testCase.Number);
+
+        // ASSERT
+        resultNumber.Should().Be(testCase.Snafu);
+    }
 
     [Test]
     public void Part1Example()
