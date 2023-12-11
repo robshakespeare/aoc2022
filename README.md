@@ -39,6 +39,12 @@ To run the MAUI app in an Android Emulator, start an [Android Emulator](https://
 dotnet build AoC.MAUI -t:Run -f net7.0-android
 ```
 
+To decrypt the puzzle inputs in this repository (requires `AocPuzzleInputCryptoKey` config value):
+
+```
+dotnet run --project AoC.CLI --decrypt
+```
+
 
 ### Test
 
