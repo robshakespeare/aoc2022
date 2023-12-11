@@ -61,7 +61,7 @@ public class Day0SolverTests
         _sut.SolvePart2(out var part2ResultFull);
 
         // ASSERT
-        part2Result.Should().EndWith("840").And.StartWith("Hello World!");
+        part2Result.Should().EndWith("840").And.StartWith("🎅 Hello World!");
 
         part2ResultFull.Value.Should().BeOfType<string>().Which.Should().EndWith("840");
         part2ResultFull.IsStarted.Should().BeTrue();
@@ -152,12 +152,11 @@ public class Day0SolverTests
         actualResults[1].Part2Result.Value.Should().Be(null);
 
         actualResults[2].Part1Result.Value.Should().Be(136L);
-        actualResults[2].Part2Result.Value.Should().BeOfType<string>().Which.Should().EndWith("840").And.StartWith("Hello World!");
+        actualResults[2].Part2Result.Value.Should().BeOfType<string>().Which.Should().EndWith("840").And.StartWith("🎅 Hello World!");
 
         // Assert time taken flow
         actualResults[0].Part1Result.Elapsed.Should().Be(null);
         actualResults[0].Part2Result.Elapsed.Should().Be(null);
-        
 
         actualResults[1].Part1Result.Elapsed.Should().BeGreaterThan(TimeSpan.Zero);
         actualResults[1].Part2Result.Elapsed.Should().Be(null);

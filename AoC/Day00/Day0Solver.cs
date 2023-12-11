@@ -33,7 +33,7 @@ public class Day0Solver : ISolver<long, string>
         var result = MathUtils.LeastCommonMultiple(numbers[0], numbers[1], numbers[2]);
 
         return $"""
-            Hello World!
+            🎅 Hello World!
             This tests that sometimes the answer can be just text.
             The specific answer was: {result}
             """;
