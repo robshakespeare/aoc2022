@@ -16,6 +16,10 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: global.json
+    - name: Decrypt the puzzle inputs
+      run: dotnet run --project AoC.CLI --decrypt
+      env:
+        AocPuzzleInputCryptoKey: ${{ secrets.AOC_PUZZLE_INPUT_CRYPTO_KEY }}
     - name: Workload restore
       run: dotnet workload restore
     - name: Publish Android app
