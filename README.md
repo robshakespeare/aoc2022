@@ -15,7 +15,8 @@ Rob Shakespeare's solutions to the Advent of Code 2022 challenges at https://adv
 
 ### Prerequisites
 
-* [.NET 7.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/7.0)
+* [.NET 8.0 SDK](https://aka.ms/get-dotnet-8)
+* `dotnet workload restore` (to install the specific workloads needed, notably MAUI)
 * Optional: to be able to run the cake scripts, first: `dotnet tool restore`
 
 
@@ -36,7 +37,7 @@ dotnet run --project AoC.WasmUI
 To run the MAUI app in an Android Emulator, start an [Android Emulator](https://visualstudio.microsoft.com/vs/msft-android-emulator/), then run:
 
 ```
-dotnet build AoC.MAUI -t:Run -f net7.0-android
+dotnet build AoC.MAUI -t:Run -f net8.0-android
 ```
 
 To decrypt the puzzle inputs in this repository (requires `AocPuzzleInputCryptoKey` config value):

@@ -7,15 +7,11 @@ using static AoC.CLI.Utils;
 
 namespace AoC.CLI;
 
-internal partial class PullPuzzleInputCommand
+internal partial class PullPuzzleInputCommand(IInputCrypto crypto)
 {
     private const string UserAgentName = "Rob Shakespeare's AoC CLI https://github.com/robshakespeare";
 
     public static PullPuzzleInputCommand Instance = new(CryptoInstance);
-
-    private readonly IInputCrypto crypto;
-
-    public PullPuzzleInputCommand(IInputCrypto crypto) => this.crypto = crypto;
 
     public async Task DoAsync(string[] args)
     {

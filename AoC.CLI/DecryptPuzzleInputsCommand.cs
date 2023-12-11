@@ -4,13 +4,9 @@ using System.Text.RegularExpressions;
 
 namespace AoC.CLI;
 
-internal partial class DecryptPuzzleInputsCommand
+internal partial class DecryptPuzzleInputsCommand(IInputCrypto crypto)
 {
     public static DecryptPuzzleInputsCommand Instance = new(CryptoInstance);
-
-    private readonly IInputCrypto crypto;
-
-    public DecryptPuzzleInputsCommand(IInputCrypto crypto) => this.crypto = crypto;
 
     public async Task DoAsync(string[] args)
     {
