@@ -15,6 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Template\AoC\DayXXX\DayNNNSolver.cs = Template\AoC\DayXXX\DayNNNSolver.cs
 		Template\AoC.Tests\DayXXX\DayNNNSolverTests.cs = Template\AoC.Tests\DayXXX\DayNNNSolverTests.cs
 		.github\workflows\deployment-workflow.yml = .github\workflows\deployment-workflow.yml
+		global.json = global.json
 		LICENSE = LICENSE
 		README.md = README.md
 		.github\workflows\release-workflow.yml = .github\workflows\release-workflow.yml
@@ -26,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AoC.WasmUI", "AoC.WasmUI\Ao
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AoC.CLI", "AoC.CLI\AoC.CLI.csproj", "{4BC3E0CA-95F8-4E5B-96E6-45129748F564}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AoC.MAUI", "AoC.MAUI\AoC.MAUI.csproj", "{AFF90317-6ED7-418D-B24B-E95CF921B3AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AoC.MAUI", "AoC.MAUI\AoC.MAUI.csproj", "{AFF90317-6ED7-418D-B24B-E95CF921B3AA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{94F081A0-A655-4CFD-93CC-D9F04FA089D8}"
 EndProject
