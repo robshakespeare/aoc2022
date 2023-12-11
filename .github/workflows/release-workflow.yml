@@ -23,7 +23,7 @@ jobs:
     - name: Workload restore
       run: dotnet workload restore
     - name: Publish Android app
-      run: dotnet publish AoC.MAUI -f:net7.0-android -c:Release
+      run: dotnet publish AoC.MAUI -f:net8.0-android -c:Release
     - name: Publish Windows CLI
       run: dotnet publish AoC.CLI -c Release -r win-x64 --self-contained -p:PublishSingleFile=true
     - name: Get most recent day name
@@ -37,5 +37,5 @@ jobs:
         prerelease: false
         title: "v${{ github.run_number }} (${{ steps.vars.outputs.MostRecentDayTitle }})"
         files: |
-          AoC.MAUI/bin/Release/net7.0-android/publish/com.rws.aoc2022-Signed.apk
-          AoC.CLI/bin/Release/net7.0/win-x64/publish/AoC.CLI.exe
+          AoC.MAUI/bin/Release/net8.0-android/publish/com.rws.aoc2022-Signed.apk
+          AoC.CLI/bin/Release/net8.0/win-x64/publish/AoC.CLI.exe
