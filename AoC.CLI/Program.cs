@@ -1,7 +1,9 @@
+using System.Text;
 using AoC;
+using AoC.CLI;
 using static Crayon.Output;
 
-Console.OutputEncoding = System.Text.Encoding.Unicode;
+Console.OutputEncoding = OperatingSystem.IsWindows() ? Encoding.Unicode : Encoding.UTF8;
 
 switch (args.ElementAtOrDefault(0))
 {
@@ -11,14 +13,18 @@ switch (args.ElementAtOrDefault(0))
         return;
 
     case "--pull":
-        await AoC.CLI.PullPuzzleInputCommand.DoAsync(args);
+        await PullPuzzleInputCommand.Instance.DoAsync(args);
+        return;
+
+    case "--decrypt":
+        await DecryptPuzzleInputsCommand.Instance.DoAsync(args);
         return;
 }
 
 static void PrintTitle()
 {
     Console.Clear();
-    Console.WriteLine("🎄 Shakey's AoC 2022 🌟");
+    Console.WriteLine($"🎄 Shakey's AoC {Utils.Year} 🌟");
 }
 
 PrintTitle();
@@ -36,27 +42,27 @@ do
     switch (resume)
     {
         case true when dayNumber == "list":
-        {
-            PrintTitle();
-            Console.WriteLine(string.Join(
-                Environment.NewLine,
-                SolverFactory.Instance.Solvers.Where(x => !string.IsNullOrEmpty(x.DayName)).Select(x => $"Day {x.DayNumber}: {x.DayName}")));
-            break;
-        }
+            {
+                PrintTitle();
+                Console.WriteLine(string.Join(
+                    Environment.NewLine,
+                    SolverFactory.Instance.Solvers.Where(x => !string.IsNullOrEmpty(x.DayName)).Select(x => $"Day {x.DayNumber}: {x.DayName}")));
+                break;
+            }
         case true:
-        {
-            PrintTitle();
-            var solver = SolverFactory.Instance.TryCreateSolver(dayNumber);
-            if (solver != null)
             {
-                await solver.RunAsync();
-            }
-            else
-            {
-                Console.WriteLine(Red($"No solver for day '{Bright.Cyan(dayNumber)}'."));
-            }
+                PrintTitle();
+                var solver = SolverFactory.Instance.TryCreateSolver(dayNumber);
+                if (solver != null)
+                {
+                    await solver.RunAsync();
+                }
+                else
+                {
+                    Console.WriteLine(Red($"No solver for day '{Bright.Cyan(dayNumber)}'."));
+                }
 
-            break;
-        }
+                break;
+            }
     }
 } while (resume);

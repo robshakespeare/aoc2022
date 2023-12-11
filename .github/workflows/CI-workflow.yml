@@ -17,7 +17,11 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 7.0.100
+          global-json-file: global.json
+      - name: Decrypt the puzzle inputs
+        run: dotnet run --project AoC.CLI --decrypt
+        env:
+          AocPuzzleInputCryptoKey: ${{ secrets.AOC_PUZZLE_INPUT_CRYPTO_KEY }}
       - name: Run tests and collect coverage
         run: dotnet test AoC.Tests --configuration Release --verbosity normal --collect:"XPlat Code Coverage"
       - name: Publish unit test code coverage results

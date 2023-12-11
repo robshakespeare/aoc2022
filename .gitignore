@@ -444,3 +444,7 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
+
+# My AoC specific rules
+/AoC/**/*.txt
+!/AoC/**/*.encrypted.txt

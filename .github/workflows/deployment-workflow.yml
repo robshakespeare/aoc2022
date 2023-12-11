@@ -10,9 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
         with:
-          submodules: true
+          global-json-file: global.json
+      - name: Decrypt the puzzle inputs
+        run: dotnet run --project AoC.CLI --decrypt
+        env:
+          AocPuzzleInputCryptoKey: ${{ secrets.AOC_PUZZLE_INPUT_CRYPTO_KEY }}
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
